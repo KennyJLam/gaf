@@ -18,8 +18,8 @@ using System.Runtime.CompilerServices;
 // The form "{Major}.{Minor}.*" will automatically update the build and revision,
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
 
-[assembly: AssemblyVersion("2.1.0")]
-[assembly: AssemblyFileVersion("2.1.0")]
+[assembly: AssemblyVersion("2.1.1")]
+[assembly: AssemblyFileVersion("2.1.1")]
 
 // The following attributes are used to specify the signing key for the assembly,
 // if desired. See the Mono documentation for more information about signing.
@@ -32,16 +32,3 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("GAF.Lab")]
 [assembly: InternalsVisibleTo("GAF.NUnit")]
 
-// ======================================================================================
-// HISTORY
-// ======================================================================================
-// Version 2    Update to IOperator interface to include the 'Enabed' Property.
-//              Change to the RandomReplace opertor to change from NumberToReplace to 
-//              Percentage to replace.
-// 2.0.1		Fixes (See NuGet)
-// 2.0.2		Fixes (See NuGet)
-// 2.0.3		Fixes (See NuGet)
-// 2.1.0		Fixes
-//				Refactoring of RandomReplace
-//				Removal of percentages resolving to even numbers.
-//2.1.1			Update of Assembly info.

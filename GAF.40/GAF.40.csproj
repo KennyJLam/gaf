@@ -75,9 +75,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Diagrams\ClassDiagram.cd" />
-  </ItemGroup>
   <ItemGroup />
   <Import Project="..\GAF.Shared\GAF.Shared.projitems" Label="Shared" Condition="Exists('..\GAF.Shared\GAF.Shared.projitems')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
