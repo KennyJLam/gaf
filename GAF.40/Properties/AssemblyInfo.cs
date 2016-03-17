@@ -15,8 +15,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 
 //used to give unit test access
-[assembly: InternalsVisibleTo("GAF.Test")]
 [assembly: InternalsVisibleTo("GAF.UnitTests")]
+[assembly: InternalsVisibleTo("GAF.Lab")]
+[assembly: InternalsVisibleTo("GAF.NUnit")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -39,16 +40,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("2.1.1")]
 [assembly: AssemblyFileVersion("2.1.1")]
 
-// ======================================================================================
-// HISTORY
-// ======================================================================================
-// Version 2    Update to IOperator interface to include the 'Enabed' Property.
-//              Change to the RandomReplace opertor to change from NumberToReplace to 
-//              Percentage to replace.
-// 2.0.1		Fixes (See NuGet)
-// 2.0.2		Fixes (See NuGet)
-// 2.0.3		Fixes (See NuGet)
-// 2.1.0		Fixes
-//				Refactoring of RandomReplace
-//				Removal of percentages resolving to even numbers.
-//2.1.1			Update of Assembly info.
+
