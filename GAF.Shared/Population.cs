@@ -348,15 +348,20 @@ namespace GAF
             //This is faster in almost all cases, however, it relies on the evaluation function
             //being able to handle multiple threads. Adding synchronisation code to the evaluation 
             //function will make this pointless and could even be slower due to the Parallel overhead.
-            //Parallel.ForEach(solutions, solution => solution.Evaluate(fitnessFunctionDelegate));
 
-			//above removed to satisfy the PCL limitations
-			//TODO: Update documentation to reflect No Parallel
+			//tests using the GAF on a Raspberry Pi 3 (Arch Linux/Mono 4.22) showed that the .Net40 version
+			//using all four corse took 1:10 whilst the PCL 78 version using a single core took 1:21.
+
+			//TODO: Update documentation to reflect No Parallel due to PCL limitations
+#if PCL
 			foreach (var solution in solutionsToEvaluate) {
-				solution.Evaluate (fitnessFunctionDelegate);
-				evaluations++;
+			solution.Evaluate (fitnessFunctionDelegate);
+			evaluations++;
 			}
-				
+#else
+			Parallel.ForEach(solutionsToEvaluate, solution => solution.Evaluate(fitnessFunctionDelegate));
+#endif
+
 			//if any have been evaluated, update the linear normalisation
             if (evaluations > 0 && this.LinearlyNormalised)
             {
