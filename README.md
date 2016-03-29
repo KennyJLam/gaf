@@ -10,3 +10,7 @@ The GAF has been designed to be as generic and extensible as possible whilst at 
 To get started, simply install the GAF using the NuGet Package Manager. Execute the following command at the Package Manager Console within Visual Studio or Xamarin.
 
 `PM> Install-Package GAF`
+
+More Info
+=========
+For more information and repo contact details see [http://johnnewcombe.net](http://johnnewcombe.net).
