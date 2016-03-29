@@ -1,3 +1,6 @@
+Description
+===========
+
 The Genetic Algorithm Framework (GAF) is designed to be the simplest way to implement a genetic algorithm in C#. The GAF is a .Net/Mono assembly, freely available via NuGet, that allows a genetic algorithm based solution to be implemented in C# using only a few lines of code.
 
 This documentation describes how to use the Genetic Algorithm Framework as part of a C# project typically using Visual Studio or Xamarin. For a full explanation of what a genetic algorithm is, and what it can do, please see the post Understanding Genetic Algorithms in less than 10 minutes and John Newcombe's article Implementing Genetic Algorithms in C# on Code Project.
