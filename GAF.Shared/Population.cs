@@ -630,7 +630,7 @@ namespace GAF
             const int parentCount = 2;
             var parents = new List<Chromosome>();
 			var tour = new List<Chromosome>();
-			var maxIterations = 10;
+			var maxIterations = 20;
 			Chromosome selected;
 
             var populationSize = PopulationSize;
@@ -654,10 +654,9 @@ namespace GAF
 					tour.Sort ();
 					selected = tour.First ();
 
+					//this keeps the parents unique
 					if (!parents.Exists (c => selected.Id == c.Id))
 						parents.Add (tour[0]);
-					else if(tour.Count > 2)
-						parents.Add(tour[1]);
 						
 
 				} while(parents.Count < parentCount);
