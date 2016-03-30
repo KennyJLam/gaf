@@ -27,6 +27,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GAF.Extensions;
 using GAF.Threading;
+using System.Threading;
 
 namespace GAF
 {
@@ -37,6 +38,7 @@ namespace GAF
     {
         private List<Chromosome> _chromosomes = new List<Chromosome>();
         private bool _reEvaluateAll;
+		private bool _evaluateInParallel;
         private bool _useLinearlyNormalisedFitness;
         private ParentSelectionMethod _parentSelectionMethod;
         private readonly object _syncLock = new object();
@@ -44,7 +46,7 @@ namespace GAF
         #region Constructor
 
         /// <summary>
-        /// Constructor for the Population object. 
+		/// Initializes a new instance of the <see cref="GAF.Population"/> class.
         /// Uses Linear Normalised fitness and does not re-evaluate those 
         /// Chromosomes that have already been evaluated in previous generations.
         /// </summary>
@@ -54,7 +56,7 @@ namespace GAF
         }
 
         /// <summary>
-        /// Constructor for the Population object. 
+		/// Initializes a new instance of the <see cref="GAF.Population"/> class.
         /// Uses Linear Normalised fitness and does not re-evaluate those 
         /// Chromosomes that have already been evaluated in previous generations.
         /// </summary>
@@ -66,7 +68,7 @@ namespace GAF
         }
 
         /// <summary>
-        /// Constructor for the Population object. 
+		/// Initializes a new instance of the <see cref="GAF.Population"/> class.
         /// Uses Linear Normalised fitness and does not re-evaluate those 
         /// Chromosomes that have already been evaluated in previous generations.
         /// </summary>
@@ -92,7 +94,7 @@ namespace GAF
         }
 
 		/// <summary>
-        /// Constructor for the Population object. 
+		/// Initializes a new instance of the <see cref="GAF.Population"/> class.
         /// </summary>
         /// <param name="populationSize"></param>
         /// <param name="chromosomeLength"></param>
@@ -100,32 +102,36 @@ namespace GAF
         /// <param name="useLinearlyNormalisedFitness"></param>
         public Population(int populationSize, int chromosomeLength, bool reEvaluateAll,
             bool useLinearlyNormalisedFitness)
+			: this ( populationSize,  chromosomeLength,  reEvaluateAll,
+				useLinearlyNormalisedFitness, ParentSelectionMethod.FitnessProportionateSelection)
         {
-            if (populationSize%2 != 0)
-            {
-                throw new ArgumentException("Population size must be an even number.");
-            }
-
-            //set the default values
-            this.InitialisationType = InitialisationType.Random;
-            _reEvaluateAll = reEvaluateAll;
-            _useLinearlyNormalisedFitness = useLinearlyNormalisedFitness;
-            _parentSelectionMethod = ParentSelectionMethod.FitnessProportionateSelection;
-			//_chromosomeLength = chromosomeLength;
-
-			this.Initialise(populationSize, chromosomeLength);
         }
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GAF.Population"/> class.
+		/// </summary>
+		/// <param name="populationSize">Population size.</param>
+		/// <param name="chromosomeLength">Chromosome length.</param>
+		/// <param name="reEvaluateAll">If set to <c>true</c> re evaluate all.</param>
+		/// <param name="useLinearlyNormalisedFitness">If set to <c>true</c> use linearly normalised fitness.</param>
+		/// <param name="selectionMethod">Selection method.</param>
+		public Population(int populationSize, int chromosomeLength, bool reEvaluateAll,
+			bool useLinearlyNormalisedFitness, ParentSelectionMethod selectionMethod)
+			: this ( populationSize,  chromosomeLength,  reEvaluateAll,
+				useLinearlyNormalisedFitness, ParentSelectionMethod.FitnessProportionateSelection, false)
+		{
+		}
         /// <summary>
-        /// Constructor for the Population object. 
+		/// Initializes a new instance of the <see cref="GAF.Population"/> class.
         /// </summary>
         /// <param name="populationSize"></param>
         /// <param name="chromosomeLength"></param>
         /// <param name="reEvaluateAll"></param>
         /// <param name="useLinearlyNormalisedFitness"></param>
         /// <param name="selectionMethod"></param>
+		/// <param name = "evaluateInParallel"></param>
         public Population(int populationSize, int chromosomeLength, bool reEvaluateAll,
-            bool useLinearlyNormalisedFitness, ParentSelectionMethod selectionMethod)
+			bool useLinearlyNormalisedFitness, ParentSelectionMethod selectionMethod, bool evaluateInParallel)
         {
             if (populationSize%2 != 0)
             {
@@ -137,7 +143,7 @@ namespace GAF
             _reEvaluateAll = reEvaluateAll;
             _useLinearlyNormalisedFitness = useLinearlyNormalisedFitness;
             _parentSelectionMethod = selectionMethod;
-			//_chromosomeLength = chromosomeLength;
+			_evaluateInParallel = evaluateInParallel;
 
 			this.Initialise(populationSize, chromosomeLength);
         }
@@ -280,6 +286,33 @@ namespace GAF
 			}
         }
 
+		/// <summary>
+		/// Gets or sets a value indicating whether this <see cref="GAF.Population"/> evaluates
+		/// the solutions in parallel using the parallel library IF the parallel library is supported.
+		/// NOTE: The PCL Version of the library does not support parallel evaluations.
+		/// </summary>
+		/// <value><c>true</c> if evaluate in parallel; otherwise, <c>false</c>.</value>
+		public bool EvaluateInParallel
+		{
+			get
+			{
+				lock (_syncLock)
+				{
+					return _evaluateInParallel;
+				}
+			}
+			set
+			{ 
+				lock (_syncLock)
+				{
+					#if PCL //parallel not supported in PCL profile
+						value = false;
+					#endif
+					_evaluateInParallel = value;
+				}
+			}
+		}
+
         /// <summary>
         /// Returns boolean to indicate whether linear normalisasion is being used.
         /// </summary>
@@ -343,7 +376,7 @@ namespace GAF
                                                         (!ReEvaluateAll && solution.Fitness <= 0)).ToList();
 
 			//TODO: Work out why the number of evaluations affects the linear normalisation?
-            var evaluations = 0;
+            int evaluations = 0;
 
             //This is faster in almost all cases, however, it relies on the evaluation function
             //being able to handle multiple threads. Adding synchronisation code to the evaluation 
@@ -355,11 +388,39 @@ namespace GAF
 			//TODO: Update documentation to reflect No Parallel due to PCL limitations
 #if PCL
 			foreach (var solution in solutionsToEvaluate) {
-			solution.Evaluate (fitnessFunctionDelegate);
-			evaluations++;
+				solution.Evaluate (fitnessFunctionDelegate);
+				evaluations++;
 			}
 #else
-			Parallel.ForEach(solutionsToEvaluate, solution => solution.Evaluate(fitnessFunctionDelegate));
+			if (EvaluateInParallel) {
+
+				// First type parameter is the type of the source elements
+				// Second type parameter is the type of the thread-local variable (partition subtotal)
+				Parallel.ForEach<Chromosome,int>(solutionsToEvaluate,
+					() => 0, // method to initialize the local variable
+					(solution, loop, subtotal) =>
+					// method invoked by the loop on each iteration
+					{
+						solution.Evaluate (fitnessFunctionDelegate);
+						subtotal ++;
+						return subtotal; // value to be passed to next iteration
+					},
+					// Method to be executed when each partition has completed.
+					// finalResult is the final value of subtotal for a particular partition.
+					(finalResult) => Interlocked.Add(ref evaluations, finalResult)
+				);			
+
+
+			} else {
+			
+				foreach (var solution in solutionsToEvaluate) {
+					solution.Evaluate (fitnessFunctionDelegate);
+					evaluations++;
+				}
+			}
+
+
+
 #endif
 
 			//if any have been evaluated, update the linear normalisation
@@ -493,8 +554,6 @@ namespace GAF
             return result;
         }
 
-        #region Selection Methods
-
         /// <summary>
         /// Returns the top n percent of the population based on highest
         /// fitness value. This method returns a deep copy of the Solutions 
@@ -623,6 +682,20 @@ namespace GAF
             }
         }
 
+		public Population CreateEmptyCopy() {
+			
+			var newPopulation = new Population (0,
+				0,
+				this.ReEvaluateAll,
+				this.LinearlyNormalised,
+				this.ParentSelectionMethod,
+				this.EvaluateInParallel);
+
+			return newPopulation;
+		}
+
+		#endregion
+
         #region Private Methods
 
         internal List<Chromosome> GetTournamentSelection()
@@ -656,7 +729,7 @@ namespace GAF
 
 					//this keeps the parents unique
 					if (!parents.Exists (c => selected.Id == c.Id))
-						parents.Add (tour[0]);
+						parents.Add (selected);
 						
 
 				} while(parents.Count < parentCount);
@@ -802,42 +875,6 @@ namespace GAF
             return result;
         }
 
-        /// <summary>
-        /// Returns a deep copy of the Population all properties are maintained.
-        /// </summary>
-        /// <returns></returns>
-//        public Population DeepClone()
-//        {
-////            var binaryFormatter = new BinaryFormatter();
-////            var memoryStream = new MemoryStream();
-////
-////            binaryFormatter.Serialize(memoryStream, this);
-////            memoryStream.Seek(0, SeekOrigin.Begin);
-////
-////            var copy = (Population) binaryFormatter.Deserialize(memoryStream);
-////            memoryStream.Close();
-////
-////            return copy;
-//			return this;
-//
-//			var clone = new Population ();
-//			clone.InitialisationType = InitialisationType;
-//			clone.LinearlyNormalised = LinearlyNormalised;
-//			clone.ParentSelectionMethod = ParentSelectionMethod;
-//			clone.ReEvaluateAll = ReEvaluateAll;
-//
-//			foreach (var solution in Solutions) {
-//				clone.Solutions.Add (solution.DeepClone());
-//			}
-//
-//			return clone;
-//        }
-
-        #endregion
-
-        #endregion
-
-
 
 		private void Initialise(int populationSize, int chromosomeLength)
         {
@@ -907,8 +944,8 @@ namespace GAF
                 currentValue--;
             }
         }
+		#endregion
 
-        #endregion
 
     }
 }

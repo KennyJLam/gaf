@@ -65,15 +65,11 @@ namespace GAF.Operators
 
             _currentGeneration++;
 
-            if (newPopulation == null)
-                newPopulation = new Population(0,
-                                               0,
-                                               currentPopulation.ReEvaluateAll,
-                                               currentPopulation.LinearlyNormalised,
-                                               currentPopulation.ParentSelectionMethod);
+			if (newPopulation == null) {
+				newPopulation = currentPopulation.CreateEmptyCopy ();			
+			}
 
-            if (!Enabled) return;
-
+			if (!Enabled) return;
 
             //create the memory if one doesn't exist
             if (_memory == null)

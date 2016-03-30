@@ -94,14 +94,11 @@ namespace GAF.Operators
         /// <param name="fitnessFunctionDelegate"></param>
         public void Invoke(Population currentPopulation, ref Population newPopulation, FitnessFunction fitnessFunctionDelegate)
         {
-            if (newPopulation == null)
-                newPopulation = new Population(0,
-                                               0,
-                                               currentPopulation.ReEvaluateAll,
-                                               currentPopulation.LinearlyNormalised,
-                                               currentPopulation.ParentSelectionMethod);
+			if (newPopulation == null) {
+				newPopulation = currentPopulation.CreateEmptyCopy ();			
+			}
 
-            if (!Enabled) return;
+			if (!Enabled) return;
 
 			if (currentPopulation.Solutions != null && currentPopulation.Solutions.Count > 0) {
 				throw new ArgumentException ("There are no Solutions in the current Population.");

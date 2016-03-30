@@ -29,6 +29,7 @@ using GAF.Operators;
 
 namespace GAF
 {
+
     /// <summary>
     /// Delegate definition for the Terminate function.
     /// </summary>
@@ -43,7 +44,7 @@ namespace GAF
     /// </summary>
     public class GeneticAlgorithm
     {
-        //private readonly object _syncLock = new object();
+        private readonly object _syncLock = new object();
 
         /// <summary>
         /// Delegate definition for the GenerationComplete event handler.
@@ -101,7 +102,7 @@ namespace GAF
         private int _currentGeneration;
         private readonly FitnessFunction _fitnessFunctionDelegate;
 
-        private long _evaluations;
+        private long _evals;
 
         #region Constructor
 
@@ -200,16 +201,6 @@ namespace GAF
                 }
 
             }, TaskContinuationOptions.OnlyOnFaulted);
-
-            //try
-            //{
-            //    _task.Wait();
-            //}
-            //catch (AggregateException aex)
-            //{
-                
-            //    throw;
-            //}
             
         }
 
@@ -228,18 +219,17 @@ namespace GAF
             }
 
             //perform the initial evaluation
-            _evaluations += _population.Evaluate(_fitnessFunctionDelegate);
+            Evaluations += _population.Evaluate(_fitnessFunctionDelegate);
 
             //raise the Generation Complete event
 			if (this.OnInitialEvaluationComplete != null)
             {
-                var eventArgs = new GaEventArgs(_population, 0, _evaluations);
+                var eventArgs = new GaEventArgs(_population, 0, Evaluations);
                 this.OnGenerationComplete(this, eventArgs);
             }
-
-			//var maxFittest = 0.0;
+				
             //main run loop for GA
-            for (int generation = 0; _evaluations < maxEvaluations; generation++)
+            for (int generation = 0; Evaluations < maxEvaluations; generation++)
             {
 
                 //Note: Selection handled by the operator(s)
@@ -253,13 +243,13 @@ namespace GAF
                 //raise the Generation Complete event
                 if (this.OnGenerationComplete != null)
                 {
-                    var eventArgs = new GaEventArgs(_population, generation + 1, _evaluations);
+                    var eventArgs = new GaEventArgs(_population, generation + 1, Evaluations);
                     this.OnGenerationComplete(this, eventArgs);
                 }
 
                 if (terminateFunction != null)
                 {
-                    if (terminateFunction.Invoke(_population, generation + 1, _evaluations))
+                    if (terminateFunction.Invoke(_population, generation + 1, Evaluations))
                     {
                         break;
                     }
@@ -270,7 +260,6 @@ namespace GAF
                     break;
                 }
 
-
             }
 
             IsRunning = false;
@@ -279,7 +268,7 @@ namespace GAF
             //raise the Run Complete event
             if (this.OnRunComplete != null)
             {
-                var eventArgs = new GaEventArgs(_population, _currentGeneration + 1, _evaluations);
+                var eventArgs = new GaEventArgs(_population, _currentGeneration + 1, Evaluations);
                 this.OnRunComplete(this, eventArgs);
             }
 
@@ -288,22 +277,22 @@ namespace GAF
 		internal Population RunGeneration(Population currentPopulation, FitnessFunction fitnessFunctionDelegate)
 		{
 
-			//long evaluations = 0;
-
 			//create a new empty population for processing 
 			var tempPopulation = new Population(
 				0,
 				0,
 				currentPopulation.ReEvaluateAll,
 				currentPopulation.LinearlyNormalised,
-				currentPopulation.ParentSelectionMethod);
+				currentPopulation.ParentSelectionMethod,
+				currentPopulation.EvaluateInParallel);
 			
 			var processedPopulation = new Population(
 				0,
 				0,
 				tempPopulation.ReEvaluateAll,
 				tempPopulation.LinearlyNormalised,
-				tempPopulation.ParentSelectionMethod);
+				tempPopulation.ParentSelectionMethod,
+				currentPopulation.EvaluateInParallel);
 
 			tempPopulation.Solutions.AddRange (currentPopulation.Solutions);
 
@@ -335,20 +324,20 @@ namespace GAF
 				if (enabled)
 				{
 					op.Invoke(tempPopulation, ref processedPopulation, fitnessFunctionDelegate);
-					_evaluations += op.GetOperatorInvokedEvaluations();
+					Evaluations += op.GetOperatorInvokedEvaluations();
 											
 					tempPopulation.Solutions.Clear();
 					tempPopulation.Solutions.AddRange (processedPopulation.Solutions);
 					processedPopulation.Solutions.Clear();
 
-					//TODO: Fix this. Some solutions will have been evaluated during the operator invocations
-					//Some solutions will have been evaluated during the operator invocations e.g. 
-					//crossover, however, they may have also been mutated. By tracking/evaluating
+					//TODO: Fix this.
+					//Some solutions will have already been evaluated during the operator invocations 
+					//e.g. crossover, however, they may have also been mutated. By tracking/evaluating
 					//mutated we could get here only needing to evaluate those that wern't touched 
 					//by the operators. The Chromosome.EvaluatedByOperator flag could help here...
 					//evaluate in case it affects the next operators selection
 
-					_evaluations += tempPopulation.Evaluate (fitnessFunctionDelegate);
+					Evaluations += tempPopulation.Evaluate (fitnessFunctionDelegate);
 
 				}
 
@@ -367,6 +356,24 @@ namespace GAF
 #pragma warning disable 618
         public List<IOperator> Operators { set; get; }
 #pragma warning restore 618
+
+		/// <summary>
+		/// Thread safe private property
+		/// </summary>
+		/// <value>The evaluations.</value>
+		private long Evaluations
+		{
+			set {
+				lock (_syncLock) {
+					_evals = value; 
+				}
+			}
+			get {
+				lock (_syncLock) {
+					return _evals; 
+				}
+			}
+		}
 
         /// <summary>
         /// Returns the current population.

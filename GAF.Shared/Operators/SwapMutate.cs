@@ -70,14 +70,11 @@ namespace GAF.Operators
                                    FitnessFunction fitnessFunctionDelegate)
         {
 
-            if (newPopulation == null)
-                newPopulation = new Population(0,
-                                               0,
-                                               currentPopulation.ReEvaluateAll,
-                                               currentPopulation.LinearlyNormalised,
-                                               currentPopulation.ParentSelectionMethod);
+			if (newPopulation == null) {
+				newPopulation = currentPopulation.CreateEmptyCopy ();			
+			}
 
-            if (!Enabled) return;
+			if (!Enabled) return;
 
 			newPopulation.Solutions.Clear();
 			newPopulation.Solutions.AddRange(currentPopulation.Solutions);

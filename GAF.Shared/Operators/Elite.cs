@@ -73,14 +73,11 @@ namespace GAF.Operators
             //Debug.WriteLine(string.Format("Elite: {0}", currentPopulation.ParentSelectionMethod));
 
             //if the new population is null, create an empty population
-            if (newPopulation == null)
-                newPopulation = new Population(0,
-                                               0,
-                                               currentPopulation.ReEvaluateAll,
-                                               currentPopulation.LinearlyNormalised,
-                                               currentPopulation.ParentSelectionMethod);
+			if (newPopulation == null) {
+				newPopulation = currentPopulation.CreateEmptyCopy ();			
+			}
 
-            if (!Enabled) return;
+			if (!Enabled) return;
             
 			CopyElites (currentPopulation, ref newPopulation , Percentage);
 
