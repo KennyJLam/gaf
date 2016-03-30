@@ -12,7 +12,7 @@ This documentation describes how to use the Genetic Algorithm Framework as part 
 
 The GAF has been designed to be as generic and extensible as possible whilst at the same time being simple to use. The single assembly contains all that is needed for many combinations of genetic algorithm. Many popular genetic operators are provided within the GAF, in addition, external operators can be defined and added to the GA process pipeline as required by the consumer.
 
-To get started, simply install the GAF using the NuGet Package Manager. Execute the following command at the Package Manager Console within Visual Studio or Xamarin.
+To get started, simply install the GAF using the NuGet Package Manager. Execute the following command at the Package Manager Console.
 
 `PM> Install-Package GAF`
 
