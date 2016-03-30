@@ -1,3 +1,5 @@
+Please note that the source here is the latest unstable version which is subject to constant change. For the latest stable version, follow this link to [Nuget.org](http://nuget.org/packages/gaf).
+
 Description
 ===========
 
