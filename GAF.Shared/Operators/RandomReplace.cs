@@ -94,17 +94,18 @@ namespace GAF.Operators
         /// <param name="fitnessFunctionDelegate"></param>
         public void Invoke(Population currentPopulation, ref Population newPopulation, FitnessFunction fitnessFunctionDelegate)
         {
-			if (newPopulation == null) {
+            //if the new population is null, create an empty population
+            if (newPopulation == null) {
 				newPopulation = currentPopulation.CreateEmptyCopy ();			
 			}
 
 			if (!Enabled) return;
 
-			if (currentPopulation.Solutions != null && currentPopulation.Solutions.Count > 0) {
+			if (currentPopulation.Solutions == null || currentPopulation.Solutions.Count == 0) {
 				throw new ArgumentException ("There are no Solutions in the current Population.");
 			}
 
-			if(currentPopulation.Solutions[0].Genes.Any(g => g.GeneType != GeneType.Binary))
+            if (currentPopulation.Solutions[0].Genes.Any(g => g.GeneType != GeneType.Binary))
             {
                 throw new Exception("Only Genes with a GeneType of Binary can be handled by the RandomReplace operator.");
             }
@@ -113,6 +114,8 @@ namespace GAF.Operators
 
             Replace(currentPopulation, ref newPopulation, this.Percentage, this.AllowDuplicates, _fitnessFunctionDelegate);
 
+            if (newPopulation.Solutions.Count == 0)
+                throw new ApplicationException("DEBG STOP");
         }
 
         /// <summary>
@@ -126,11 +129,8 @@ namespace GAF.Operators
         internal void Replace(Population currentPopulation, ref Population newPopulation, int percentage, bool allowDuplicates, FitnessFunction fitnessFunctionDelegate)
         {
 
-			if (currentPopulation.Solutions.Count == 0) {
-			
-			}
             //copy everything accross in order of fitness i.e. Elites at the top
-			newPopulation.Solutions = currentPopulation.Solutions;
+			newPopulation.Solutions.AddRange(currentPopulation.Solutions);
 			newPopulation.Solutions.Sort ();
 
             //find the number of non elites
@@ -207,6 +207,8 @@ namespace GAF.Operators
                 //do nothing
             }
 
+            if (newPopulation.Solutions.Count == 0)
+                throw new ApplicationException("DEBG STOP");
         }
 
 		private void AddImigrant(Population population, Chromosome imigrant, FitnessFunction fitnessFunctionDelegate)

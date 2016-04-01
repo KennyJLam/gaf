@@ -58,9 +58,10 @@ namespace GAF
         /// <param name="includeHammingDistance"></param>
         public PopulationStatistics(Population population, bool includeHammingDistance)
         {
+
             _population = population;
             _populationSize = population.PopulationSize;
-			_chromosomeLength = GetChromosomeLength ();
+            _chromosomeLength = GetChromosomeLength();
             _diversityGraph = new int[BucketCount];
             _maximumFitness = 0;
             _minimumFitnes = 1.0;
@@ -118,17 +119,21 @@ namespace GAF
         /// </summary>
         public int GetDuplicateCount
         {
+
             get
             {
+                double percentageUnique = 0.0;
                 var q = from solution in _population.Solutions
                         group solution by solution.ToBinaryString()
                             into uniqueSolution
-                            select uniqueSolution;
+                        select uniqueSolution;
 
                 var count = q.ToList().Count;
 
-                var percentageUnique = ((double)count / _populationSize) * 100;
-
+                if (count > 0)
+                {
+                    percentageUnique = ((double)count / _populationSize) * 100;
+                }
                 return 100 - (int)System.Math.Round(percentageUnique);
 
             }
@@ -284,7 +289,10 @@ namespace GAF
 
             #region Average Fitness
 
-            _averageFitness = totalFitness/_populationSize;
+            if (totalFitness != 0 && _populationSize != 0)
+            {
+                _averageFitness = totalFitness / _populationSize;
+            }
 
             #endregion
 

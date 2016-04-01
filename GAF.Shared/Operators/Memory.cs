@@ -65,7 +65,8 @@ namespace GAF.Operators
 
             _currentGeneration++;
 
-			if (newPopulation == null) {
+            //if the new population is null, create an empty population
+            if (newPopulation == null) {
 				newPopulation = currentPopulation.CreateEmptyCopy ();			
 			}
 
@@ -75,13 +76,6 @@ namespace GAF.Operators
             if (_memory == null)
             {
                 _memory = new Population(_memorySize, 0, true, false);
-            }
-
-            //if the new population is null, create an empty population
-            if (newPopulation == null || newPopulation.Solutions.Count != currentPopulation.Solutions.Count)
-            {
-                throw new ArgumentException(
-                    "The current Population and the new Population contain a different number of Solutions.");
             }
 
             //if what we have in memory is better than the best in the current population, copy this with the

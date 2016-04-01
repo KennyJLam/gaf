@@ -240,6 +240,11 @@ namespace GAF
 				_population.Solutions.Clear ();
 				_population.Solutions.AddRange (newPopulation.Solutions);
 
+                if (newPopulation.Solutions.Count == 0)
+                {
+                    throw new ApplicationException("Debug Stop");
+                }
+
                 //raise the Generation Complete event
                 if (this.OnGenerationComplete != null)
                 {
@@ -277,23 +282,10 @@ namespace GAF
 		internal Population RunGeneration(Population currentPopulation, FitnessFunction fitnessFunctionDelegate)
 		{
 
-			//create a new empty population for processing 
-			var tempPopulation = new Population(
-				0,
-				0,
-				currentPopulation.ReEvaluateAll,
-				currentPopulation.LinearlyNormalised,
-				currentPopulation.ParentSelectionMethod,
-				currentPopulation.EvaluateInParallel);
-			
-			var processedPopulation = new Population(
-				0,
-				0,
-				tempPopulation.ReEvaluateAll,
-				tempPopulation.LinearlyNormalised,
-				tempPopulation.ParentSelectionMethod,
-				currentPopulation.EvaluateInParallel);
-
+            //create new empty populations for processing 
+            var tempPopulation = currentPopulation.CreateEmptyCopy();
+            var processedPopulation = tempPopulation.CreateEmptyCopy();
+            
 			tempPopulation.Solutions.AddRange (currentPopulation.Solutions);
 
 			//clear the current population, this keeps it simple as the solutions could
@@ -323,27 +315,28 @@ namespace GAF
 				//operators.
 				if (enabled)
 				{
+                    Debug.WriteLine("Operator {0} Invoked", op.GetType().ToString());
 					op.Invoke(tempPopulation, ref processedPopulation, fitnessFunctionDelegate);
 					Evaluations += op.GetOperatorInvokedEvaluations();
 											
 					tempPopulation.Solutions.Clear();
 					tempPopulation.Solutions.AddRange (processedPopulation.Solutions);
-					processedPopulation.Solutions.Clear();
+                    processedPopulation.Solutions.Clear();
 
-					//TODO: Fix this.
-					//Some solutions will have already been evaluated during the operator invocations 
-					//e.g. crossover, however, they may have also been mutated. By tracking/evaluating
-					//mutated we could get here only needing to evaluate those that wern't touched 
-					//by the operators. The Chromosome.EvaluatedByOperator flag could help here...
-					//evaluate in case it affects the next operators selection
+                    //TODO: Fix this.
+                    //Some solutions will have already been evaluated during the operator invocations 
+                    //e.g. crossover, however, they may have also been mutated. By tracking/evaluating
+                    //mutated we could get here only needing to evaluate those that wern't touched 
+                    //by the operators. The Chromosome.EvaluatedByOperator flag could help here...
+                    //evaluate in case it affects the next operators selection
 
-					Evaluations += tempPopulation.Evaluate (fitnessFunctionDelegate);
+                    Evaluations += tempPopulation.Evaluate (fitnessFunctionDelegate);
 
 				}
 
 			}
 
-			return tempPopulation;
+            return tempPopulation;
 		}
 
         #endregion
