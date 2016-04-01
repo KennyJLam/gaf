@@ -60,18 +60,6 @@ namespace GAF
         /// Uses Linear Normalised fitness and does not re-evaluate those 
         /// Chromosomes that have already been evaluated in previous generations.
         /// </summary>
-        /// <param name="chromosomeLength"></param>
-		[Obsolete("This Constructor has been deprecated and may not be available in future releases.", false)]
-		public Population(int chromosomeLength)
-            : this(0, chromosomeLength, false, true, ParentSelectionMethod.FitnessProportionateSelection)
-        {
-        }
-
-        /// <summary>
-		/// Initializes a new instance of the <see cref="GAF.Population"/> class.
-        /// Uses Linear Normalised fitness and does not re-evaluate those 
-        /// Chromosomes that have already been evaluated in previous generations.
-        /// </summary>
         /// <param name="populationSize"></param>
         /// <param name="chromosomeLength"></param>
         public Population(int populationSize, int chromosomeLength)
@@ -681,7 +669,10 @@ namespace GAF
                 }
             }
         }
-
+		/// <summary>
+		/// Returns the empty copy of the population object based on the current instance.
+		/// </summary>
+		/// <returns>The empty copy.</returns>
 		public Population CreateEmptyCopy() {
 			
 			var newPopulation = new Population (0,

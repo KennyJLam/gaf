@@ -111,7 +111,7 @@ namespace GAF
 		/// </summary>
 		public GeneticAlgorithm()
 		{
-			this.Operators = new List<IOperator>();
+			this.Operators = new List<IGeneticOperator>();
 		}
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace GAF
             _population = population;
 
             _fitnessFunctionDelegate = fitnessFunctionDelegate;
-			this.Operators = new List<IOperator>();
+			this.Operators = new List<IGeneticOperator>();
 		}
 
         #endregion
@@ -353,9 +353,7 @@ namespace GAF
         /// <summary>
         /// Sets/Gets a list of the Operators that are applied.
         /// </summary>
-#pragma warning disable 618
-        public List<IOperator> Operators { set; get; }
-#pragma warning restore 618
+        public List<IGeneticOperator> Operators { set; get; }
 
 		/// <summary>
 		/// Thread safe private property

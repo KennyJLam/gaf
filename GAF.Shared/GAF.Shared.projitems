@@ -6,7 +6,7 @@
     <SharedGUID>{770B5AAB-BB71-41F1-BB4B-560C65BC97BB}</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>GAF.Shared</Import_RootNamespace>
+    <Import_RootNamespace>GAF</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Chromosome.cs" />
@@ -26,7 +26,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)GeneticAlgorithm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IGeneticOperator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InitialisationType.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IOperator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParentSelectionType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Population.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PopulationStatistics.cs" />

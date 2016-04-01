@@ -28,19 +28,33 @@ namespace GAF
     /// <summary>
     /// This is the interface that should be implemented when creating custom genetic operators.
     /// </summary>
-#pragma warning disable 618
-    public interface IGeneticOperator : IOperator
-#pragma warning restore 618
+	/// <remarks>An operator shoult only NOT change
+	/// the currentPopulation. It IS acceptable for an operator to return a new
+	/// population with a different number of chromosomes than the current population.
+	/// </remarks>
+    public interface IGeneticOperator// : IOperator
     {
-        /// <summary>
-        /// This is the interface that all reproductive operators must implement.
-        /// </summary>
-        /// <remarks>Each operator should ensure that any chromosomes passed from 
-        /// the current population to the returned population are cloned 
-        /// using the Chromosomes Clone() method. An operator shoult only NOT change
-        /// the currentPopulation. It is acceptable for an operator to return a new
-        /// population with a different number of chromosomes than the current population.
-        /// </remarks>
+		/// <summary>
+		/// This method should be used to perform the operation. The the 'currentPopulation' variable will be in an 
+		/// unknown state following the call.
+		/// </summary>
+		/// <param name="currentPopulation"></param>
+		/// <param name="newPopulation"></param>
+		/// <param name="fitnesFunctionDelegate"></param>
+		/// <returns>Population</returns>
+		void Invoke(Population currentPopulation, ref Population newPopulation, FitnessFunction fitnesFunctionDelegate);
+
+		/// <summary>
+		/// This method should return the number of evaluations that were carried out, 
+		/// i.e. the number of times the fitness function was called during the Invoke method.
+		/// </summary>
+		/// <returns></returns>
+		int GetOperatorInvokedEvaluations();
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the <see cref="GAF.IGeneticOperator"/> is enabled.
+		/// </summary>
+		/// <value><c>true</c> if enabled; otherwise, <c>false</c>.</value>
         bool Enabled { set; get; }
     }
 }
