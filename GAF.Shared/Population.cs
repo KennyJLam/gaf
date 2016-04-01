@@ -143,7 +143,7 @@ namespace GAF
         /// <summary>
         /// Returns the length of the chromosomes used in the population.
         /// </summary>
-        internal int ChromosomeLength {
+        public int ChromosomeLength {
 			get {				
 				if (Solutions != null && Solutions.Count > 0 && 
 					Solutions[0].Genes != null && Solutions[0].Genes.Count > 0) {
