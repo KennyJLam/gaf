@@ -114,9 +114,7 @@ namespace GAF.Operators
 
             Replace(currentPopulation, ref newPopulation, this.Percentage, this.AllowDuplicates, _fitnessFunctionDelegate);
 
-            if (newPopulation.Solutions.Count == 0)
-                throw new ApplicationException("DEBG STOP");
-        }
+         }
 
         /// <summary>
         /// Helper Method marked as Internal for Unit Testing purposes.
@@ -185,30 +183,9 @@ namespace GAF.Operators
 
                 }
 
-//	                //need to add these to the solution, sort and then remove the weakest
-//	                var imigrantCount = immigrants.Count;
-//	                if (imigrantCount > 0)
-//	                {
-//	                    foreach (var imigrant in immigrants)
-//	                    {
-//	                        imigrant.Evaluate(fitnessFunctionDelegate);
-//	                        _evaluations++;
-//	                    }
-//
-//	                    //dont want to remove elites so sort
-//	                    newPopulation.Solutions.Sort();
-//	                    newPopulation.Solutions.RemoveRange(newPopulation.Solutions.Count - imigrantCount, imigrantCount);
-//	                    newPopulation.Solutions.AddRange(immigrants);
-//	                }
-
-            }
-            else
-            {
-                //do nothing
             }
 
-            if (newPopulation.Solutions.Count == 0)
-                throw new ApplicationException("DEBG STOP");
+
         }
 
 		private void AddImigrant(Population population, Chromosome imigrant, FitnessFunction fitnessFunctionDelegate)
@@ -219,9 +196,7 @@ namespace GAF.Operators
 				imigrant.Evaluate (fitnessFunctionDelegate);
 				_evaluations++;
 
-				//TODO: Fix this, Random does not want to remove weakest as we are trying to increase diversityr, it needs to add random.
-				//dont want to remove elites so sort
-				//population.Solutions.Sort ();
+				//TODO: Fix this, Random does not want to remove weakest as we are trying to increase diversity.
 
 				//add the imigrant this extends the population
 				population.Solutions.Add (imigrant);
@@ -267,19 +242,6 @@ namespace GAF.Operators
 
         }
 
-//		private int GetChromosomeLength(Population population)
-//		{
-//			var result = 0;
-//			if (population.Solutions != null &&
-//				population.Solutions.Count > 0 &&
-//				population.Solutions [0].Genes != null) {
-//
-//				result = population.Solutions [0].Genes.Count;
-//			}
-//
-//			return result;
-//		}
-
         /// <summary>
         /// Returns the number of evaluations performed by this operator.
         /// </summary>
@@ -311,30 +273,7 @@ namespace GAF.Operators
                 }
             }
         }
-
-        ///// <summary>
-        ///// Sets/Gets the Number of solutions to replace. The setting and getting of this property is thread safe.
-        ///// </summary>
-        //public int NumberToReplace
-        //{
-        //    get
-        //    {
-        //        //not really needed as 32bit int updates are atomic on 32bit systems 
-        //        lock (_syncLock)
-        //        {
-        //            return _numberToReplace;
-        //        }
-        //    }
-
-        //    set
-        //    {
-        //        lock (_syncLock)
-        //        {
-        //            _numberToReplace = value;
-        //        }
-        //    }
-        //}
-
+			
         /// <summary>
         /// Sets/Gets whether duplicates are allowed in the population. 
         /// The setting and getting of this property is thread safe.
