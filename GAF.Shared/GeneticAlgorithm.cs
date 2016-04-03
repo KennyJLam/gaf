@@ -240,11 +240,6 @@ namespace GAF
 				_population.Solutions.Clear ();
 				_population.Solutions.AddRange (newPopulation.Solutions);
 
-                if (newPopulation.Solutions.Count == 0)
-                {
-                    throw new ApplicationException("Debug Stop");
-                }
-
                 //raise the Generation Complete event
                 if (this.OnGenerationComplete != null)
                 {

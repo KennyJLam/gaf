@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Genetic Algorithm Framework for .Net")]
 
-[assembly: AssemblyConfiguration("27th March 2016")]
+[assembly: AssemblyConfiguration("2nd April 2016")]
 [assembly: AssemblyCompany("AI Frameworks")]
 [assembly: AssemblyCopyright("Copyright © John Newcombe 2016")]
 [assembly: AssemblyTrademark("")]
@@ -17,8 +17,8 @@ using System.Runtime.CompilerServices;
 // The form "{Major}.{Minor}.*" will automatically update the build and revision,
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
 
-[assembly: AssemblyVersion("2.2.1.*")]
-[assembly: AssemblyFileVersion("2.2.1")]
+[assembly: AssemblyVersion("2.2.2.*")]
+[assembly: AssemblyFileVersion("2.2.2")]
 
 // The following attributes are used to specify the signing key for the assembly,
 // if desired. See the Mono documentation for more information about signing.
