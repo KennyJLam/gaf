@@ -5,20 +5,27 @@ namespace GAF.ConsumerFunctions
 	public class TravellingSalesman : IConsumerFunctions
 	{
 		#region IConsumerFunctions implementation
+
 		public double EvaluateFitness (Chromosome chromosome)
 		{
 			var distanceToTravel = CalculateDistance(chromosome);
-			return 1 - distanceToTravel / 10000;
+
+			//experience suggests that 1500 is just less than the shortest possible distance
+			var fitness = 1500/distanceToTravel; 
+					
+			return fitness > 1.0 ? 1.0 : fitness;
+
 		}
+
 		public bool TerminateAlgorithm (Population population, int currentGeneration, long currentEvaluation)
 		{
-			return currentGeneration > 400;
+			return currentGeneration >= 350;
 		}
 		#endregion
 
 		#region Helper Methods
 
-		private static double CalculateDistance(Chromosome chromosome)
+		public static double CalculateDistance(Chromosome chromosome)
 		{
 			var distanceToTravel = 0.0;
 			City previousCity = null;
