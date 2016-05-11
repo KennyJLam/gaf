@@ -2,16 +2,10 @@
 using System.Reflection;
 using System.Linq;
 
-namespace GAF.ConsoleTest
+namespace GAF.SocketServer
 {
-	public class ConsumerFunctions
+	internal class ConsumerFunctions
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GAF.ConsoleTest.ConsumerFunctions"/> class based
-		/// on the specified assembly. the assembly should contain a class that implements the IConsumerFunctions
-		/// interface.
-		/// </summary>
-		/// <param name="assemblyPath">Assembly path.</param>
 		public ConsumerFunctions (string assemblyPath)
 		{
 
