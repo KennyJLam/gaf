@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
 	Genetic Algorithm Framework for .Net
 	Copyright (C) 2016  John Newcombe
 
@@ -18,48 +17,57 @@
 
 	http://johnnewcombe.net
 */
-
 #if !PCL
 
 using System;
-using System.Net.Sockets;
-using System.Text;
-using System.Collections.Generic;
 
 namespace GAF.Net
 {
-	/// <summary>
-	/// State object for receiving data from remote device.
-	/// </summary>
-	internal class StateObject {
+	public interface IQueue
+	{
+		/// <summary>
+		/// Enqueue the specified data.
+		/// </summary>
+		/// <param name="data">Data.</param>
+		void Enqueue (byte[] data);
 
 		/// <summary>
-		/// Client socket.
+		/// Enqueue the specified data.
 		/// </summary>
-		public Socket WorkSocket = null;
+		/// <param name="data">Data.</param>
+		void Enqueue (byte data);
 
 		/// <summary>
-		/// The size of the data buffer.
+		/// Dequeue the specified number of bytes.
 		/// </summary>
-		public const int BufferSize = 1024;
+		/// <param name="count">Count.</param>
+		byte[] Dequeue (int count);
 
 		/// <summary>
-		/// Data buffer.
+		/// Peek the specified number of bytes. This is similar to Dequeue
+		/// but no bytes are removed from the queue.
 		/// </summary>
-		public byte[] Buffer = new byte[BufferSize];
+		/// <param name="length">Length.</param>
+		byte[] Peek (int startIndex, int length);
 
 		/// <summary>
-		/// Received data bytes.
+		/// Gets the size of the max queue.
 		/// </summary>
-		//public List<byte> Data = new List<byte>();
+		/// <value>The size of the max queue.</value>
+		int MaxQueueSize{ get; }
 
 		/// <summary>
-		/// Packet Manager.
+		/// Gets the bytes available.
 		/// </summary>
-		public PacketManager PacMan = new PacketManager (new SynchronisedQueue (8192));
+		/// <value>The bytes available.</value>
+		int BytesAvailable { get;}
 
-
+		/// <summary>
+		/// Gets the count of bytes in the queue.
+		/// </summary>
+		/// <value>The count.</value>
+		int Count { get;}
 	}
 }
-#endif
 
+#endif

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Chromosome.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\EvaluationException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operators\BinaryMutate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operators\Copy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operators\CopyMethod.cs" />
@@ -50,8 +51,25 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\GeneTypeException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ChromosomeNotUniqueException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IConsumerFunctions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\StateObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\BinarySerializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\Packet.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operators\EventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\EventArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\SocketException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\PacketManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\Queue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\IQueue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\SynchronisedQueue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\PacketHeader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\SocketListener.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\SocketClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\EvaluationClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\EvaluationServer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Exceptions\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Net\" />
   </ItemGroup>
 </Project>

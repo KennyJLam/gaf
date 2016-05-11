@@ -51,9 +51,9 @@ namespace GAF.Operators
         {
         }
 
-        /// <summary>
-        /// Replaces the whole population with randomly generated solutions.
-        /// </summary>
+		/// <summary>
+		/// Replaces the whole population with randomly generated solutions.
+		/// </summary>/// <param name="allowDuplicates">If set to <c>true</c> allow duplicates.</param>
         public RandomReplace(bool allowDuplicates)
             :this(100, allowDuplicates)
         {

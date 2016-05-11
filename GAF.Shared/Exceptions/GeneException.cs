@@ -46,7 +46,6 @@ namespace GAF
     /// <summary>
     /// Custom exception used to indicate an exception with a gene. See the inner exception and message for full exception details.
     /// </summary>
-//    [Serializable]
     public class GeneException : Exception
     {
         /// <summary>

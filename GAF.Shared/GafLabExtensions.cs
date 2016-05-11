@@ -30,32 +30,14 @@ namespace GAF
     /// This interface is provided to support the GAF.Lab GUI application. Please see the product information
     /// for GAF.Lab for further details.
     /// </summary>
-    public interface IGafLabFunctions
-    {
-
-        /// <summary>
-        /// This interface is provided to support the GAF.Lab GUI application. Please see the product information
-        /// for GAF.Lab for further details.
-        /// </summary>
-        double EvaluateFitness(Chromosome chromosome);
-        /// <summary>
-        /// This interface is provided to support the GAF.Lab GUI application. Please see the product information
-        /// for GAF.Lab for further details.
-        /// </summary>
-        bool TerminateAlgorithm(Population population, int currentGeneration, long currentEvaluation);
-
-    }
-
-    /// <summary>
-    /// This interface is provided to support the GAF.Lab GUI application. Please see the product information
-    /// for GAF.Lab for further details.
-    /// </summary>
+	[ObsoleteAttribute("This interface is obsolete.", false)]
     public interface IGafLabPopulation
     {
-        /// <summary>
-        /// This interface is provided to support the GAF.Lab GUI application. Please see the product information
-        /// for GAF.Lab for further details.
-        /// </summary>
+		/// <summary>
+		/// This interface is provided to support the GAF.Lab GUI application. Please see the product information
+		/// for GAF.Lab for further details.
+		/// </summary>
+		/// <returns>The population.</returns>
         Population CreatePopulation();
     }
 
@@ -63,12 +45,17 @@ namespace GAF
     /// This interface is provided to support the GAF.Lab GUI application. Please see the product information
     /// for GAF.Lab for further details.
     /// </summary>
-    public interface IGafLabResults
+	[ObsoleteAttribute("This interface is obsolete.", false)]
+	public interface IGafLabResults
     {
-        /// <summary>
-        /// This interface is provided to support the GAF.Lab GUI application. Please see the product information
-        /// for GAF.Lab for further details.
-        /// </summary>
+		/// <summary>
+		/// This interface is provided to support the GAF.Lab GUI application. Please see the product information
+		/// for GAF.Lab for further details.
+		/// </summary>
+		/// <returns>The results.</returns>
+		/// <param name="currentPopulation">Current population.</param>
+		/// <param name="currentGeneration">Current generation.</param>
+		/// <param name="evaluations">Evaluations.</param>
         string DisplayResults(Population currentPopulation, int currentGeneration, long evaluations);
     }
 
@@ -76,6 +63,7 @@ namespace GAF
     /// This class is provided to support the GAF.Lab GUI application. Please see the product information
     /// for GAF.Lab for further details.
     /// </summary>
+	[ObsoleteAttribute("This attribute is obsolete.", false)]
     [System.AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class OperatorOptionsAttribute : Attribute
     {

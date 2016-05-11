@@ -24,7 +24,7 @@ using System;
 
 namespace GAF.Net
 {
-	public class Header
+	public class PacketHeader
 	{
 		// The Header consists of; 
 		// SOH (16 byte GUID)
@@ -42,7 +42,7 @@ namespace GAF.Net
 
 		private byte[] _headerBytes;
 
-		public Header (byte packetId, Guid objectId, int dataLength)
+		public PacketHeader (byte packetId, Guid objectId, int dataLength)
 		{
 
 			// get the byte representation of the header elements
@@ -52,7 +52,7 @@ namespace GAF.Net
 
 		}
 
-		public Header (byte[] headerBytes)
+		public PacketHeader (byte[] headerBytes)
 		{
 			_headerBytes = headerBytes;
 
@@ -67,7 +67,6 @@ namespace GAF.Net
 			//oid (Guid) 16 bytes
 
 			var headerSoh = new byte[16]; //guid
-			var headerPid = new byte[1]; //byte
 			var headerOid = new byte[16]; //guid
 
 			//get the header elements
@@ -76,12 +75,14 @@ namespace GAF.Net
 				throw new ArgumentException ("SOH is invalid.", "headerBytes");
 			}
 
-			// pid not used as yet
+			// pid
 			PacketId = headerBytes [_indexOfPid];
 
 			// objectId set by consumer
 			Array.Copy (headerBytes, _indexOfOid, headerOid, 0, headerOid.Length);
 			ObjectId = new Guid(headerOid);
+
+			DataLength = BitConverter.ToInt32 (headerBytes, _indexofDataLengthElement);
 
 		}
 

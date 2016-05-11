@@ -1,12 +1,131 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace GAF
 {
-	public class EventArgs
+	
+	/// <summary>
+	/// Event arguments used within the main GA exeption events.
+	/// </summary>
+	public class GaExceptionEventArgs : EventArgs
 	{
-		public EventArgs ()
+		private readonly string _message;
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="message"></param>
+		public GaExceptionEventArgs(string message)
 		{
+			_message = message;
+		}
+
+		/// <summary>
+		/// Returns the list of Exception messages.
+		/// </summary>
+		public string Message
+		{
+			get { return _message; }
 		}
 	}
+	/// <summary>
+	/// Event arguments used within the main GA events.
+	/// </summary>
+	public class GaEventArgs : EventArgs
+	{
+		private readonly int _generation;
+		private readonly Population _population;
+		private readonly long _evaluations;
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="population"></param>
+		/// <param name="generation"></param>
+		/// <param name="evaluations"></param>
+		public GaEventArgs(Population population, int generation, long evaluations)
+		{
+			_generation = generation;
+			_population = population;
+			_evaluations = evaluations;
+		}
+
+		/// <summary>
+		/// Returns the population.
+		/// </summary>
+		public Population Population
+		{
+			get { return _population; }
+		}
+
+		/// <summary>
+		/// Returns the number of the current generation.
+		/// </summary>
+		public int Generation
+		{
+			get { return _generation; }
+		}
+
+		/// <summary>
+		/// Returns the number of the evaluations undertaken so far.
+		/// </summary>
+		public long Evaluations
+		{
+			get { return _evaluations; }
+		}
+	}
+
+	/// <summary>
+	/// Evaluation event arguments.
+	/// </summary>
+	public class EvaluationEventArgs : EventArgs
+	{
+		private readonly List<Chromosome> _solutionsToEvaluate;
+		private readonly FitnessFunction _fitnessFunction;
+
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name = "solutionsToEvaluate"></param>
+		/// <param name = "fitnessFunctionDelegate"></param>
+		public EvaluationEventArgs(List<Chromosome> solutionsToEvaluate, FitnessFunction fitnessFunctionDelegate)
+		{
+			_solutionsToEvaluate = solutionsToEvaluate;
+			_fitnessFunction = fitnessFunctionDelegate;
+			Evaluations = 0;
+		}
+
+		/// <summary>
+		/// Returns the population.
+		/// </summary>
+		public List<Chromosome> SolutionsToEvaluate
+		{
+			get { return _solutionsToEvaluate; }
+		}
+
+		/// <summary>
+		/// Gets the fitness function.
+		/// </summary>
+		/// <value>The fitness function.</value>
+		public FitnessFunction FitnessFunctionDelegate
+		{
+			get { return _fitnessFunction; }
+		}
+
+		/// <summary>
+		/// Gets or sets a value indicating whether to cancel further evaluations. This property
+		/// can be used by consumers of the event to stop further evaluations.
+		/// </summary>
+		/// <value><c>true</c> to cancel; otherwise, <c>false</c>.</value>
+		public bool Cancel { set; get; }
+
+		/// <summary>
+		/// Gets or sets the evaluation count. This property should be used by consumers of the event
+		/// to update the evaluation count if appropriate.
+		/// count
+		/// </summary>
+		/// <value>The numbe of evaluations undertaken eithin the event.</value>
+		public int Evaluations { set; get; }
+	}
+
 }
 

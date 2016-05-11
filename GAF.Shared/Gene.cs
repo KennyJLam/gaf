@@ -53,7 +53,10 @@ namespace GAF
     /// <summary>
     /// This class represents a gene.
     /// </summary>
-    public class Gene
+	#if !PCL
+	[Serializable]
+	#endif
+	public class Gene
     {
         private object _objectValue = null;
 
@@ -208,4 +211,5 @@ namespace GAF
 		}
 
 	}
+	
 }

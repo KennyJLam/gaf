@@ -130,9 +130,6 @@ namespace GAF.Operators
 		public void Invoke (Population currentPopulation, ref Population newPopulation, FitnessFunction fitnessFunctionDelegate)
 		{
 
-
-			//Debug.WriteLine(string.Format("Crossover: {0}", currentPopulation.ParentSelectionMethod));
-
 			//if the new population is null, create an empty population
 			if (newPopulation == null) {
 				newPopulation = currentPopulation.CreateEmptyCopy ();			
@@ -140,15 +137,6 @@ namespace GAF.Operators
 
 			if (!Enabled)
 				return;
-
-
-
-			//if the elite operator exists before this one, the population will already contain the elites
-			//from the current genetartion.
-//            if (_currentPopulationSize % 2 != 0 && _newPopulationSize % 2 != 0)
-//            {
-//                throw new ArgumentException("Population sizes must be an even number.");
-//            }
 
 			_fitnessFunctionDelegate = fitnessFunctionDelegate;
 			_currentPopulation = currentPopulation;
@@ -204,7 +192,6 @@ namespace GAF.Operators
 				}
 			}
 			_currentPopulationSize = _currentPopulation.Solutions.Count;
-			//_newPopulationSize = _newPopulation.Solutions.Count;
 
 			_numberOfChildrenToGenerate =
 				_currentPopulationSize - eliteCount;
@@ -254,17 +241,6 @@ namespace GAF.Operators
 
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="p1"></param>
-		/// <param name="p2"></param>
-		/// <param name="crossoverProbability"></param>
-		/// <param name="crossoverType"></param>
-		/// <param name = "crossoverData"></param>
-		/// <param name="c1"></param>
-		/// <param name="c2"></param>
-		/// <returns></returns>
 		#region Private Methods
 
 		internal CrossoverData PerformCrossover (Chromosome p1, Chromosome p2, double crossoverProbability, CrossoverType crossoverType, CrossoverData crossoverData, out Chromosome c1, out Chromosome c2)
@@ -599,28 +575,6 @@ namespace GAF.Operators
 		}
 	}
 
-	/// <summary>
-	/// Event arguments for the Crossover events.
-	/// </summary>
-	public class CrossoverEventArgs : EventArgs
-	{
-		private readonly CrossoverData _crossoverResult;
 
-		/// <summary>
-		/// Constructor.
-		/// </summary>
-		/// <param name="crossoverResult"></param>
-		public CrossoverEventArgs (CrossoverData crossoverResult)
-		{
-			_crossoverResult = crossoverResult;
-		}
-
-		/// <summary>
-		/// Returns the crossover result.
-		/// </summary>
-		public CrossoverData CrossoverData {
-			get { return _crossoverResult; }
-		}
-	}
 }
 

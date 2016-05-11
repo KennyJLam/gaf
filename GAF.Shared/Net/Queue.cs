@@ -29,14 +29,17 @@ namespace GAF.Net
 	/// <summary>
 	/// Packet manager class to manage a cyclic byte buffer.
 	/// </summary>
-	public class Buffer
+	public class Queue : IQueue
 	{
+		/// <summary>
+		/// The default size of the queue.
+		/// </summary>
+		protected const int DefaultSize = 1048576;
+
 		private byte[] _byteQueue;
 		private int _inPtr = 0;
 		private int _outPtr = 0;
 		private int _bytesUsed = 0;
-		private object syncLock = new object ();
-		private Queue<Packet> _packetQueue = new Queue<Packet> ();
 
 		//TODO: Raise event/exception when data is overwritten
 		//TODO: Raise event when a packet is ready.
@@ -45,7 +48,7 @@ namespace GAF.Net
 		/// Initializes a new instance of the <see cref="GAF.Net.PacketManager"/> class
 		/// with a default buffer size of 1Mb.
 		/// </summary>
-		public Buffer () : this (1048576)
+		public Queue () : this (DefaultSize)
 		{
 		}
 
@@ -53,7 +56,7 @@ namespace GAF.Net
 		/// Initializes a new instance of the <see cref="GAF.Net.PacketManager"/> class.
 		/// </summary>
 		/// <param name="maxQueueSize">Max queue size.</param>
-		public Buffer (int maxQueueSize)
+		public Queue (int maxQueueSize)
 		{
 			// initialise
 			MaxQueueSize = maxQueueSize;
@@ -61,16 +64,18 @@ namespace GAF.Net
 			_byteQueue = new byte[maxQueueSize];
 		}
 
+		#region interface methods
+
 		/// <summary>
 		/// Adds data to the internal buffer.
 		/// </summary>
 		/// <param name="data">Data.</param>
-		public void Add (byte[] data)
+		public void Enqueue (byte[] data)
 		{
 			var dataLength = data.Length;
 
 			if (dataLength > MaxQueueSize - _bytesUsed) {
-				throw new ArgumentOutOfRangeException ("data", "Buffer overun.");
+				throw new ArgumentOutOfRangeException ("data", "Buffer overflow.");
 			}
 
 			if (dataLength > 0) {
@@ -83,19 +88,16 @@ namespace GAF.Net
 				if (bytesBeforeWrapping > dataLength) {
 
 					Array.Copy (data, 0, _byteQueue, _inPtr, dataLength);
-					IncrementPointer (ref _inPtr, dataLength);
-
 
 				} else {
 
 					//if wrapping is required copy in two steps
-					//
-					//
-
-					IncrementPointer (ref _inPtr, dataLength);
+					Array.Copy (data, 0, _byteQueue, _inPtr, bytesBeforeWrapping);
+					Array.Copy (data, bytesBeforeWrapping, _byteQueue, 0, dataLength - bytesBeforeWrapping);
 
 				}
 
+				IncrementPointer (ref _inPtr, dataLength);
 				_bytesUsed += dataLength;
 			}
 
@@ -105,10 +107,10 @@ namespace GAF.Net
 		/// Adds data to the internal buffer.
 		/// </summary>
 		/// <param name="data">Data.</param>
-		public void Add (byte data)
+		public void Enqueue (byte data)
 		{ 
 			var dataArray = new byte[1] { data };
-			Add (dataArray);
+			Enqueue (dataArray);
 		}
 
 		/// <summary>
@@ -117,16 +119,69 @@ namespace GAF.Net
 		/// <value>The size of the queue.</value>
 		public int MaxQueueSize { private set; get; }
 
+		public byte[] Dequeue (int count)
+		{
+			//need to ensure there bytes waiting to be dequeued
+			if (count > this.Count) {
+				throw new ArgumentOutOfRangeException ("count", "Not enough bytes on the queue to be Dequeued.");
+			}
+
+			var result = new byte[count];
+
+			var bytesBeforeWrapping = MaxQueueSize - _outPtr;
+
+			if (bytesBeforeWrapping > count) {
+				Array.Copy (_byteQueue, _outPtr, result, 0, count);
+			} else {
+				Array.Copy (_byteQueue, _outPtr, result, 0, bytesBeforeWrapping);
+				Array.Copy (_byteQueue, 0, result, bytesBeforeWrapping, count - bytesBeforeWrapping);
+			}
+
+			IncrementPointer (ref _outPtr, count);
+			_bytesUsed -= count;
+
+			return result;
+		}
+
+		public byte[] Peek (int startIndex, int count)
+		{
+			//need to ensure there bytes waiting to be dequeued
+			if (count + startIndex > this.Count) {
+				throw new ArgumentOutOfRangeException ("count", "Not enough bytes on the queue to be Peeked.");
+			}
+
+			var result = new byte[count];
+			var bytesBeforeWrapping = MaxQueueSize - _outPtr;
+
+			if (bytesBeforeWrapping > count + startIndex) {
+				Array.Copy (_byteQueue, _outPtr + startIndex, result, 0, count);
+			} else {
+				Array.Copy (_byteQueue, _outPtr + startIndex, result, 0, bytesBeforeWrapping - startIndex);
+				Array.Copy (_byteQueue, 0, result, bytesBeforeWrapping - startIndex, count - bytesBeforeWrapping + startIndex);
+			}
+				
+			return result;
+		}
+
 		/// <summary>
-		/// Gets the size of the queue.
+		/// Gets the number of bytes available in the queue.
 		/// </summary>
 		/// <value>The size of the queue.</value>
-		public int QueueSize { 
 
+		public int BytesAvailable {
 			get {
 				return MaxQueueSize - _bytesUsed;
-			} 
+			}
 		}
+
+		public int Count {
+		
+			get { 
+				return MaxQueueSize - BytesAvailable;
+			}
+		}
+
+		#endregion
 
 		#region private methods
 
@@ -145,9 +200,7 @@ namespace GAF.Net
 
 			return wrapped;
 		}
-
-
-
+			
 		#endregion
 	}
 }

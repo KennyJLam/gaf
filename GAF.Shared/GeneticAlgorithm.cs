@@ -19,13 +19,13 @@
 */
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using GAF.Operators;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace GAF
 {
@@ -47,14 +47,14 @@ namespace GAF
         private readonly object _syncLock = new object();
 
         /// <summary>
-        /// Delegate definition for the GenerationComplete event handler.
+		/// Delegate definition for the InitialEvaluationComplete event handler.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         public delegate void InitialEvaluationCompleteHandler(object sender, GaEventArgs e);
 
         /// <summary>
-        /// Event definition for the GenerationComplete event handler.
+		/// Event definition for the InitialEvaluationComplete event handler.
         /// </summary>
 		public event InitialEvaluationCompleteHandler OnInitialEvaluationComplete;
 
@@ -113,15 +113,16 @@ namespace GAF
 		{
 			this.Operators = new List<IGeneticOperator>();
 		}
-
-        /// <summary>
-        /// Constuctor, requires a configured Population object.
-        /// </summary>
+		/// <summary>
+		/// Constuctor, requires a configured Population object.
+		/// </summary>/// <param name="population">Population.</param>
+		/// <param name="fitnessFunctionDelegate">Fitness function delegate.</param>
         public GeneticAlgorithm(Population population, FitnessFunction fitnessFunctionDelegate)
         {
             _population = population;
 
-            _fitnessFunctionDelegate = fitnessFunctionDelegate;
+			_fitnessFunctionDelegate = fitnessFunctionDelegate;
+
 			this.Operators = new List<IGeneticOperator>();
 		}
 
@@ -129,20 +130,22 @@ namespace GAF
 
         #region Public Methods
 
-        /// <summary>
-        /// Main method for executing the GA. The GA runs until the number of evaluations 
-        /// have reached the value specified in the maxEvaluations parameter.
-        /// This method runs syncronously.
-        /// </summary>
-        public void Run(long maxEvaluations)
+		/// <summary>
+		/// Main method for executing the GA. The GA runs until the number of evaluations 
+		/// have reached the value specified in the maxEvaluations parameter.
+		/// This method runs syncronously.
+		/// </summary>
+		/// <param name="maxEvaluations">Max evaluations.</param>
+		public void Run(long maxEvaluations)
         {
             RunTask(maxEvaluations, null, CancellationToken.None);
         }
-        /// <summary>
-        /// Main method for executing the GA. The GA runs until the
-        /// Terminate function returns true. 
-        /// This method runs syncronously.
-        /// </summary>
+		/// <summary>
+		/// Main method for executing the GA. The GA runs until the
+		/// Terminate function returns true. 
+		/// This method runs syncronously.
+		/// </summary>
+		/// <param name="terminateFunction">Terminate function.</param>
         public void Run(TerminateFunction terminateFunction)
         {
             RunTask(long.MaxValue, terminateFunction, CancellationToken.None);
@@ -225,7 +228,7 @@ namespace GAF
 			if (this.OnInitialEvaluationComplete != null)
             {
                 var eventArgs = new GaEventArgs(_population, 0, Evaluations);
-                this.OnGenerationComplete(this, eventArgs);
+                this.OnInitialEvaluationComplete(this, eventArgs);
             }
 				
             //main run loop for GA
@@ -310,7 +313,7 @@ namespace GAF
 				//operators.
 				if (enabled)
 				{
-                    Debug.WriteLine("Operator {0} Invoked", op.GetType().ToString());
+//                  Debug.WriteLine("Operator {0} Invoked", op.GetType().ToString());
 					op.Invoke(tempPopulation, ref processedPopulation, fitnessFunctionDelegate);
 					Evaluations += op.GetOperatorInvokedEvaluations();
 											
@@ -377,7 +380,7 @@ namespace GAF
         /// <summary>
         /// Gets the running state of the GA.
         /// </summary>
-        public bool IsRunning { get; set; }
+		public bool IsRunning { get; private set; }
 
 
         #endregion
@@ -387,73 +390,5 @@ namespace GAF
         #endregion
 
     }
-    /// <summary>
-    /// Event arguments used within the main GA exeption events.
-    /// </summary>
-    public class GaExceptionEventArgs : EventArgs
-    {
-        private readonly string _message;
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="message"></param>
-        public GaExceptionEventArgs(string message)
-        {
-            _message = message;
-        }
-
-        /// <summary>
-        /// Returns the list of Exception messages.
-        /// </summary>
-        public string Message
-        {
-            get { return _message; }
-        }
-    }
-    /// <summary>
-    /// Event arguments used within the main GA events.
-    /// </summary>
-    public class GaEventArgs : EventArgs
-    {
-        private readonly int _generation;
-        private readonly Population _population;
-        private readonly long _evaluations;
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="population"></param>
-        /// <param name="generation"></param>
-        /// <param name="evaluations"></param>
-        public GaEventArgs(Population population, int generation, long evaluations)
-        {
-            _generation = generation;
-            _population = population;
-            _evaluations = evaluations;
-        }
-
-        /// <summary>
-        /// Returns the population.
-        /// </summary>
-        public Population Population
-        {
-            get { return _population; }
-        }
-
-        /// <summary>
-        /// Returns the number of the current generation.
-        /// </summary>
-        public int Generation
-        {
-            get { return _generation; }
-        }
-
-        /// <summary>
-        /// Returns the number of the evaluations undertaken so far.
-        /// </summary>
-        public long Evaluations
-        {
-            get { return _evaluations; }
-        }
-    }
 }

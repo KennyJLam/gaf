@@ -32,7 +32,7 @@ namespace GAF.Net
 	/// <summary>
 	/// Asynchronous socket listener.
 	/// </summary>
-	public static class AsynchronousSocketListener
+	public static class SocketListener
 	{
 		/// <summary>
 		/// Delegate definition for the GenerationComplete event handler.
@@ -69,7 +69,7 @@ namespace GAF.Net
 
 
 			// Bind the socket to the local endpoint and listen for incoming connections.
-			try {
+
 				listener.Bind (localEndPoint);
 				listener.Listen (100);
 
@@ -87,9 +87,6 @@ namespace GAF.Net
 
 				}
 
-			} catch (Exception ex) {
-				throw ex;
-			}
 
 		}
 
@@ -108,6 +105,7 @@ namespace GAF.Net
 
 			handler.BeginReceive (state.Buffer, 0, StateObject.BufferSize, 0,
 				new AsyncCallback (ReadCallback), state);
+
 		}
 
 		private static void ReadCallback (IAsyncResult ar)
@@ -119,7 +117,6 @@ namespace GAF.Net
 			Socket handler = state.WorkSocket;
 			bool etxReceived = false;
 
-			try {
 				// Read data from the client socket. 
 				int bytesRead = handler.EndReceive (ar);
 
@@ -165,9 +162,7 @@ namespace GAF.Net
 						state.WorkSocket.BeginReceive (state.Buffer, 0, StateObject.BufferSize, 0,
 							new AsyncCallback (ReadCallback), state);
 					}
-				}
-			} catch (Exception ex) {
-				Console.WriteLine (ex.Message);
+
 			}
 		}
 
@@ -179,24 +174,30 @@ namespace GAF.Net
 			// Begin sending the data to the remote device.
 			handler.BeginSend (data.ToByteArray (), 0, data.Header.DataLength + PacketHeader.HeaderLength, 0,
 				new AsyncCallback (SendCallback), state);
+			
+
 		}
 
 		private static void SendCallback (IAsyncResult ar)
 		{
-			try {
-				StateObject state = (StateObject)ar.AsyncState;
-				Socket handler = state.WorkSocket;
 
-				// Complete sending the data to the remote device.
-				handler.EndSend (ar);
+			StateObject state = (StateObject)ar.AsyncState;
+			Socket handler = state.WorkSocket;
+
+			try {
+				
+			// Complete sending the data to the remote device.
+			handler.EndSend (ar);
 
 				if (state.PacMan.LastPidReceived == pidEtx) {
-					//handler.Shutdown(SocketShutdown.Both);
+					handler.LingerState = new LingerOption (true, 1);
 					handler.Close ();
 				}
 
 			} catch (Exception ex) {
-				throw ex;
+				if (state.PacMan.LastPidReceived != pidEtx) {
+					throw ex;
+				}
 			}
 		}
 

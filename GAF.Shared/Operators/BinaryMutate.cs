@@ -115,12 +115,6 @@ namespace GAF.Operators
 			newPopulation.Solutions.Clear ();
 			newPopulation.Solutions.AddRange(currentPopulation.Solutions);
 
-//			var elites1c = newPopulation.GetElites ();
-//			foreach(var solution in elites1c)
-//			{
-//				Debug.WriteLine(string.Format("Elites1c: {0}",solution.ToBinaryString()));
-//			}
-//			Debug.WriteLine ("\n");
         }
 
         /// <summary>
@@ -165,6 +159,9 @@ namespace GAF.Operators
 
                 if (rd <= mutationProbability)
                 {
+					//we are changing a chromosome so any existing fitness is now inappropriate
+					child.Fitness = 0;
+					child.FitnessNormalised = 0;
 
                     switch(gene.GeneType)
                     {

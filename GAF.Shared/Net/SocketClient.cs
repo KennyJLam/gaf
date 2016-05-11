@@ -31,7 +31,7 @@ namespace GAF.Net
 	/// <summary>
 	/// Synchronous socket client.
 	/// </summary>
-	public static class SynchronousSocketClient
+	public static class SocketClient
 	{
 		private const int headerSize = 4;
 		private const int maxRetries = 10;
@@ -54,10 +54,6 @@ namespace GAF.Net
 				IPEndPoint remoteEndPoint = new IPEndPoint (ipAddress, port);
 				return Connect (remoteEndPoint);
 			
-			} catch (ArgumentNullException ex) {
-				throw ex;
-			} catch (SocketException ex) {
-				throw ex;
 			} catch (Exception ex) {
 				throw ex;
 			}
@@ -92,10 +88,6 @@ namespace GAF.Net
 					throw new GAF.Exceptions.SocketException (string.Format ("Unable to connect to endpoint after {0} attempts.", maxRetries));
 				}
 					
-			} catch (ArgumentNullException ex) {
-				throw ex;
-			} catch (SocketException ex) {
-				throw ex;
 			} catch (Exception ex) {
 				throw ex;
 			}
@@ -129,10 +121,6 @@ namespace GAF.Net
 
 				return null;
 
-			} catch (ArgumentNullException ex) {
-				throw ex;
-			} catch (SocketException ex) {
-				throw ex;
 			} catch (Exception ex) {
 				throw ex;
 			}
@@ -153,23 +141,13 @@ namespace GAF.Net
 		/// <param name="client">Client.</param>
 		public static bool Close (Socket client)
 		{
-			var retries = 0;
 			try {
 
-				while (client.Connected && retries < maxRetries) {
-					//client.Shutdown (SocketShutdown.Both);
-					client.Close ();
-					retries++;
-				}
+				client.LingerState = new LingerOption (true, 1);
+				//client.Shutdown (SocketShutdown.Both);
+				client.Close ();
 
-				if (client.Connected) {
-					throw new GAF.Exceptions.SocketException (string.Format ("Unable to close connection after {0} attempts.", maxRetries));
-				}
 
-			} catch (ArgumentNullException ex) {
-				throw ex;
-			} catch (SocketException ex) {
-				throw ex;
 			} catch (Exception ex) {
 				throw ex;
 			}

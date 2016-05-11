@@ -125,6 +125,10 @@ namespace GAF.Operators
 			chromosome.Genes [first] = chromosome.Genes [second];
 			chromosome.Genes [second] = temp;
 
+			//we are changing a chromosome so any existing fitness is now inappropriate
+			chromosome.Fitness = 0;
+			chromosome.FitnessNormalised = 0;
+
 		}
 
 		/// <summary>
@@ -136,11 +140,11 @@ namespace GAF.Operators
 		{
 			var result = new List<int> ();
 
-			var first = RandomProvider.GetThreadRandom ().Next (chromosome.Genes.Count - 1);
+			var first = RandomProvider.GetThreadRandom ().Next (chromosome.Genes.Count);
 
 			var second = 0;
 			while (first == second || second == 0) {
-				second = RandomProvider.GetThreadRandom ().Next (chromosome.Genes.Count - 1);
+				second = RandomProvider.GetThreadRandom ().Next (chromosome.Genes.Count);
 			}
 
 			result.Add (first);
