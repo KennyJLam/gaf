@@ -32,6 +32,5 @@ using System.Runtime.CompilerServices;
 
 //used to give unit test access
 [assembly: InternalsVisibleTo("GAF.UnitTests")]
-[assembly: InternalsVisibleTo("GAF.Lab")]
-[assembly: InternalsVisibleTo("GAF.NUnit")]
+[assembly: InternalsVisibleTo("GAF.Api")]
 
