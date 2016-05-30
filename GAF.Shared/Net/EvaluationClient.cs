@@ -56,6 +56,10 @@ namespace GAF.Net
 
 		#endregion
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GAF.Net.EvaluationClient"/> class.
+		/// </summary>
+		/// <param name="endPoints">End points.</param>
 		public EvaluationClient (List<IPEndPoint> endPoints)
 		{
 			if (endPoints == null) {
@@ -66,6 +70,10 @@ namespace GAF.Net
 
 		}
 
+		/// <summary>
+		/// Evaluate the specified solutionsToEvaluate.
+		/// </summary>
+		/// <param name="solutionsToEvaluate">Solutions to evaluate.</param>
 		public int Evaluate (List<Chromosome> solutionsToEvaluate)
 		{
 
@@ -178,7 +186,7 @@ namespace GAF.Net
 			GAF.Net.SocketClient.TransmitETX (_clients [taskId]);
 			GAF.Net.SocketClient.Close (_clients [taskId]);
 			}
-			catch(Exception ex) {
+			catch {
 				//remove faulty endpoint from the collection
 				RemoveEndPointAt(taskId);
 			}
