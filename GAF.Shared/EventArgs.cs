@@ -14,8 +14,9 @@ namespace GAF
 		/// <summary>
 		/// Constructor.
 		/// </summary>
+		/// <param name = "method"></param>
 		/// <param name="message"></param>
-		public ExceptionEventArgs(string message)
+		public ExceptionEventArgs (string method, string message)
 		{
 			_message = message;
 		}
@@ -23,25 +24,46 @@ namespace GAF
 		/// <summary>
 		/// Returns the list of Exception messages.
 		/// </summary>
-		public string Message
-		{
+		public string Message {
 			get { return _message; }
 		}
 	}
 
 	/// <summary>
-	/// Event arguments used within the main GA exeption events.
+	/// Event arguments used within the logging events.
 	/// </summary>
-	public class GaExceptionEventArgs : ExceptionEventArgs
+	public class LoggingEventArgs : EventArgs
 	{
+		private readonly string _message;
+
 		/// <summary>
-		/// Constructor.
+		/// Initializes a new instance of the <see cref="GAF.LoggingEventArgs"/> class.
 		/// </summary>
-		/// <param name="message"></param>
-		public GaExceptionEventArgs(string message) : base(message)
+		/// <param name="format">Format.</param>
+		/// <param name="args">Arguments.</param>
+		public LoggingEventArgs (string format, params object[] args) : this (false, format, args)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GAF.LoggingEventArgs"/> class.
+		/// </summary>
+		/// <param name = "warning"></param>
+		/// <param name="format">Format.</param>
+		/// <param name="args">Arguments.</param>
+		public LoggingEventArgs (bool warning, string format, params object[] args)
+		{
+			var level = warning ? "WARN" : "INFO";
+			var msg = string.Format (format, args);
+			_message = string.Format ("{0}: {1}", level, msg);
+		}
+
+		/// <summary>
+		/// Returns the list of Exception messages.
+		/// </summary>
+		public string Message {
+			get { return _message; }
+		}
 	}
 
 	/// <summary>
@@ -52,13 +74,14 @@ namespace GAF
 		private readonly int _generation;
 		private readonly Population _population;
 		private readonly long _evaluations;
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="population"></param>
 		/// <param name="generation"></param>
 		/// <param name="evaluations"></param>
-		public GaEventArgs(Population population, int generation, long evaluations)
+		public GaEventArgs (Population population, int generation, long evaluations)
 		{
 			_generation = generation;
 			_population = population;
@@ -68,24 +91,21 @@ namespace GAF
 		/// <summary>
 		/// Returns the population.
 		/// </summary>
-		public Population Population
-		{
+		public Population Population {
 			get { return _population; }
 		}
 
 		/// <summary>
 		/// Returns the number of the current generation.
 		/// </summary>
-		public int Generation
-		{
+		public int Generation {
 			get { return _generation; }
 		}
 
 		/// <summary>
 		/// Returns the number of the evaluations undertaken so far.
 		/// </summary>
-		public long Evaluations
-		{
+		public long Evaluations {
 			get { return _evaluations; }
 		}
 	}
@@ -103,7 +123,7 @@ namespace GAF
 		/// </summary>
 		/// <param name = "solutionsToEvaluate"></param>
 		/// <param name = "fitnessFunctionDelegate"></param>
-		public EvaluationEventArgs(List<Chromosome> solutionsToEvaluate, FitnessFunction fitnessFunctionDelegate)
+		public EvaluationEventArgs (List<Chromosome> solutionsToEvaluate, FitnessFunction fitnessFunctionDelegate)
 		{
 			_solutionsToEvaluate = solutionsToEvaluate;
 			_fitnessFunction = fitnessFunctionDelegate;
@@ -113,8 +133,7 @@ namespace GAF
 		/// <summary>
 		/// Returns the population.
 		/// </summary>
-		public List<Chromosome> SolutionsToEvaluate
-		{
+		public List<Chromosome> SolutionsToEvaluate {
 			get { return _solutionsToEvaluate; }
 		}
 
@@ -122,8 +141,7 @@ namespace GAF
 		/// Gets the fitness function.
 		/// </summary>
 		/// <value>The fitness function.</value>
-		public FitnessFunction FitnessFunctionDelegate
-		{
+		public FitnessFunction FitnessFunctionDelegate {
 			get { return _fitnessFunction; }
 		}
 

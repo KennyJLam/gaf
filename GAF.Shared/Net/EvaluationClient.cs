@@ -46,7 +46,7 @@ namespace GAF.Net
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		public delegate void EvaluationExceptionHandler (object sender, GaExceptionEventArgs e);
+		public delegate void EvaluationExceptionHandler (object sender, ExceptionEventArgs e);
 
 		/// <summary>
 		/// Event definition for the EvaluationException event handler.
@@ -140,7 +140,7 @@ namespace GAF.Net
 						message.Append ("\r\n");
 					}
 
-					var eventArgs = new GaExceptionEventArgs (message.ToString ());
+					var eventArgs = new ExceptionEventArgs ("RunTask", message.ToString ());
 					OnEvaluationException (this, eventArgs);
 				}
 

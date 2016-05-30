@@ -70,13 +70,12 @@ namespace GAF
 		/// </summary>
 		public event GenerationCompleteHandler OnGenerationComplete;
 
-
 		/// <summary>
 		/// Delegate definition for the RunException event handler.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-        public delegate void RunExceptionHandler (object sender, GaExceptionEventArgs e);
+        public delegate void RunExceptionHandler (object sender, ExceptionEventArgs e);
 
 		/// <summary>
 		/// Event definition for the RunException event handler.
@@ -94,6 +93,11 @@ namespace GAF
 		/// Event definition for the RunComplete event handler.
 		/// </summary>
 		public event RunCompleteHandler OnRunComplete;
+
+		/// <summary>
+		/// Event definition for the LoggingEventHandler event handler.
+		/// </summary>
+		public event LoggingEventHandler OnLogging;
 
 		private CancellationTokenSource _tokenSource = new CancellationTokenSource ();
 		private Task _task;
@@ -197,7 +201,7 @@ namespace GAF
 						message.Append ("\r\n");
 					}
 
-					var eventArgs = new GaExceptionEventArgs (message.ToString ());
+					var eventArgs = new ExceptionEventArgs ("RunAsync", message.ToString ());
 					this.OnRunException (this, eventArgs);
 				}
 
@@ -301,7 +305,7 @@ namespace GAF
 				//however the check is made here as this cannot be guaranteed with third party
 				//operators.
 				if (enabled) {
-                    Debug.WriteLine("Operator {0} Invoked", op.GetType().ToString());
+                    //Debug.WriteLine("Operator {0} Invoked", op.GetType().ToString());
 					op.Invoke (tempPopulation, ref processedPopulation, fitnessFunctionDelegate);
 
 
