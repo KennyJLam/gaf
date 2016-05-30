@@ -34,6 +34,7 @@ namespace GAF.Operators
 	/// This operator does not consider duplicates. To maintain a unique population, ensure that this operator
 	/// is used before any oprators that modify the solutions.
 	/// </summary>
+	[Obsolete("This operator has no real value in the current version of the GAF. The same copy operations are acheived through crossover probability and by using the Elite and Random Replace operators.", false)]
 	public class Copy : IGeneticOperator
 	{
 		private int _percentageS;
