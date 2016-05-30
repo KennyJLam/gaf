@@ -56,6 +56,11 @@ namespace GAF
 		/// </summary>
 		public event EvaluationBeginHandler OnEvaluationBegin;
 
+		/// <summary>
+		/// Event definition for the LoggingEventHandler event handler.
+		/// </summary>
+		public event LoggingEventHandler OnLogging;
+
 		#region Constructor
 
 		/// <summary>
@@ -544,7 +549,6 @@ namespace GAF
 
 				if (q1.Count () - 1 > 0) {
 					result = false;
-					//throw new ApplicationException("Duplicate detected.");
 				}
 
 			}
@@ -653,6 +657,7 @@ namespace GAF
 
 			//copy any event subscribers over 
 			newPopulation.OnEvaluationBegin = this.OnEvaluationBegin;
+			newPopulation.OnLogging = this.OnLogging;
 
 			return newPopulation;
 		}
@@ -664,9 +669,11 @@ namespace GAF
 		internal List<Chromosome> GetTournamentSelection ()
 		{
 			const int parentCount = 2;
+			const int maxIterations = 16;
+
 			var parents = new List<Chromosome> ();
 			var tour = new List<Chromosome> ();
-			var maxIterations = 32;
+
 			Chromosome selected;
 
 			var populationSize = PopulationSize;
@@ -674,9 +681,6 @@ namespace GAF
 			for (var iteration = 0; iteration < parentCount; iteration++) {
 
 				do {
-
-
-
 
 					//determine the size of the tour
 					var tourSize = RandomProvider.GetThreadRandom ().Next (populationSize);
@@ -698,11 +702,14 @@ namespace GAF
 					}
 					else
 					{
-						//throw new PopulationSelectionException ("Tournament Selection has failed to find two parents, this could be due to a small Population size.");
-
 						//can't get unique so just add any way
 						//TODO: Make this more adaptive. As the GA converges it becomes harder to ensure unique parents.
 						parents.Add (selected);
+
+						if(this.OnLogging != null)
+						{
+							this .OnLogging(this,new LoggingEventArgs(true, "Tournament Selection has failed to find two parents after {0} iterations. This could be due to a small or converged population.", maxIterations));
+						}
 					}
 
 

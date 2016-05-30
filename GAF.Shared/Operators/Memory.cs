@@ -37,6 +37,10 @@ namespace GAF.Operators
         private int _currentGeneration = 0;
 		private object _synclock = new object();
 
+		/// <summary>
+		/// Event definition for the LoggingEventHandler event handler.
+		/// </summary>
+		public event LoggingEventHandler OnLogging;
 
         /// <summary>
         /// This memory operator is designed to store recently identified solutions.

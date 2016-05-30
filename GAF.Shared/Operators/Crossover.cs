@@ -39,6 +39,11 @@ namespace GAF.Operators
 		private readonly object _syncLock = new object ();
 
 		/// <summary>
+		/// Event definition for the LoggingEventHandler event handler.
+		/// </summary>
+		public event LoggingEventHandler OnLogging;
+
+		/// <summary>
 		/// Delegage definition for the CrossoverComplete event handler.
 		/// </summary>
 		/// <param name="sender"></param>
@@ -570,7 +575,5 @@ namespace GAF.Operators
 			get { return _points; } 
 		}
 	}
-
-
 }
 

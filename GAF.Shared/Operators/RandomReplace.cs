@@ -44,6 +44,11 @@ namespace GAF.Operators
 
         private int _percentageToReplace;
 
+		/// <summary>
+		/// Event definition for the LoggingEventHandler event handler.
+		/// </summary>
+		public event LoggingEventHandler OnLogging;
+
         /// <summary>
         /// Replaces the whole population with randomly generated solutions.
         /// </summary>
