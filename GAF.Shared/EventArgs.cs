@@ -28,6 +28,7 @@ namespace GAF
 			get { return _message; }
 		}
 	}
+
 	/// <summary>
 	/// Event arguments used within the main GA exeption events.
 	/// </summary>
@@ -87,33 +88,6 @@ namespace GAF
 		{
 			get { return _evaluations; }
 		}
-	}
-
-	/// <summary>
-	/// Event arguments used within the Property Changed events of all objects that support them.
-	/// </summary>
-	public class PropertyChangedEventArgs : EventArgs
-	{
-		private readonly string _propertyName;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="GAF.PropertyChangedEventArgs"/> class.
-		/// </summary>
-		/// <param name="propertyName">Property name.</param>
-		public PropertyChangedEventArgs(string propertyName)
-		{
-			_propertyName = propertyName;
-		}
-
-		/// <summary>
-		/// Gets the name of the property.
-		/// </summary>
-		/// <value>The name of the property.</value>
-		public string PropertyName
-		{
-			get { return _propertyName; }
-		}
-
 	}
 
 	/// <summary>
