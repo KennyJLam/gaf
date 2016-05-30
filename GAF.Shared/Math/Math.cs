@@ -79,5 +79,30 @@ namespace GAF
 		{
 			return range / (System.Math.Pow(2, numberOfBits) - 1);
 		}
+
+		/// <summary>
+		/// Compares two double values for equality.
+		/// </summary>
+		/// <returns><c>true</c>, if equal was abouted, <c>false</c> otherwise.</returns>
+		/// <param name="x">The x coordinate.</param>
+		/// <param name="y">The y coordinate.</param>
+		public static bool AboutEqual(double x, double y) {
+			double epsilon = System.Math.Max(System.Math.Abs(x), System.Math.Abs(y)) * 1E-15;
+			return System.Math.Abs(x - y) <= epsilon;
+		}
+
+		/// <summary>
+		/// Changes the range of a number whilst maintaining ratio.
+		/// </summary>
+		/// <returns>The range.</returns>
+		/// <param name="oldValue">Old value.</param>
+		/// <param name="oldMin">Old minimum.</param>
+		/// <param name="oldMax">Old max.</param>
+		/// <param name="newMin">New minimum.</param>
+		/// <param name="newMax">New max.</param>
+		public static double ReRange(double oldValue, double oldMin, double oldMax, double newMin, double newMax)
+		{
+			return (((oldValue - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin;
+		}
     }
 }
