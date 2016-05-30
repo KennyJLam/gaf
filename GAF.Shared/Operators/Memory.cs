@@ -32,28 +32,76 @@ namespace GAF.Operators
     {
         private Population _memory;
         private int _evaluations;
-        private readonly int _memorySize;
-        private readonly int _generationalUpdatePeriod;
+        private int _memorySize;
+        private int _generationalUpdatePeriod;
         private int _currentGeneration = 0;
+		private object _synclock = new object();
+
 
         /// <summary>
         /// This memory operator is designed to store recently identified solutions.
         /// The operator stores the fittest solution determined and stores this after
-        /// a period of generations determined by the generationsBetweenUpdate parameter.
+		/// a period of generations determined by the generationalUpdatePeriod parameter.
         /// Once the memory is full, older solutions are overwritten.
         /// </summary>
         /// <param name="memorySize"></param>
-        /// <param name="generationsBetweenUpdate"></param>
-        public Memory(int memorySize, int generationsBetweenUpdate)
+		/// <param name="generationalUpdatePeriod"></param>
+		public Memory(int memorySize, int generationalUpdatePeriod)
         {
+			if (memorySize < 0)
+				throw new ArgumentOutOfRangeException ("memorySize");
+			
             Enabled = false;
             _memorySize = memorySize;
-            _generationalUpdatePeriod = generationsBetweenUpdate;
+			_generationalUpdatePeriod = generationalUpdatePeriod;
             
             Enabled = true;
 
         }
-        /// <summary>
+
+		/// <summary>
+		/// Gets or sets the size of the memory.
+		/// If this property is changed when the operator is enabled and the GA is running
+		/// will cause the memory to clear before being re-created at its new size.
+		/// </summary>
+		/// <value>The size of the memory.</value>
+		public int MemorySize {
+			get {
+				lock (_synclock) {
+					return _memorySize;
+				}
+			}
+			set {
+				if (value < 0)
+					throw new ArgumentOutOfRangeException ("value");
+				
+				lock (_synclock) {
+					_memorySize = value;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the generational update period.
+		/// </summary>
+		/// <value>The generational update period.</value>
+		public int GenerationalUpdatePeriod {
+			get {
+				lock (_synclock) {
+					return _generationalUpdatePeriod;
+				}
+			}
+			set {
+				if (value < 0)
+					throw new ArgumentOutOfRangeException ("value");
+				
+				lock (_synclock) {
+					_generationalUpdatePeriod = value;
+				}
+			}
+		}
+
+		/// <summary>
         /// This is the method that invokes the operator. This should not normally be called explicitly.
         /// </summary>
         /// <param name="currentPopulation"></param>
@@ -72,8 +120,9 @@ namespace GAF.Operators
 
 			if (!Enabled) return;
 
-            //create the memory if one doesn't exist
-            if (_memory == null)
+			//create the memory if one doesn't exist or it is of a different size
+			if (_memory == null || 
+				_memory.PopulationSize != _memorySize)
             {
                 _memory = new Population(_memorySize, 0, true, false);
             }
@@ -121,7 +170,7 @@ namespace GAF.Operators
         {
             //simply add the best to our memory
 			_memory.Solutions.Add(solution);
-            //_memory.Solutions.Add(solution.DeepClone());
+
             if (_memory.Solutions.Count > _memorySize)
             {
                 //remove the oldest

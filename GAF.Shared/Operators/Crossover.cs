@@ -168,7 +168,7 @@ namespace GAF.Operators
 		protected void Process ()
 		{
 
-			int maxLoop = 100;
+			int maxLoop = 1000;
 			int eliteCount = 0;
 
 			//reset the number of evaluations
@@ -200,9 +200,7 @@ namespace GAF.Operators
 				//emergency exit
 				maxLoop--;
 				if (maxLoop <= 0) {
-					Debug.WriteLine (
-						"Warning: Unable to create a child that is better than those in the current population");
-					break;
+					throw new ChromosomeException ("Unable to create a suitable child. If duplicates have been disallowed then consider increasing the chromosome length or increasing the number of elites.");
 				}
 
 				//these will hold the children
@@ -219,7 +217,6 @@ namespace GAF.Operators
 				var crossoverResult = PerformCrossover (p1, p2, CrossoverProbability, CrossoverType, crossoverData, out c1, out c2);
 
 				//pass the children out to derived classes 
-				//(e.g. CrossoverMutate class uses this to perform mutation)
 				if (OnCrossoverComplete != null) {
 					var eventArgs = new CrossoverEventArgs (crossoverResult);
 					OnCrossoverComplete (this, eventArgs);
@@ -234,9 +231,7 @@ namespace GAF.Operators
 					if (AddChild (c2)) {
 						_numberOfChildrenToGenerate--;
 					}
-
 				}
-
 			}
 
 		}
@@ -262,6 +257,7 @@ namespace GAF.Operators
 			//check probability by generating a random number between zero and one and if 
 			//this number is less than or equal to the given crossover probability 
 			//then crossover takes place."
+
 			var rd = RandomProvider.GetThreadRandom ().NextDouble ();
 			if (rd <= crossoverProbability) {
 				switch (crossoverType) {
@@ -370,7 +366,7 @@ namespace GAF.Operators
 
 						//if at this point we do not have a complete child, raise an exception
 						if (cg1.Count != p1.Count || cg2.Count != p2.Count) {
-							throw new CrossoverTypeIncompatibleException ("The parent Chromosomes were not suitable for Ordered Crossover as they do not contain the same set of values. Consider using a different crossover type, or ensure all solutions are build with the same set of values.");
+							throw new CrossoverTypeIncompatibleException ("The parent Chromosomes are not suitable for Ordered Crossover as they do not contain the same set of values. Consider using a different crossover type, or ensure all solutions are build with the same set of values.");
 						}
 
 						break;
