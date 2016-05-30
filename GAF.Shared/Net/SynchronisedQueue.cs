@@ -27,14 +27,24 @@ using System;
 
 namespace GAF.Net
 {
+	/// <summary>
+	/// Synchronised queue.
+	/// </summary>
 	public class SynchronisedQueue : Queue
 	{
 		private readonly object _syncLock = new object ();
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GAF.Net.SynchronisedQueue"/> class.
+		/// </summary>
 		public SynchronisedQueue () : base (DefaultSize)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GAF.Net.SynchronisedQueue"/> class.
+		/// </summary>
+		/// <param name="maxQueueSize">Max queue size.</param>
 		public SynchronisedQueue (int maxQueueSize) : base (maxQueueSize)
 		{
 		}
@@ -76,6 +86,7 @@ namespace GAF.Net
 		/// Peek the specified number of bytes. This is similar to Dequeue
 		/// but no bytes are removed from the queue.
 		/// </summary>
+		/// <param name = "startIndex"></param>
 		/// <param name="length">Length.</param>
 		public new byte[] Peek (int startIndex, int length)
 		{

@@ -49,11 +49,6 @@ namespace GAF.Net
 		public byte[] Buffer = new byte[BufferSize];
 
 		/// <summary>
-		/// Received data bytes.
-		/// </summary>
-		//public List<byte> Data = new List<byte>();
-
-		/// <summary>
 		/// Packet Manager.
 		/// </summary>
 		public PacketManager PacMan = new PacketManager (new SynchronisedQueue (8192));

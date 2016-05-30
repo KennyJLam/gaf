@@ -119,6 +119,10 @@ namespace GAF.Net
 		/// <value>The size of the queue.</value>
 		public int MaxQueueSize { private set; get; }
 
+		/// <summary>
+		/// Dequeue the specified number of bytes.
+		/// </summary>
+		/// <param name="count">Count.</param>
 		public byte[] Dequeue (int count)
 		{
 			//need to ensure there bytes waiting to be dequeued
@@ -143,6 +147,12 @@ namespace GAF.Net
 			return result;
 		}
 
+		/// <summary>
+		/// Peek the specified number of bytes. This is similar to Dequeue
+		/// but no bytes are removed from the queue.
+		/// </summary>
+		/// <param name="startIndex">Start index.</param>
+		/// <param name="count">Count.</param>
 		public byte[] Peek (int startIndex, int count)
 		{
 			//need to ensure there bytes waiting to be dequeued
@@ -174,6 +184,10 @@ namespace GAF.Net
 			}
 		}
 
+		/// <summary>
+		/// Gets the count of bytes in the queue.
+		/// </summary>
+		/// <value>The count.</value>
 		public int Count {
 		
 			get { 

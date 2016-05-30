@@ -35,35 +35,9 @@ namespace GAF.Net
 	public class PacketManager
 	{
 		private readonly IQueue _queue;
-		private CancellationTokenSource _tokenSource = new CancellationTokenSource ();
-		private Task _task;
 		private State _state = State.LookingForSOH;
 		private Packet _currentPacket = null;
 		private PacketHeader _currentHeader = null;
-
-		/// <summary>
-		/// Delegate definition for the RunException event handler.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		public delegate void ProcessingExceptionHandler (object sender, EventArgs e);
-
-		/// <summary>
-		/// Event definition for the RunException event handler.
-		/// </summary>
-		public event ProcessingExceptionHandler OnProcessingException;
-
-		/// <summary>
-		/// Delegate definition for the EvaluationBeginHandler event handler.
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		public delegate void PacketReceivedHandler (object sender, PacketEventArgs e);
-
-		/// <summary>
-		/// Event definition for the EvaluationBeginHandler event handler.
-		/// </summary>
-		public event PacketReceivedHandler OnPacketReceived;
 
 		private enum State
 		{
@@ -112,67 +86,11 @@ namespace GAF.Net
 		/// <value>The last pid received.</value>
 		public byte LastPidReceived { get; private set; }
 
-//		internal void StopProcessing ()
-//		{
-//			_tokenSource.Cancel ();
-//		}
-//
-//		internal void StartProcessing ()
-//		{
-//			var token = _tokenSource.Token;
-//			_task = new Task (() => ProcessQueueTask (token), token);
-//			_task.Start ();
-//
-//			_task.ContinueWith (t => {
-//				/* error handling */
-//				var exception = t.Exception;
-//				IsRunning = false;
-//
-//				if (this.OnProcessingException != null && t.Exception != null) {
-//					var message = new StringBuilder ();
-//					foreach (var ex in t.Exception.InnerExceptions) {
-//						message.Append (ex.Message);
-//						message.Append ("\r\n");
-//					}
-//
-//					var eventArgs = new ProcessingExceptionEventArgs (message.ToString ());
-//					this.OnProcessingException (this, eventArgs);
-//				}
-//
-//			}, TaskContinuationOptions.OnlyOnFaulted);
-//		}
 
-//		private void ProcessQueueTask (CancellationToken token)
-//		{
-//			//if no one has subscribed to the event, nothing happens and the 
-//			//user is expected to call GetPacket() manually.
-//
-//			IsRunning = true;
-//			var packetsReceived = 0;
-//
-//			//this only happens if the event is being subscribed to
-//			while (true) {
-//
-//				var packet = GetPacket ();
-//
-//				if (packet != null) {
-//
-//					packetsReceived++;
-//
-//					if (OnPacketReceived != null) {
-//						var args = new PacketEventArgs (packetsReceived, packet);
-//						this.OnPacketReceived (this, args);
-//					}
-//				}
-//
-//				if (token.IsCancellationRequested) {
-//					IsRunning = false;
-//					break;
-//				}
-//			}
-//
-//		}
-
+		/// <summary>
+		/// Gets the next available packet.
+		/// </summary>
+		/// <returns>The packet.</returns>
 		public Packet GetPacket ()
 		{
 			//TODO: Deal with scenario where SOH is valid but not enough header or data bytes are received
@@ -262,14 +180,6 @@ namespace GAF.Net
 								LastPidReceived = _currentPacket.Header.PacketId;
 
 								return _currentPacket;
-
-//									if (OnPacketReceived != null) {
-//
-//										var args = new PacketReceivedEventArgs (currentPacket, packetCount, orphanedBytes);
-//										this.OnPacketReceived (this, args);
-//									}
-
-//									
 
 							}
 						} else {

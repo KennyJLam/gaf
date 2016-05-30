@@ -23,6 +23,9 @@ using System;
 
 namespace GAF.Net
 {
+	/// <summary>
+	/// IQueue interface.
+	/// </summary>
 	public interface IQueue
 	{
 		/// <summary>
@@ -47,6 +50,7 @@ namespace GAF.Net
 		/// Peek the specified number of bytes. This is similar to Dequeue
 		/// but no bytes are removed from the queue.
 		/// </summary>
+		/// <param name = "startIndex"></param>
 		/// <param name="length">Length.</param>
 		byte[] Peek (int startIndex, int length);
 

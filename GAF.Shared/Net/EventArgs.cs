@@ -91,6 +91,9 @@ namespace GAF.Net
 		}
 	}
 
+	/// <summary>
+	/// Remote evaluation event arguments.
+	/// </summary>
 	public class RemoteEvaluationEventArgs : EventArgs
 	{
 		private readonly Chromosome _solution;

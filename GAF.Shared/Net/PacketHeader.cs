@@ -24,6 +24,9 @@ using System;
 
 namespace GAF.Net
 {
+	/// <summary>
+	/// Packet header.
+	/// </summary>
 	public class PacketHeader
 	{
 		// The Header consists of; 
@@ -42,6 +45,12 @@ namespace GAF.Net
 
 		private byte[] _headerBytes;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GAF.Net.PacketHeader"/> class.
+		/// </summary>
+		/// <param name="packetId">Packet identifier.</param>
+		/// <param name="objectId">Object identifier.</param>
+		/// <param name="dataLength">Data length.</param>
 		public PacketHeader (byte packetId, Guid objectId, int dataLength)
 		{
 
@@ -52,6 +61,10 @@ namespace GAF.Net
 
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GAF.Net.PacketHeader"/> class.
+		/// </summary>
+		/// <param name="headerBytes">Header bytes.</param>
 		public PacketHeader (byte[] headerBytes)
 		{
 			_headerBytes = headerBytes;
@@ -127,6 +140,10 @@ namespace GAF.Net
 			}
 		}
 
+		/// <summary>
+		/// Returns the Packet as a byte array.
+		/// </summary>
+		/// <returns>A byte array.</returns>
 		public byte[] ToByteArray()
 		{
 
