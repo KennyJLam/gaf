@@ -99,7 +99,6 @@ namespace GAF
 		private Task _task;
 		private Population _population;
 		private int _currentGeneration;
-		private readonly FitnessFunction _fitnessFunctionDelegate;
 
 		private long _evals;
 
@@ -121,7 +120,7 @@ namespace GAF
 		{
 			_population = population;
 
-			_fitnessFunctionDelegate = fitnessFunctionDelegate;
+			FitnessFunction = fitnessFunctionDelegate;
 
 			this.Operators = new List<IGeneticOperator> ();
 		}
@@ -213,6 +212,7 @@ namespace GAF
 		{
 			IsRunning = true;
 
+			TerminateFunction = terminateFunction;
 			//validate the population
 			if (this.Population == null || this.Population.Solutions.Count == 0) {
 				throw new NullReferenceException (
@@ -220,7 +220,7 @@ namespace GAF
 			}
 
 			//perform the initial evaluation
-			Evaluations += _population.Evaluate (_fitnessFunctionDelegate);
+			Evaluations += _population.Evaluate (FitnessFunction);
 
 			//raise the Generation Complete event
 			if (this.OnInitialEvaluationComplete != null) {
@@ -234,7 +234,7 @@ namespace GAF
 				//Note: Selection handled by the operator(s)
 				_currentGeneration = generation;
 
-				var newPopulation = RunGeneration (_population, _fitnessFunctionDelegate);
+				var newPopulation = RunGeneration (_population, FitnessFunction);
 
 				_population.Solutions.Clear ();
 				_population.Solutions.AddRange (newPopulation.Solutions);
@@ -245,8 +245,8 @@ namespace GAF
 					this.OnGenerationComplete (this, eventArgs);
 				}
 
-				if (terminateFunction != null) {
-					if (terminateFunction.Invoke (_population, generation + 1, Evaluations)) {
+				if (TerminateFunction != null) {
+					if (TerminateFunction.Invoke (_population, generation + 1, Evaluations)) {
 						break;
 					}
 				}
@@ -301,8 +301,10 @@ namespace GAF
 				//however the check is made here as this cannot be guaranteed with third party
 				//operators.
 				if (enabled) {
-//                  Debug.WriteLine("Operator {0} Invoked", op.GetType().ToString());
+                    Debug.WriteLine("Operator {0} Invoked", op.GetType().ToString());
 					op.Invoke (tempPopulation, ref processedPopulation, fitnessFunctionDelegate);
+
+
 					Evaluations += op.GetOperatorInvokedEvaluations ();
 											
 					tempPopulation.Solutions.Clear ();
@@ -367,11 +369,13 @@ namespace GAF
 		/// Gets the fitness function.
 		/// </summary>
 		/// <value>The fitness function.</value>
-		public FitnessFunction FitnessFunction {
-			get {
-				return _fitnessFunctionDelegate;
-			}
-		}
+		public FitnessFunction FitnessFunction { set; get; }
+
+		/// <summary>
+		/// Gets or sets the terminate function.
+		/// </summary>
+		/// <value>The terminate function.</value>
+		public TerminateFunction TerminateFunction { set; get; }
 
 		#endregion
 
