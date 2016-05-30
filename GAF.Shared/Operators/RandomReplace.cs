@@ -132,15 +132,15 @@ namespace GAF.Operators
 			newPopulation.Solutions.Sort ();
 
             //find the number of non elites
-			var chromosomeCount = newPopulation.Solutions.Count(s => !s.IsElite);
+			var nonElites = newPopulation.Solutions.Count(s => !s.IsElite);
+
 
             //determine how many we are replacing based on the percentage
-			var numberToReplace = (int)System.Math.Round((chromosomeCount / 100.0) * percentage);
+			var numberToReplace = (int)System.Math.Round((nonElites / 100.0) * percentage);
 
-            //we fill it up if we are short.
-            if (numberToReplace > chromosomeCount)
+            if (numberToReplace > nonElites)
             {
-                numberToReplace = chromosomeCount;
+                numberToReplace = nonElites;
             }
 
             if (numberToReplace > 0)
@@ -153,7 +153,8 @@ namespace GAF.Operators
                 }
 
 				//reduce the population as required
-				newPopulation.Solutions.RemoveRange(chromosomeCount - numberToReplace,numberToReplace);
+				var populationCount = newPopulation.Solutions.Count();
+				newPopulation.Solutions.RemoveRange(populationCount - numberToReplace,numberToReplace);
 
 				var chromosomeLength = currentPopulation.ChromosomeLength;
 
@@ -170,22 +171,18 @@ namespace GAF.Operators
 						AddImigrant (newPopulation, uniqueChromosome, fitnessFunctionDelegate);
 
 						//should find one only
-						var duplicates = newPopulation.Solutions.FindAll (s => s.ToString ().Equals (uniqueChromosome.ToString ()));
-						if (duplicates.Count != 1) {
-
-							throw new ChromosomeException ("The Chromosome was not unique");
-						}
+//						var duplicates = newPopulation.Solutions.FindAll (s => s.ToString ().Equals (uniqueChromosome.ToString ()));
+//						if (duplicates.Count != 1) {
+//
+//							throw new ChromosomeException ("The Chromosome was not unique");
+//						}
 					}
                     else
                     {
 						AddImigrant (newPopulation, new Chromosome(chromosomeLength), fitnessFunctionDelegate);
                     }
-
                 }
-
             }
-
-
         }
 
 		private void AddImigrant(Population population, Chromosome imigrant, FitnessFunction fitnessFunctionDelegate)
@@ -196,7 +193,7 @@ namespace GAF.Operators
 				imigrant.Evaluate (fitnessFunctionDelegate);
 				_evaluations++;
 
-				//TODO: Fix this, Random does not want to remove weakest as we are trying to increase diversity.
+				//TODO: Consider that Random may not want to remove weakest as we are trying to increase diversity.
 
 				//add the imigrant this extends the population
 				population.Solutions.Add (imigrant);
