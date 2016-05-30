@@ -28,9 +28,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)InitialisationType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParentSelectionType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Population.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TestProblems.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\List.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Math\Math.cs">
@@ -66,6 +63,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Net\EvaluationClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Net\EvaluationServer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operators\ReplacementMethod.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LoggingEventHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Net\" />
