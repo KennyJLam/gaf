@@ -666,7 +666,7 @@ namespace GAF
 			const int parentCount = 2;
 			var parents = new List<Chromosome> ();
 			var tour = new List<Chromosome> ();
-			var maxIterations = 20;
+			var maxIterations = 32;
 			Chromosome selected;
 
 			var populationSize = PopulationSize;
@@ -675,10 +675,8 @@ namespace GAF
 
 				do {
 
-					iteration++;
 
-					if (iteration > maxIterations)
-						throw new PopulationSelectionException ("Tournament Selection has failed to find two parents, this could be due to a small Population size.");
+
 
 					//determine the size of the tour
 					var tourSize = RandomProvider.GetThreadRandom ().Next (populationSize);
@@ -690,10 +688,23 @@ namespace GAF
 					tour.Sort ();
 					selected = tour.First ();
 
-					//this keeps the parents unique
-					if (!parents.Exists (c => selected.Id == c.Id))
+					iteration++;
+
+					if (iteration < maxIterations)
+					{
+						if (!parents.Exists (c => selected.Id == c.Id)) {
+							parents.Add (selected);
+						}
+					}
+					else
+					{
+						//throw new PopulationSelectionException ("Tournament Selection has failed to find two parents, this could be due to a small Population size.");
+
+						//can't get unique so just add any way
+						//TODO: Make this more adaptive. As the GA converges it becomes harder to ensure unique parents.
 						parents.Add (selected);
-						
+					}
+
 
 				} while(parents.Count < parentCount);
 			}
