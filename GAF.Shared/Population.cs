@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using GAF.Extensions;
 using GAF.Threading;
 using System.Threading;
+using System.Diagnostics;
 
 namespace GAF
 {
@@ -111,9 +112,9 @@ namespace GAF
 		/// <param name="reEvaluateAll"></param>
 		/// <param name="useLinearlyNormalisedFitness"></param>
 		public Population (int populationSize, int chromosomeLength, bool reEvaluateAll,
-		                        bool useLinearlyNormalisedFitness)
+		                   bool useLinearlyNormalisedFitness)
 			: this (populationSize, chromosomeLength, reEvaluateAll,
-			         useLinearlyNormalisedFitness, ParentSelectionMethod.FitnessProportionateSelection)
+			        useLinearlyNormalisedFitness, ParentSelectionMethod.FitnessProportionateSelection)
 		{
 		}
 
@@ -126,9 +127,9 @@ namespace GAF
 		/// <param name="useLinearlyNormalisedFitness">If set to <c>true</c> use linearly normalised fitness.</param>
 		/// <param name="selectionMethod">Selection method.</param>
 		public Population (int populationSize, int chromosomeLength, bool reEvaluateAll,
-		                  bool useLinearlyNormalisedFitness, ParentSelectionMethod selectionMethod)
+		                   bool useLinearlyNormalisedFitness, ParentSelectionMethod selectionMethod)
 			: this (populationSize, chromosomeLength, reEvaluateAll,
-			         useLinearlyNormalisedFitness, ParentSelectionMethod.FitnessProportionateSelection, false)
+			        useLinearlyNormalisedFitness, ParentSelectionMethod.FitnessProportionateSelection, false)
 		{
 		}
 
@@ -142,7 +143,7 @@ namespace GAF
 		/// <param name="selectionMethod"></param>
 		/// <param name = "evaluateInParallel"></param>
 		public Population (int populationSize, int chromosomeLength, bool reEvaluateAll,
-		                        bool useLinearlyNormalisedFitness, ParentSelectionMethod selectionMethod, bool evaluateInParallel)
+		                   bool useLinearlyNormalisedFitness, ParentSelectionMethod selectionMethod, bool evaluateInParallel)
 		{
 			if (populationSize % 2 != 0) {
 				throw new ArgumentException ("Population size must be an even number.");
@@ -166,11 +167,13 @@ namespace GAF
 		/// Returns the length of the chromosomes used in the population.
 		/// </summary>
 		public int ChromosomeLength {
-			get {				
-				if (Solutions != null && Solutions.Count > 0 &&
-				    Solutions [0].Genes != null && Solutions [0].Genes.Count > 0) {
+			get {
+
+				if (!IsEmptyList<Chromosome> (Solutions) &&
+				    !IsEmptyList<Gene> (Solutions [0].Genes)) {
 					return Solutions [0].Genes.Count;
 				}
+
 				return  0;
 			}
 		}
@@ -336,7 +339,7 @@ namespace GAF
 
 			//get the list of soultions to be evaluated
 			var solutionsToEvaluate = Solutions.Where (solution => ReEvaluateAll ||
-			                                   (!ReEvaluateAll && solution.Fitness <= 0)).ToList ();
+			                          (!ReEvaluateAll && solution.Fitness <= 0)).ToList ();
 
 			if (OnEvaluationBegin != null) {
 				var evalArgs = new EvaluationEventArgs (solutionsToEvaluate, fitnessFunctionDelegate);
@@ -364,32 +367,30 @@ namespace GAF
 					evaluations++;
 				}
 #else
-			if (EvaluateInParallel) {
+				if (EvaluateInParallel) {
 
-				// First type parameter is the type of the source elements
-				// Second type parameter is the type of the thread-local variable (partition subtotal)
-				Parallel.ForEach<Chromosome,int>(solutionsToEvaluate,
-					() => 0, // method to initialize the local variable
-					(solution, loop, subtotal) =>
-					// method invoked by the loop on each iteration
-					{
-						solution.Evaluate (fitnessFunctionDelegate);
-						subtotal ++;
-						return subtotal; // value to be passed to next iteration
-					},
+					// First type parameter is the type of the source elements
+					// Second type parameter is the type of the thread-local variable (partition subtotal)
+					Parallel.ForEach<Chromosome,int> (solutionsToEvaluate,
+						() => 0, // method to initialize the local variable
+						(solution, loop, subtotal) => {					// method invoked by the loop on each iteration
+							solution.Evaluate (fitnessFunctionDelegate);
+							subtotal++;
+							return subtotal; // value to be passed to next iteration
+						},
 					// Method to be executed when each partition has completed.
 					// finalResult is the final value of subtotal for a particular partition.
-					(finalResult) => Interlocked.Add(ref evaluations, finalResult)
-				);			
+						(finalResult) => Interlocked.Add (ref evaluations, finalResult)
+					);			
 
 
-			} else {
+				} else {
 			
-				foreach (var solution in solutionsToEvaluate) {
-					solution.Evaluate (fitnessFunctionDelegate);
-					evaluations++;
+					foreach (var solution in solutionsToEvaluate) {
+						solution.Evaluate (fitnessFunctionDelegate);
+						evaluations++;
+					}
 				}
-			}
 
 #endif
 			
@@ -538,8 +539,8 @@ namespace GAF
 			foreach (Chromosome chromosome in Solutions) {
 
 				var q1 = from b in this.Solutions
-				                     where b.Id.ToString () == chromosome.Id.ToString ()
-				                     select b;
+				         where b.Id.ToString () == chromosome.Id.ToString ()
+				         select b;
 
 				if (q1.Count () - 1 > 0) {
 					result = false;
@@ -550,6 +551,7 @@ namespace GAF
 
 			return result;
 		}
+
 		/// <summary>
 		/// Returns the top count of the population based on highest
 		/// fitness value.        
@@ -888,6 +890,15 @@ namespace GAF
 			foreach (var chromosome in Solutions) {
 				chromosome.FitnessNormalised = currentValue;
 				currentValue--;
+			}
+		}
+
+		private bool IsEmptyList<T> (List<T> list)
+		{
+			if (list == null) {
+				return true; // or throw an exception
+			} else {
+				return !list.Any ();			
 			}
 		}
 
