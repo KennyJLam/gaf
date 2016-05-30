@@ -307,24 +307,7 @@ namespace GAF
             Fitness = fitness;
 			return fitness;
 		}
-
-		/// <summary>
-		/// Evaluates the Chromosome by invoking the specified delegate method.
-		/// The fitness function should return a higher 
-		/// value for those chromosomes that are deemed fitter.
-		/// </summary>
-		/// <param name="fitnessFunctionDelegate"></param>
-		/// <param name = "state"></param>
-		/// <returns></returns>
-		public double Evaluate (FitnessFunction fitnessFunctionDelegate, object state)
-		{			
-			var fitness = fitnessFunctionDelegate.Invoke(this);
-			if (fitness < 0 || fitness > 1.0)
-				throw new EvaluationException("The fitness value must be within the range 0.0 to 1.0.");
-
-			Fitness = fitness;
-			return fitness;
-		}
+			
 		/// <summary>
 		/// Creates a new GUID for the Chromosome
 		/// </summary>
