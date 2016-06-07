@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Chromosome.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\EvaluationException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operators\CustomObjectMutate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operators\BinaryMutate.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operators\Copy.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operators\CopyMethod.cs" />
