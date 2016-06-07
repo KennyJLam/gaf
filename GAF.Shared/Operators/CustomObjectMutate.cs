@@ -17,7 +17,7 @@ namespace GAF.Operators
 	/// mutation of custom objects by inheriting this class in other projects.
 	/// This operator can only be used with genes of type Object.
 	/// </summary>
-	abstract class CustomObjectMutate : IGeneticOperator
+	public abstract class CustomObjectMutate : IGeneticOperator
 	{
 		private double _mutationProbabilityS;
 		private bool _allowDuplicatesS;
