@@ -18,4 +18,4 @@ To get started, simply install the GAF using the NuGet Package Manager. Execute 
 
 More Info
 =========
-For more information and repo contact details see [http://johnnewcombe.net](http://johnnewcombe.net).
+For more information and repo contact details see [http://johnnewcombe.net/gaf](http://johnnewcombe.net/gaf).
