@@ -35,6 +35,7 @@ namespace GAF
 	public class LoggingEventArgs : EventArgs
 	{
 		private readonly string _message;
+		private readonly bool _isWarning;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GAF.LoggingEventArgs"/> class.
@@ -48,14 +49,14 @@ namespace GAF
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GAF.LoggingEventArgs"/> class.
 		/// </summary>
-		/// <param name = "warning"></param>
+		/// <param name = "isWarning"></param>
 		/// <param name="format">Format.</param>
 		/// <param name="args">Arguments.</param>
-		public LoggingEventArgs (bool warning, string format, params object[] args)
+		public LoggingEventArgs (bool isWarning, string format, params object[] args)
 		{
-			var level = warning ? "WARN" : "INFO";
 			var msg = string.Format (format, args);
-			_message = string.Format ("{0}: {1}", level, msg);
+			_message = msg;
+			_isWarning = isWarning;
 		}
 
 		/// <summary>
@@ -63,6 +64,9 @@ namespace GAF
 		/// </summary>
 		public string Message {
 			get { return _message; }
+		}
+		public bool IsWarning {
+			get { return _isWarning; }
 		}
 	}
 

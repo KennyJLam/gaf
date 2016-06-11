@@ -114,6 +114,7 @@ namespace GAF
 		public GeneticAlgorithm ()
 		{
 			this.Operators = new List<IGeneticOperator> ();
+
 		}
 
 		/// <summary>
@@ -263,7 +264,6 @@ namespace GAF
 
 			IsRunning = false;
 
-
 			//raise the Run Complete event
 			if (this.OnRunComplete != null) {
 				var eventArgs = new GaEventArgs (_population, _currentGeneration + 1, Evaluations);
@@ -363,7 +363,7 @@ namespace GAF
 		public Population Population {
 			get { return _population; }
 		}
-			
+
 		/// <summary>
 		/// Gets the running state of the GA.
 		/// </summary>
