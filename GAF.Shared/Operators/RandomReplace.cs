@@ -134,7 +134,7 @@ namespace GAF.Operators
 
             //copy everything accross in order of fitness i.e. Elites at the top
 			newPopulation.Solutions.AddRange(currentPopulation.Solutions);
-			newPopulation.Solutions.Sort ();
+			newPopulation.Solutions.Sort((x, y) => y.IsElite.CompareTo (x.IsElite)); //sorts by elite
 
             //find the number of non elites
 			var nonElites = newPopulation.Solutions.Count(s => !s.IsElite);
