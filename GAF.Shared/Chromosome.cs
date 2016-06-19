@@ -29,6 +29,7 @@ using GAF.Threading;
 using GAF.Exceptions;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using GAF.Extensions;
 
 namespace GAF
 {
@@ -290,7 +291,22 @@ namespace GAF
 		{
 			return this.ToBinaryString ().Substring (startIndex, length);
 		}
-			
+
+
+		public Chromosome DeepClone ()
+		{
+			var result = new Chromosome ();
+			result.Fitness = this.Fitness;
+			result.FitnessNormalised = this.FitnessNormalised;
+			result.AddRangeCloned (this.Genes);
+			result.EvaluatedByOperator = this.EvaluatedByOperator;
+			result.Id = this.Id;
+			result.IsElite = this.IsElite;
+			result.Tag = this.Tag;
+				
+			return result;
+		}
+
 		/// <summary>
 		/// Evaluates the Chromosome by invoking the specified delegate method.
 		/// The fitness function should return a higher 
