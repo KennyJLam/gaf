@@ -72,7 +72,6 @@ namespace GAF.Operators
 		/// </summary>
 		/// <param name="mutationProbability"></param>
 		/// <param name="allowDuplicates"></param>
-		[Obsolete("The parameter 'allowDuplicates' is no longer supported and will be removed in future versions. If a unique population needs to be maintained, consider using the RandomReplace operator instead.")]
 		public BinaryMutate (double mutationProbability, bool allowDuplicates)
 		{
 			_mutationProbabilityS = mutationProbability;
@@ -102,12 +101,56 @@ namespace GAF.Operators
 
 			if (!Enabled)
 				return;
+			
+			if (currentPopulation.Solutions == null || currentPopulation.Solutions.Count == 0) {
+				throw new ArgumentException ("There are no Solutions in the current Population.");
+			}
 
-			var solutionsToProcess = currentPopulation.GetNonElites ();
+			if (currentPopulation.Solutions [0].Genes.Any (g => g.GeneType != GeneType.Binary)) {
+				throw new Exception ("Only Genes with a GeneType of Binary can be handled by the BinaryMutate operator.");
+			}
+
+			//copy everything accross including elites
+			newPopulation.Solutions.Clear ();
+			newPopulation.Solutions.AddRange (currentPopulation.Solutions);
+
+			////just copy the elites, this will take all elites
+
+			////TODO: Sort out what we do if we overfill the population with elites
+			//var elites = currentPopulation.GetElites ();
+			//if (elites != null && elites.Count > 0) {
+			//	newPopulation.Solutions.AddRange (elites);
+			//}
+
+			//run through the non elites mutating as required
+			var solutionsToProcess = newPopulation.GetNonElites ();
+
 			foreach (var chromosome in solutionsToProcess) {
 
 				var mutationProbability = MutationProbability >= 0 ? MutationProbability : 0.0;			
-				Mutate (chromosome, mutationProbability);
+
+				if (AllowDuplicates) {
+
+					//allowing duplicates so simply mutate and add to new population
+					Mutate (chromosome, mutationProbability);
+					//newPopulation.Solutions.Add (chromosome);
+				
+				} else {
+
+					//duplicates not allowed so we have to clone the chromosome
+					var clonedChromosome = chromosome.DeepClone ();
+
+					//mutate the clone
+					Mutate (clonedChromosome, mutationProbability);
+
+					//only add the mutated chromosome if it does not exist otherwise do nothing
+					if (!newPopulation.SolutionExists (clonedChromosome)) {						
+
+						//swap exiting genes for the mutated onese
+						chromosome.Genes = clonedChromosome.Genes;
+					}
+
+				}
 			}
 				
 			//copy everything accross including elites
@@ -210,7 +253,6 @@ namespace GAF.Operators
 		/// Sets/Gets whether duplicates are allowed in the population. 
 		/// The setting and getting of this property is thread safe.
 		/// </summary>
-		[Obsolete("This property is no longer supported and will be removed from future versions. If a unique population needs to be maintained, consider using the RandomReplace operator instead.")]
 		public bool AllowDuplicates {
 			get {
 				lock (_syncLock) {
