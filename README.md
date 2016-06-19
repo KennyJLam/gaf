@@ -1,7 +1,7 @@
-Latest Unstable Version
-=======================
+Latest Stable Version
+=====================
 
-Please note that the source here is the latest unstable version. The code is subject to constant change. For the latest stable version, follow this link to [Nuget.org](http://nuget.org/packages/gaf).
+The source here is the latest stable version and reflects the version that is published in [Nuget.org](http://nuget.org/packages/gaf).
 
 Description
 ===========
