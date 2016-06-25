@@ -43,9 +43,9 @@ namespace GAF
 	/// <summary>
 	/// This clas represents a chromosome.
 	/// </summary>
-	#if !PCL
+#if !PCL
 	[Serializable]
-	#endif
+#endif
 	public class Chromosome : IEnumerable, IComparable<Chromosome>
 	{
 		/// <summary>
@@ -60,7 +60,7 @@ namespace GAF
 		/// </summary>
 		public Chromosome ()
 		{
-            
+
 		}
 
 		/// <summary>
@@ -91,7 +91,7 @@ namespace GAF
 		{
 			try {
 				foreach (Char digit in binaryString) {
-					this.Add (new Gene () { ObjectValue = digit == '1' ? 1 : -1 });
+					this.Add (new Gene () { ObjectValue = digit == '1' });
 				}
 			} catch (Exception ex) {
 				throw new ArgumentException ("Invalid string.", ex);
@@ -223,7 +223,7 @@ namespace GAF
 		/// <summary>
 		/// Returns the globally unique ID for this chromosome.
 		/// </summary>
-		public Guid Id { 
+		public Guid Id {
 			get { return _id; }
 			internal set { _id = value; }
 		}
@@ -259,29 +259,6 @@ namespace GAF
 		}
 
 		/// <summary>
-		/// Returns a string representation of the Chromosome.
-		/// </summary>
-		/// <returns></returns>
-		public new string ToString ()
-		{
-			var realNumberString = new StringBuilder ();
-
-			foreach (var gene in _genes) {
-				if (gene.GeneType == GeneType.Object) {
-					realNumberString.Append (gene.ObjectValue.ToString ());
-				} else {
-					realNumberString.Append (gene.RealValue.ToString (CultureInfo.InvariantCulture));
-				}
-				realNumberString.Append (" ");
-			}
-			var length = realNumberString.Length;
-			if (length > 0) {
-				realNumberString.Remove (length - 1, 1);
-			}
-			return realNumberString.ToString ();
-		}
-
-		/// <summary>
 		/// Returns a binary string representation of the Chromosome. 
 		/// </summary>
 		/// <param name="startIndex"></param>
@@ -290,6 +267,53 @@ namespace GAF
 		public string ToBinaryString (int startIndex, int length)
 		{
 			return this.ToBinaryString ().Substring (startIndex, length);
+		}
+
+		/// <summary>
+		/// Returns a string representation of the Chromosome.
+		/// </summary>
+		/// <returns></returns>
+		public new string ToString ()
+		{
+			var toString = new StringBuilder ();
+
+			foreach (var gene in _genes) {
+
+				switch (gene.GeneType) {
+
+				case GeneType.Binary: {
+						toString.Append (gene.BinaryValue.ToString (CultureInfo.InvariantCulture));
+						break;
+					}
+				case GeneType.Object: {
+						toString.Append (gene.ObjectValue.ToString ());
+						toString.Append (" ");
+						break;
+					}
+				case GeneType.Real: {
+						toString.Append (gene.RealValue.ToString (CultureInfo.InvariantCulture));
+						toString.Append (" ");
+						break;
+
+					}
+				case GeneType.Integer: {
+						toString.Append (((int)(System.Math.Round (gene.RealValue))).ToString (CultureInfo.InvariantCulture));
+						toString.Append (" ");
+						break;
+					}
+				}
+
+
+				//if (gene.GeneType == GeneType.Object) {
+				//	toString.Append (gene.ObjectValue.ToString ());
+				//} else {
+				//	toString.Append (gene.RealValue.ToString (CultureInfo.InvariantCulture));
+				//}
+
+
+			}
+
+			return toString.ToString ().TrimEnd(" ".ToCharArray());
 		}
 
 
@@ -303,7 +327,7 @@ namespace GAF
 			result.Id = this.Id;
 			result.IsElite = this.IsElite;
 			result.Tag = this.Tag;
-				
+
 			return result;
 		}
 
@@ -315,15 +339,15 @@ namespace GAF
 		/// <param name="fitnessFunctionDelegate"></param>
 		/// <returns></returns>
 		public double Evaluate (FitnessFunction fitnessFunctionDelegate)
-		{			
-            var fitness = fitnessFunctionDelegate.Invoke(this);
-            if (fitness < 0 || fitness > 1.0)
-                throw new EvaluationException("The fitness value must be within the range 0.0 to 1.0.");
+		{
+			var fitness = fitnessFunctionDelegate.Invoke (this);
+			if (fitness < 0 || fitness > 1.0)
+				throw new EvaluationException ("The fitness value must be within the range 0.0 to 1.0.");
 
-            Fitness = fitness;
+			Fitness = fitness;
 			return fitness;
 		}
-			
+
 		/// <summary>
 		/// Creates a new GUID for the Chromosome
 		/// </summary>
