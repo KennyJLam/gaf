@@ -556,6 +556,20 @@ namespace GAF
 			return result;
 		}
 
+		public int GetDuplicates ()
+		{
+			//get the number of uniques and take that from the population size
+			//to get the number of duplicates
+			var q = from solution in this.Solutions
+			group solution by solution.ToString ()
+			into uniqueSolution
+			select uniqueSolution;
+
+			return this.PopulationSize - q.ToList ().Count;
+
+		}
+
+
 		/// <summary>
 		/// Returns the top count of the population based on highest
 		/// fitness value.        
