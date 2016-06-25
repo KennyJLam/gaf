@@ -53,7 +53,7 @@ namespace GAF.Operators
 		/// </summary>
 		internal BinaryMutate () : this (1.0)
 		{
-            
+
 		}
 
 		/// <summary>
@@ -66,7 +66,7 @@ namespace GAF.Operators
 			_allowDuplicatesS = true;
 			Enabled = true;
 		}
-			
+
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -96,12 +96,12 @@ namespace GAF.Operators
 		{
 
 			if (newPopulation == null) {
-				newPopulation = currentPopulation.CreateEmptyCopy ();			
+				newPopulation = currentPopulation.CreateEmptyCopy ();
 			}
 
 			if (!Enabled)
 				return;
-			
+
 			if (currentPopulation.Solutions == null || currentPopulation.Solutions.Count == 0) {
 				throw new ArgumentException ("There are no Solutions in the current Population.");
 			}
@@ -114,48 +114,56 @@ namespace GAF.Operators
 			newPopulation.Solutions.Clear ();
 			newPopulation.Solutions.AddRange (currentPopulation.Solutions);
 
-			////just copy the elites, this will take all elites
-
-			////TODO: Sort out what we do if we overfill the population with elites
-			//var elites = currentPopulation.GetElites ();
-			//if (elites != null && elites.Count > 0) {
-			//	newPopulation.Solutions.AddRange (elites);
-			//}
-
 			//run through the non elites mutating as required
 			var solutionsToProcess = newPopulation.GetNonElites ();
 
 			foreach (var chromosome in solutionsToProcess) {
 
-				var mutationProbability = MutationProbability >= 0 ? MutationProbability : 0.0;			
+				var mutationProbability = MutationProbability >= 0 ? MutationProbability : 0.0;
 
 				if (AllowDuplicates) {
 
-					//allowing duplicates so simply mutate and add to new population
+					//allowing duplicates so simply mutate
 					Mutate (chromosome, mutationProbability);
-					//newPopulation.Solutions.Add (chromosome);
-				
+
 				} else {
+
+					//TODO: Remove this
+					var dups = newPopulation.GetDuplicates ();
+					if (dups > 0)
+						Debug.WriteLine ("{0} Duplicates were detected as BinaryMutate.", new { dups });
 
 					//duplicates not allowed so we have to clone the chromosome
 					var clonedChromosome = chromosome.DeepClone ();
 
+					//TODO: Remove this
+					dups = newPopulation.GetDuplicates ();
+					if (dups > 0)
+						Debug.WriteLine ("{0} Duplicates were detected as BinaryMutate.", new { dups });
+
+
 					//mutate the clone
 					Mutate (clonedChromosome, mutationProbability);
+					//TODO: Remove this
+					dups = newPopulation.GetDuplicates ();
+					if (dups > 0)
+						Debug.WriteLine ("{0} Duplicates were detected as BinaryMutate.", new { dups });
 
 					//only add the mutated chromosome if it does not exist otherwise do nothing
-					if (!newPopulation.SolutionExists (clonedChromosome)) {						
+					if (!newPopulation.SolutionExists (clonedChromosome)) {
 
-						//swap exiting genes for the mutated onese
+						//swap existing genes for the mutated onese
 						chromosome.Genes = clonedChromosome.Genes;
 					}
+					//TODO: Remove this
+					dups = newPopulation.GetDuplicates ();
+					if (dups > 0)
+						Debug.WriteLine ("{0} Duplicates were detected as BinaryMutate.", new { dups });
 
 				}
 			}
-				
-			//copy everything accross including elites
-			newPopulation.Solutions.Clear ();
-			newPopulation.Solutions.AddRange (currentPopulation.Solutions);
+
+
 
 		}
 
@@ -202,18 +210,15 @@ namespace GAF.Operators
 					child.FitnessNormalised = 0;
 
 					switch (gene.GeneType) {
-					case GeneType.Binary:
-						{
+					case GeneType.Binary: {
 							gene.ObjectValue = !(bool)gene.ObjectValue;
 							break;
 						}
-					case GeneType.Real:
-						{
+					case GeneType.Real: {
 							gene.ObjectValue = (double)gene.ObjectValue * -1;
 							break;
 						}
-					case GeneType.Integer:
-						{
+					case GeneType.Integer: {
 							gene.ObjectValue = (int)gene.ObjectValue * -1;
 							break;
 						}
@@ -248,7 +253,7 @@ namespace GAF.Operators
 				}
 			}
 		}
-			
+
 		/// <summary>
 		/// Sets/Gets whether duplicates are allowed in the population. 
 		/// The setting and getting of this property is thread safe.
