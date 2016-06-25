@@ -166,6 +166,28 @@ namespace GAF
 		}
 
 		/// <summary>
+		/// Resume this GA from a paused state.
+		/// </summary>
+		public void Resume ()
+		{
+			if (IsRunning && IsPaused) {
+				((ManualResetEvent)_tokenSource.Token.WaitHandle).Set ();
+				IsPaused = false;
+			}
+		}
+
+		/// <summary>
+		/// Pauses the GA if it is running.
+		/// </summary>
+		public void Pause ()
+		{
+			if (IsRunning && !IsPaused) {
+				((ManualResetEvent)_tokenSource.Token.WaitHandle).Reset ();
+				IsPaused = true;
+			}
+		}
+
+		/// <summary>
 		/// Runs the algorithn for the specified number of generations.
 		/// </summary>
 		/// <param name="maxEvaluations"></param>
@@ -185,11 +207,12 @@ namespace GAF
 
 		private void RunAsync (long maxEvaluations, TerminateFunction terminateFunction)
 		{
-            
+
 			var token = _tokenSource.Token;
+			((ManualResetEvent)token.WaitHandle).Set ();
+
 			_task = new Task (() => RunTask (maxEvaluations, terminateFunction, token), token);
 			_task.Start ();
-
 			_task.ContinueWith (t => {
 				/* error handling */
 				var exception = t.Exception;
@@ -215,6 +238,7 @@ namespace GAF
 		/// </summary>
 		private void RunTask (long maxEvaluations, TerminateFunction terminateFunction, CancellationToken token)
 		{
+			
 			IsRunning = true;
 
 			TerminateFunction = terminateFunction;
@@ -256,6 +280,12 @@ namespace GAF
 					}
 				}
 
+				//check for a request to pause
+				//if (_mrse != null) {
+				//	_mrse.WaitOne ();
+				//}
+				token.WaitHandle.WaitOne ();
+
 				if (token.IsCancellationRequested) {
 					break;
 				}
@@ -263,6 +293,7 @@ namespace GAF
 			}
 
 			IsRunning = false;
+			IsPaused = false;
 
 			//raise the Run Complete event
 			if (this.OnRunComplete != null) {
@@ -367,7 +398,12 @@ namespace GAF
 		/// <summary>
 		/// Gets the running state of the GA.
 		/// </summary>
-		public bool IsRunning { set; get; }
+		public bool IsRunning { private set; get; }
+
+		/// <summary>
+		/// Gets the paused state of the GA.
+		/// </summary>
+		public bool IsPaused { private set; get; }
 
 		/// <summary>
 		/// Gets the fitness function.
