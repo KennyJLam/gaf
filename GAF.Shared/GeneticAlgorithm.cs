@@ -280,11 +280,11 @@ namespace GAF
 					}
 				}
 
-				//check for a request to pause
-				//if (_mrse != null) {
-				//	_mrse.WaitOne ();
-				//}
-				token.WaitHandle.WaitOne ();
+				//if running synchronously, this never gets set
+				if (token.CanBeCanceled) {
+					//running asynchronously so check for a 'Pause' by monitoring the wait handle.
+					token.WaitHandle.WaitOne ();
+				}
 
 				if (token.IsCancellationRequested) {
 					break;

@@ -128,26 +128,11 @@ namespace GAF.Operators
 
 				} else {
 
-					//TODO: Remove this
-					var dups = newPopulation.GetDuplicates ();
-					if (dups > 0)
-						Debug.WriteLine ("{0} Duplicates were detected as BinaryMutate.", new { dups });
-
 					//duplicates not allowed so we have to clone the chromosome
 					var clonedChromosome = chromosome.DeepClone ();
 
-					//TODO: Remove this
-					dups = newPopulation.GetDuplicates ();
-					if (dups > 0)
-						Debug.WriteLine ("{0} Duplicates were detected as BinaryMutate.", new { dups });
-
-
 					//mutate the clone
 					Mutate (clonedChromosome, mutationProbability);
-					//TODO: Remove this
-					dups = newPopulation.GetDuplicates ();
-					if (dups > 0)
-						Debug.WriteLine ("{0} Duplicates were detected as BinaryMutate.", new { dups });
 
 					//only add the mutated chromosome if it does not exist otherwise do nothing
 					if (!newPopulation.SolutionExists (clonedChromosome)) {
@@ -155,16 +140,8 @@ namespace GAF.Operators
 						//swap existing genes for the mutated onese
 						chromosome.Genes = clonedChromosome.Genes;
 					}
-					//TODO: Remove this
-					dups = newPopulation.GetDuplicates ();
-					if (dups > 0)
-						Debug.WriteLine ("{0} Duplicates were detected as BinaryMutate.", new { dups });
-
 				}
 			}
-
-
-
 		}
 
 		/// <summary>
