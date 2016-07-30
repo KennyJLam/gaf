@@ -131,14 +131,17 @@ namespace GAF.Operators
         /// <param name="fitnessFunctionDelegate"></param>
         internal void Replace(Population currentPopulation, ref Population newPopulation, int percentage, bool allowDuplicates, FitnessFunction fitnessFunctionDelegate)
         {
-
-            //copy everything accross in order of fitness i.e. Elites at the top
+			//copy everything accross in order of fitness with Elites at the top
+			//NOTE: at this point, the Elites may not be the fittest, depending upon
+			//effects of the previous operator(s)
 			newPopulation.Solutions.AddRange(currentPopulation.Solutions);
-			newPopulation.Solutions.Sort((x, y) => y.IsElite.CompareTo (x.IsElite)); //sorts by elite
+			newPopulation.Solutions.Sort ((x, y) => {
+				int result = y.IsElite.CompareTo (x.IsElite);
+				return result != 0 ? result : y.Fitness.CompareTo (x.Fitness);
+			});
 
             //find the number of non elites
 			var nonElites = newPopulation.Solutions.Count(s => !s.IsElite);
-
 
             //determine how many we are replacing based on the percentage
 			var numberToReplace = (int)System.Math.Round((nonElites / 100.0) * percentage);
