@@ -134,7 +134,7 @@ namespace GAF
 		public Population (int populationSize, int chromosomeLength, bool reEvaluateAll,
 		                   bool useLinearlyNormalisedFitness, ParentSelectionMethod selectionMethod)
 			: this (populationSize, chromosomeLength, reEvaluateAll,
-			        useLinearlyNormalisedFitness, ParentSelectionMethod.FitnessProportionateSelection, false)
+			        useLinearlyNormalisedFitness, selectionMethod, false)
 		{
 		}
 
@@ -262,7 +262,7 @@ namespace GAF
 					return _reEvaluateAll;
 				}
 			}
-			internal set { 
+			set { 
 				lock (_syncLock) {
 					_reEvaluateAll = value;
 				}
@@ -300,7 +300,7 @@ namespace GAF
 					return _useLinearlyNormalisedFitness;
 				}
 			}
-			internal set { 
+			set { 
 				lock (_syncLock) {
 					_useLinearlyNormalisedFitness = value;
 				}
@@ -317,7 +317,7 @@ namespace GAF
 					return _parentSelectionMethod;
 				}
 			}
-			internal set { 
+			set { 
 				lock (_syncLock) {
 					_parentSelectionMethod = value;
 				}
