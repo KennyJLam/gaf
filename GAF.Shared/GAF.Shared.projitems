@@ -21,7 +21,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Operators\OperatorException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operators\RandomReplace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operators\SwapMutate.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)FitnessFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gene.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GeneticAlgorithm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IGeneticOperator.cs" />
@@ -64,6 +63,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Net\EvaluationServer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operators\ReplacementMethod.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LoggingEventHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Net\PacketId.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IFitness.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Net\" />
