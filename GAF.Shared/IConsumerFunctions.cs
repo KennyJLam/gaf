@@ -5,6 +5,7 @@ namespace GAF
 	/// <summary>
 	/// This interface is provided to support external programs such as the GAF.Lab GUI application.
 	/// </summary>
+	[Obsolete ("Interface is deprecated, please consider using IFitness instead.")]
 	public interface IConsumerFunctions
 	{
 
