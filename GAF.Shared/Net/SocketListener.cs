@@ -147,7 +147,7 @@ namespace GAF.Net
 						}
 
 						//have we received all for this transmission?
-						etxReceived = packet.Header.PacketId == pidEtx;
+					etxReceived = packet.Header.PacketId == PacketId.Etx;
 
 						//Packets other than 0 are control packets
 						if (packet.Header.PacketId == 0) {
@@ -189,13 +189,13 @@ namespace GAF.Net
 			// Complete sending the data to the remote device.
 			handler.EndSend (ar);
 
-				if (state.PacMan.LastPidReceived == pidEtx) {
+				if (state.PacMan.LastPidReceived == PacketId.Etx) {
 					handler.LingerState = new LingerOption (true, 1);
 					handler.Close ();
 				}
 
 			} catch (Exception ex) {
-				if (state.PacMan.LastPidReceived != pidEtx) {
+				if (state.PacMan.LastPidReceived != PacketId.Etx) {
 					throw ex;
 				}
 			}

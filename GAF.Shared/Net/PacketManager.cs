@@ -84,7 +84,7 @@ namespace GAF.Net
 		/// Gets the last pid received.
 		/// </summary>
 		/// <value>The last pid received.</value>
-		public byte LastPidReceived { get; private set; }
+		public PacketId LastPidReceived { get; private set; }
 
 
 		/// <summary>

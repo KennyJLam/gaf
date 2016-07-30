@@ -36,7 +36,7 @@ namespace GAF.Net
 		/// <param name="data">Data.</param>
 		/// <param name = "packetId"></param>
 		/// <param name="objectId">Object identifier.</param>
-		public Packet (byte[] data, byte packetId, Guid objectId)
+		public Packet (byte[] data, PacketId packetId, Guid objectId)
 		{
 			if (data != null) {
 
@@ -95,7 +95,7 @@ namespace GAF.Net
 			var data= new byte[header.DataLength];
 			Array.Copy (rawBytes, PacketHeader.HeaderLength, data, 0, header.DataLength);
 
-			return new Packet (data, header.PacketId, header.ObjectId);
+			return new Packet (data, (PacketId)header.PacketId, header.ObjectId);
 
 		}
 

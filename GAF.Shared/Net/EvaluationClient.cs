@@ -27,6 +27,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
+using System.IO;
 
 namespace GAF.Net
 {
@@ -35,9 +36,12 @@ namespace GAF.Net
 	/// </summary>
 	public class EvaluationClient
 	{
-		private Socket[] _clients;
+		private Socket [] _clients;
 		private List<IPEndPoint> _endPoints;
-		private object _syncLock = new object();
+		private object _syncLock = new object ();
+		private string _consumerFunctionsAssembleName;
+
+		private const int pidInit = 10;
 
 		#region Task Declarations
 
@@ -60,14 +64,14 @@ namespace GAF.Net
 		/// Initializes a new instance of the <see cref="GAF.Net.EvaluationClient"/> class.
 		/// </summary>
 		/// <param name="endPoints">End points.</param>
-		public EvaluationClient (List<IPEndPoint> endPoints)
+		public EvaluationClient (List<IPEndPoint> endPoints, string consumerFunctionsAssembleName)
 		{
 			if (endPoints == null) {
-				throw new ArgumentNullException ("endPoints", "The parameter is null (or empty).");
+				throw new ArgumentNullException (nameof (endPoints), "The parameter is null (or empty).");
 			}
 
 			_endPoints = endPoints;
-
+			_consumerFunctionsAssembleName = consumerFunctionsAssembleName;
 		}
 
 		/// <summary>
@@ -78,17 +82,16 @@ namespace GAF.Net
 		{
 
 			if (solutionsToEvaluate == null || solutionsToEvaluate.Count == 0) {
-				throw new ArgumentNullException ("solutionsToEvaluate", "The parameter is null (or empty).");
+				throw new ArgumentNullException (nameof (solutionsToEvaluate), "The parameter is null (or empty).");
 			}
 
 			//determine how many endpoints we are to be using
-			//alas... no discovery here :(
 			int epCount = _endPoints.Count;
 
 			if (epCount > 0) {
 				//create a number of tasks
-				Task[] tasks = new Task[epCount];
-				_clients = new Socket[epCount];
+				Task [] tasks = new Task [epCount];
+				_clients = new Socket [epCount];
 
 				//create a single queue and add the solutions to the queue
 				var queue = new System.Collections.Queue ();
@@ -110,7 +113,7 @@ namespace GAF.Net
 
 				// set the number of evaluations we have done (one per solution)
 				return solutionsToEvaluate.Count ();
-			} else {			
+			} else {
 				return 0;
 			}
 
@@ -125,7 +128,7 @@ namespace GAF.Net
 			//.Net 4.5 option
 			//var task = Task.Run (() => EvaluateTask (syncQueue, fitnessFunctionDelegate, taskId, token), token);
 
-			//.Net 4.0 option
+			//.Net 4.0/4.5 option
 			var task = new Task (() => EvaluateTask (syncQueue, fitnessFunctionDelegate, taskId, token), token);
 			task.Start ();
 
@@ -151,44 +154,54 @@ namespace GAF.Net
 
 		private void EvaluateTask (System.Collections.Queue syncQueue, FitnessFunction fitnessFunctionDelegate, int taskId, CancellationToken token)
 		{
-			try{
-			// Establish the remote endpoint using the appropriate endpoint and socket client
-			IPEndPoint remoteEndPoint = EndPoints [taskId];
-			_clients [taskId] = GAF.Net.SocketClient.Connect (remoteEndPoint);
+			try {
+				
+				// Establish the remote endpoint using the appropriate endpoint and socket client
+				IPEndPoint remoteEndPoint = EndPoints [taskId];
+				_clients [taskId] = GAF.Net.SocketClient.Connect (remoteEndPoint);
 
-			//read the queue, each task will be doing this
-			while (syncQueue.Count > 0) {
+				//serialise the consumer functions
+				//TODO: This name should be passed in
+				var functionBytes = File.ReadAllBytes (_consumerFunctionsAssembleName);
 
-				Chromosome solution = null;
+				//at this point we need the name of the consumer functions DLL in order to pass it to the 
+				//far end of each endPoint.
+				var xmitPacket = new GAF.Net.Packet (functionBytes, PacketId.Init, Guid.Empty);
+				var recPacket = GAF.Net.SocketClient.TransmitData (_clients [taskId], xmitPacket);
 
-				//take a solution from the queue
-				//this can cause an exception if the queue is emptied
-				//between the count (above) and the next statement
-				try {
-					solution = (Chromosome)syncQueue.Dequeue ();
-				} catch {
-					break;
+
+				//read the queue, each task will be doing this
+				while (syncQueue.Count > 0) {
+
+					Chromosome solution = null;
+
+					//take a solution from the queue
+					//this can cause an exception if the queue is emptied
+					//between the count (above) and the next statement
+					try {
+						solution = (Chromosome)syncQueue.Dequeue ();
+					} catch {
+						break;
+					}
+
+					//add the task Id, this is used in the fitness function 
+					//to determine a suitable endpoint
+					solution.Tag = taskId;
+					if (token.IsCancellationRequested) {
+						break;
+					}
+
+					//evaluate the solution in the normal way by passing in the fitness delegate
+					solution.Evaluate (fitnessFunctionDelegate);
+
 				}
 
-				//add the task Id, this is used in the fitness function 
-				//to determine a suitable endpoint
-				solution.Tag = taskId;
-				if (token.IsCancellationRequested) {
-					break;
-				}
-
-				//evaluate the solution in the normal way by passing in the fitness delegate
-				solution.Evaluate (fitnessFunctionDelegate);
-
-			}
-
-			//all done so send ETX to inform the server
-			GAF.Net.SocketClient.TransmitETX (_clients [taskId]);
-			GAF.Net.SocketClient.Close (_clients [taskId]);
-			}
-			catch {
+				//all done so send ETX to inform the server
+				GAF.Net.SocketClient.TransmitETX (_clients [taskId]);
+				GAF.Net.SocketClient.Close (_clients [taskId]);
+			} catch {
 				//remove faulty endpoint from the collection
-				RemoveEndPointAt(taskId);
+				RemoveEndPointAt (taskId);
 			}
 
 		}
@@ -202,7 +215,7 @@ namespace GAF.Net
 
 				// Convert the passed chromosome to a byte array
 				var byteData = GAF.Net.BinarySerializer.Serialize<Chromosome> (chromosome);
-				var xmitPacket = new GAF.Net.Packet (byteData, 0, chromosome.Id);
+				var xmitPacket = new GAF.Net.Packet (byteData, PacketId.Data, chromosome.Id);
 
 				var recPacket = GAF.Net.SocketClient.TransmitData (client, xmitPacket);
 
@@ -243,7 +256,7 @@ namespace GAF.Net
 				int port = 0;
 
 				if (IPAddress.TryParse (epSegments [0], out addr) &&
-				    int.TryParse (epSegments [1], out port)) {
+					int.TryParse (epSegments [1], out port)) {
 
 					ipEndPoint = new IPEndPoint (addr, port);
 
@@ -257,9 +270,10 @@ namespace GAF.Net
 		/// Removes the specified end point.
 		/// </summary>
 		/// <param name="index">Index.</param>
-		public void RemoveEndPointAt(int index){
+		public void RemoveEndPointAt (int index)
+		{
 			lock (_syncLock) {
-				_endPoints.RemoveAt(index);
+				_endPoints.RemoveAt (index);
 			}
 		}
 
@@ -277,12 +291,12 @@ namespace GAF.Net
 		/// Gets the end points.
 		/// </summary>
 		/// <value>The end points.</value>
-		public List<IPEndPoint> EndPoints { 
-			get{ 
+		public List<IPEndPoint> EndPoints {
+			get {
 				lock (_syncLock) {
 					return _endPoints;
 				}
-			}  
+			}
 		}
 
 

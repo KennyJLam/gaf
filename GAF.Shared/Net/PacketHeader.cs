@@ -51,7 +51,7 @@ namespace GAF.Net
 		/// <param name="packetId">Packet identifier.</param>
 		/// <param name="objectId">Object identifier.</param>
 		/// <param name="dataLength">Data length.</param>
-		public PacketHeader (byte packetId, Guid objectId, int dataLength)
+		public PacketHeader (PacketId packetId, Guid objectId, int dataLength)
 		{
 
 			// get the byte representation of the header elements
@@ -89,7 +89,7 @@ namespace GAF.Net
 			}
 
 			// pid
-			PacketId = headerBytes [_indexOfPid];
+			PacketId = (PacketId)headerBytes [_indexOfPid];
 
 			// objectId set by consumer
 			Array.Copy (headerBytes, _indexOfOid, headerOid, 0, headerOid.Length);
@@ -119,7 +119,7 @@ namespace GAF.Net
 		/// Gets the size of the data.
 		/// </summary>
 		/// <value>The size of the data.</value>
-		public byte PacketId { get; private set; }
+		public PacketId PacketId { get; private set; }
 
 		/// <summary>
 		/// Gets or sets the object identifier associated with each packet. This is an optional
@@ -149,7 +149,7 @@ namespace GAF.Net
 
 			var headerBytes = new byte[HeaderLength];
 			var soh = SOH.ToByteArray();
-			var pid = new byte[1] { PacketId };
+			var pid = new byte[1] { (byte)PacketId };
 			var headerObjectId = ObjectId.ToByteArray();
 			var headerDataLength = BitConverter.GetBytes (DataLength);
 

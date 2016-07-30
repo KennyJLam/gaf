@@ -18,6 +18,7 @@
 	http://johnnewcombe.net
 */
 using System.Net;
+using System.IO;
 
 #if !PCL
 
@@ -37,7 +38,7 @@ namespace GAF.Net
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-		public delegate void EvaluationCompleteHandler(object sender, RemoteEvaluationEventArgs e);
+		public delegate void EvaluationCompleteHandler (object sender, RemoteEvaluationEventArgs e);
 
 		/// <summary>
 		/// Event definition for the InitialEvaluationComplete event handler.
@@ -58,22 +59,34 @@ namespace GAF.Net
 		/// </summary>
 		/// <param name="ipAddress">Ip address.</param>
 		/// <param name="port">Port.</param>
-		public void Start(IPAddress ipAddress, int port){
-		
+		public void Start (IPAddress ipAddress, int port)
+		{
+
 			SocketListener.OnPacketReceived += listener_OnPacketReceived;
 			SocketListener.StartListening (ipAddress, port);
 		}
 
-		private void listener_OnPacketReceived(object sender, PacketEventArgs e)
+		private void listener_OnPacketReceived (object sender, PacketEventArgs e)
 		{
 			if (e.Packet.Header.DataLength > 0) {
-				
-				var chromosome = BinarySerializer.DeSerialize<Chromosome> (e.Packet.Data);
-				e.Result = chromosome.Evaluate (_fitnessFunction);
-				if (OnEvaluationComplete != null) {
-				
-					var eventArgs = new RemoteEvaluationEventArgs(chromosome);
-					this.OnEvaluationComplete(this, eventArgs); 
+
+				switch ((PacketId)e.Packet.Header.PacketId) {
+
+				case PacketId.Data: {
+						var chromosome = BinarySerializer.DeSerialize<Chromosome> (e.Packet.Data);
+						e.Result = chromosome.Evaluate (_fitnessFunction);
+						if (OnEvaluationComplete != null) {
+
+							var eventArgs = new RemoteEvaluationEventArgs (chromosome);
+							this.OnEvaluationComplete (this, eventArgs);
+						}
+						break;
+					}
+				case PacketId.Init: {
+						File.WriteAllBytes ("GAF.ConsumerFunctions.Dynamic.dll", e.Packet.Data);
+
+						break;
+					}
 				}
 			}
 		}

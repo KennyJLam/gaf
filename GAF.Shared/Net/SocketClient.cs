@@ -46,9 +46,9 @@ namespace GAF.Net
 		{
 			try {
 				if (ipAddress == null)
-					throw new ArgumentNullException ("ipAddress");
+					throw new ArgumentNullException (nameof (ipAddress));
 				if (port < 1024)
-					throw new ArgumentOutOfRangeException ("port");
+					throw new ArgumentOutOfRangeException (nameof (port));
 				
 				// Establish the remote endpoint
 				IPEndPoint remoteEndPoint = new IPEndPoint (ipAddress, port);
@@ -73,7 +73,7 @@ namespace GAF.Net
 				while ((client == null || !client.Connected) && retries < maxRetries) {
 
 					if (remoteEndPoint == null)
-						throw new ArgumentNullException ("remoteEndPoint");
+						throw new ArgumentNullException (nameof (remoteEndPoint));
 
 					// Create a TCP/IP  socket.
 					client = new Socket (AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -132,7 +132,7 @@ namespace GAF.Net
 		/// <param name="client">Client.</param>
 		public static void TransmitETX (Socket client)
 		{
-			TransmitData (client, new Packet (new byte[0], pidEtx, new Guid ()));
+			TransmitData (client, new Packet (new byte[0], PacketId.Etx, new Guid ()));
 		}
 
 		/// <summary>
