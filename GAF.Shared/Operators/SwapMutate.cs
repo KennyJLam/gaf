@@ -84,9 +84,10 @@ namespace GAF.Operators
 			newPopulation.Solutions.Clear();
 			newPopulation.Solutions.AddRange(currentPopulation.Solutions);
 
-            foreach (var chromosome in newPopulation.Solutions)
+			var mutationProbability = MutationProbability >= 0 ? MutationProbability : 0.0;
+
+			foreach (var chromosome in newPopulation.Solutions)
             {
-                var mutationProbability = MutationProbability >= 0 ? MutationProbability : 0.0;
 
 				if (chromosome == null) {
 					throw new ChromosomeException ("The Cromosome is null.");
@@ -100,7 +101,7 @@ namespace GAF.Operators
 					var rd = RandomProvider.GetThreadRandom ().NextDouble ();
 					if (rd <= mutationProbability) {
 
-						Mutate (chromosome, mutationProbability);
+						Mutate (chromosome);
 					}
 				}
             }
@@ -111,8 +112,7 @@ namespace GAF.Operators
         /// the functionality of the operator to be extended within a derived class.
         /// </summary>
 		/// <param name="chromosome"></param>
-        /// <param name="mutationProbability"></param>
-        protected virtual void Mutate(Chromosome chromosome, double mutationProbability)
+        protected virtual void Mutate(Chromosome chromosome)
         {
 			var points = GetSwapPoints (chromosome);
 			Mutate (chromosome, points[0], points[1]);
