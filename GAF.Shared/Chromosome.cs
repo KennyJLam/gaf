@@ -316,11 +316,21 @@ namespace GAF
 			return toString.ToString ().TrimEnd(" ".ToCharArray());
 		}
 
-
-		public Chromosome DeepClone ()
+		/// <summary>
+		/// Returns a DeepClone of the current instance with the option of clearing the fitness.
+		/// </summary>
+		/// <returns>The clone.</returns>
+		/// <param name="clearFitness">Reset fitness.</param>
+		public Chromosome DeepClone (bool clearFitness)
 		{
 			var result = new Chromosome ();
-			result.Fitness = this.Fitness;
+
+			if (clearFitness) {
+				ClearFitness ();
+			} else {
+				result.Fitness = this.Fitness;
+			}
+
 			result.FitnessNormalised = this.FitnessNormalised;
 			result.AddRangeCloned (this.Genes);
 			result.EvaluatedByOperator = this.EvaluatedByOperator;
@@ -332,6 +342,24 @@ namespace GAF
 		}
 
 		/// <summary>
+		/// Returns a DeepClone of the current instance.		/// </summary>
+		/// <returns>The clone.</returns>
+		public Chromosome DeepClone ()
+		{
+			return DeepClone (false);
+		}
+
+		/// <summary>
+		/// Resets the fitness value this method also clears the normalised fitness.
+		/// </summary>
+		/// <returns>The fitness.</returns>
+		public void ClearFitness ()
+		{
+			this.Fitness = 0;
+			this.FitnessNormalised = 0;
+		}
+
+		/// <summary>
 		/// Evaluates the Chromosome by invoking the specified delegate method.
 		/// The fitness function should return a higher 
 		/// value for those chromosomes that are deemed fitter.
@@ -340,6 +368,9 @@ namespace GAF
 		/// <returns></returns>
 		public double Evaluate (FitnessFunction fitnessFunctionDelegate)
 		{
+			if (fitnessFunctionDelegate == null)
+				throw new ArgumentNullException (nameof (fitnessFunctionDelegate));
+			
 			var fitness = fitnessFunctionDelegate.Invoke (this);
 			if (fitness < 0 || fitness > 1.0)
 				throw new EvaluationException ("The fitness value must be within the range 0.0 to 1.0.");
