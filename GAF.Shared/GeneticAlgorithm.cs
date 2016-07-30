@@ -71,11 +71,21 @@ namespace GAF
 		public event GenerationCompleteHandler OnGenerationComplete;
 
 		/// <summary>
+		/// Delegate definition for the OnOperatorComplete event handler.
+		/// </summary>
+		public delegate void OperatorCompleteHandler (object sender, GaOperatorEventArgs e);
+
+		/// <summary>
+		/// Event definition for the OnOperatorComplete event handler.
+		/// </summary>
+		public event OperatorCompleteHandler OnOperatorComplete;
+
+		/// <summary>
 		/// Delegate definition for the RunException event handler.
 		/// </summary>
 		/// <param name="sender"></param>
 		/// <param name="e"></param>
-        public delegate void RunExceptionHandler (object sender, ExceptionEventArgs e);
+		public delegate void RunExceptionHandler (object sender, ExceptionEventArgs e);
 
 		/// <summary>
 		/// Event definition for the RunException event handler.
@@ -263,7 +273,7 @@ namespace GAF
 				//Note: Selection handled by the operator(s)
 				_currentGeneration = generation;
 
-				var newPopulation = RunGeneration (_population, FitnessFunction);
+				var newPopulation = RunGeneration (_currentGeneration, _population, FitnessFunction);
 
 				_population.Solutions.Clear ();
 				_population.Solutions.AddRange (newPopulation.Solutions);
@@ -303,7 +313,7 @@ namespace GAF
 
 		}
 
-		internal Population RunGeneration (Population currentPopulation, FitnessFunction fitnessFunctionDelegate)
+		internal Population RunGeneration (int currentGeneration, Population currentPopulation, FitnessFunction fitnessFunctionDelegate)
 		{
 
 			//create new empty populations for processing 
@@ -355,6 +365,11 @@ namespace GAF
 
 					Evaluations += tempPopulation.Evaluate (fitnessFunctionDelegate);
 
+					//raise the Generation Complete event
+					if (this.OnOperatorComplete != null) {
+						var eventArgs = new GaOperatorEventArgs (op, tempPopulation, currentGeneration + 1, Evaluations);
+						this.OnOperatorComplete (this, eventArgs);
+					}
 				}
 
 			}
