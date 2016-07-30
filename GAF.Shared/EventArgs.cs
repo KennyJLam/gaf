@@ -75,9 +75,9 @@ namespace GAF
 	/// </summary>
 	public class GaEventArgs : EventArgs
 	{
-		private readonly int _generation;
-		private readonly Population _population;
-		private readonly long _evaluations;
+		protected readonly int _generation;
+		protected readonly Population _population;
+		protected readonly long _evaluations;
 
 		/// <summary>
 		/// Constructor.
@@ -111,6 +111,32 @@ namespace GAF
 		/// </summary>
 		public long Evaluations {
 			get { return _evaluations; }
+		}
+	}
+
+	public class GaOperatorEventArgs : GaEventArgs
+	{
+		IGeneticOperator _geneticOperator;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:GAF.GaOperatorEventArgs"/> class.
+		/// </summary>
+		/// <param name="geneticOperator">Genetic operator.</param>
+		/// <param name="population">Population.</param>
+		/// <param name="generation">Generation.</param>
+		/// <param name="evaluations">Evaluations.</param>
+		public GaOperatorEventArgs (IGeneticOperator geneticOperator, Population population, int generation, long evaluations)
+			:base(population,generation,evaluations)
+		{
+			_geneticOperator = geneticOperator;
+		}
+
+		/// <summary>
+		/// Gets the genetic operator.
+		/// </summary>
+		/// <value>The genetic operator.</value>
+		public IGeneticOperator GeneticOperator {
+			get { return _geneticOperator; }
 		}
 	}
 
@@ -163,6 +189,7 @@ namespace GAF
 		/// </summary>
 		/// <value>The numbe of evaluations undertaken eithin the event.</value>
 		public int Evaluations { set; get; }
+
 	}
 
 }

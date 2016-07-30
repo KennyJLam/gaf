@@ -221,7 +221,7 @@ namespace GAF.Operators
 				//pass the children out to derived classes 
 				//(e.g. CrossoverMutate class uses this to perform mutation)
 				if (OnCrossoverComplete != null) {
-					var eventArgs = new CrossoverEventArgs (crossoverResult);
+					var eventArgs = new CrossoverEventArgs (crossoverResult, p1, p2, c1, c2);
 					OnCrossoverComplete (this, eventArgs);
 				}
                 
@@ -338,41 +338,39 @@ namespace GAF.Operators
 						result.Points.Add (secondPoint);
 
 						//pass the middle part of Parent 1 to child 1
-						//cg1 = new List<Gene> ();
 						cg1.AddRangeCloned (p1.Genes.Skip (firstPoint).Take (secondPoint - firstPoint)); //+1 make this exclusive e.g. 4-6 include 3 genes. 
                             
 						//pass the middle part of Parent 2 to child 2
-						//cg2 = new List<Gene> ();
 						cg2.AddRangeCloned (p2.Genes.Skip (firstPoint).Take (secondPoint - firstPoint));
 
-                        //run through the P2 adding to C1 those that exist in P1 but not yet in C1
-                        //add them in the order found in P2. This has to be done by value as the first parent
-                        //is used but the order id determined by the second parent. Can't use Guid as the second 
-                        //parent has a different set of genes (guids)s)
-
+						//create hash sets for parent1 and child1
                         var p1Hash = new HashSet<object>();
                         var cg1Hash = new HashSet<object>();
 
+						//populate the parent hash set with object values (not the gene itself)
                         foreach (var gene in p1.Genes)
                         {
                             p1Hash.Add(gene.ObjectValue);
                         }
 
-                        foreach (var gene in cg1)
+						//populate the child hash set with object values (not the gene itself)
+						//at this point only the center section of P1 will be in C1
+						foreach (var gene in cg1)
                         {
                             cg1Hash.Add(gene.ObjectValue);
                         }
 
-                        foreach (var gene in p2.Genes)
+						//run through the P2 adding to C1 those that exist in P1 but not yet in C1
+						//add them in the order found in P2. This has to be done by value as the first parent
+						//is used but the order id determined by the second parent. Can't use Guid as the second 
+						//parent has a different set of genes guids.
+						foreach (var gene in p2.Genes)
 						{
 						    //if we have the value in P1 and it is not already in C1, then add it.
-						    bool any = false;
-                            any = p1Hash.Contains(gene.ObjectValue);
+							bool existsInP1 = p1Hash.Contains(gene.ObjectValue);
+                            bool existsInCg1 = cg1Hash.Contains (gene.ObjectValue);
 
-                            bool any1 = false;
-                            any1 = cg1Hash.Contains(gene.ObjectValue);
-
-                            if (any && !any1)
+                            if (existsInP1 && !existsInCg1)
                             {
 							  cg1.AddCloned (gene);
 						    }
@@ -400,13 +398,10 @@ namespace GAF.Operators
                         foreach (var gene in p1.Genes)
 						{
 						    //if we have the value in P1 and it is not already in C1, then add it.
-						    bool any = false;
-                            any = p2Hash.Contains(gene.ObjectValue);
+                            bool existsInP2 = p2Hash.Contains(gene.ObjectValue);
+                            bool existsInCg2 = cg2Hash.Contains(gene.ObjectValue);
 
-						    bool any1 = false;
-                            any1 = cg2Hash.Contains(gene.ObjectValue);
-
-						    if (any && !any1)
+						    if (existsInP2 && !existsInCg2)
                             {
 								cg2.AddCloned (gene);
 							}
