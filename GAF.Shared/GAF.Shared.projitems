@@ -33,7 +33,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Threading\RandomProvider.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ChromosomeExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ChromosomeException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\CrossoverTypeIncompatibleException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\GeneException.cs" />
@@ -65,6 +64,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LoggingEventHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Net\PacketId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IFitness.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ChromosomeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Net\" />
