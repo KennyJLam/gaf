@@ -26,6 +26,7 @@ namespace GAF.Net
 	/// <summary>
 	/// Transmission Packet.
 	/// </summary>
+	[Obsolete ("This class is deprecated. The similarly named class within the GAF.Network package, should be used instead.")]
 	public class Packet
 	{
 

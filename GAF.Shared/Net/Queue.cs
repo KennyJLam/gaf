@@ -29,6 +29,7 @@ namespace GAF.Net
 	/// <summary>
 	/// Packet manager class to manage a cyclic byte buffer.
 	/// </summary>
+	[Obsolete ("This class is deprecated. The similarly named class within the GAF.Network package, should be used instead.")]
 	public class Queue : IQueue
 	{
 		/// <summary>

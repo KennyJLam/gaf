@@ -26,6 +26,7 @@ namespace GAF.Net
 	/// <summary>
 	/// IQueue interface.
 	/// </summary>
+	[Obsolete ("This interface is deprecated. The similarly named interface within the GAF.Network package, should be used instead.")]
 	public interface IQueue
 	{
 		/// <summary>

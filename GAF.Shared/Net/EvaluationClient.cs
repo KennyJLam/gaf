@@ -34,6 +34,7 @@ namespace GAF.Net
 	/// <summary>
 	/// Evaluation client.
 	/// </summary>
+	[Obsolete ("This class is deprecated. The similarly named class within the GAF.Network package, should be used instead.")]
 	public class EvaluationClient
 	{
 		private Socket [] _clients;

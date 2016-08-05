@@ -29,6 +29,7 @@ namespace GAF.Net
 	/// <summary>
 	/// Evaluation server.
 	/// </summary>
+	[Obsolete ("This class is deprecated. The similarly named class within the GAF.Network package, should be used instead.")]
 	public class EvaluationServer
 	{
 		private readonly FitnessFunction _fitnessFunction;

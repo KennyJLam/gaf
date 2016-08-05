@@ -30,6 +30,7 @@ namespace GAF.Net
 	/// <summary>
 	/// Synchronised queue.
 	/// </summary>
+	[Obsolete ("This class is deprecated. The similarly named class within the GAF.Network package, should be used instead.")]
 	public class SynchronisedQueue : Queue
 	{
 		private readonly object _syncLock = new object ();

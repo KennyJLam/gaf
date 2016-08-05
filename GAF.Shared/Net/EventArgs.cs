@@ -28,6 +28,7 @@ namespace GAF.Net
 	/// <summary>
 	/// Event arguments used within the GAF Socket Listener.
 	/// </summary>
+	[Obsolete ("This class is deprecated. The similarly named class within the GAF.Network package, should be used instead.")]
 	public class PacketEventArgs : EventArgs
 	{
 		private readonly long _packetsReceived;
@@ -66,10 +67,11 @@ namespace GAF.Net
 		/// <value>The fitness.</value>
 		public double Result{ set; get; }
 	}
-		
+
 	/// <summary>
 	/// Packet Maneger exception event arguments.
 	/// </summary>
+	[Obsolete ("This class is deprecated. The similarly named class within the GAF.Network package, should be used instead.")]
 	public class ProcessingExceptionEventArgs : EventArgs
 	{
 		private readonly string _message;
@@ -94,6 +96,7 @@ namespace GAF.Net
 	/// <summary>
 	/// Remote evaluation event arguments.
 	/// </summary>
+	[Obsolete ("This class is deprecated. The similarly named class within the GAF.Network package, should be used instead.")]
 	public class RemoteEvaluationEventArgs : EventArgs
 	{
 		private readonly Chromosome _solution;

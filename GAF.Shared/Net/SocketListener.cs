@@ -32,6 +32,7 @@ namespace GAF.Net
 	/// <summary>
 	/// Asynchronous socket listener.
 	/// </summary>
+	[Obsolete ("This class is deprecated. The similarly named class within the GAF.Network package, should be used instead.")]
 	public static class SocketListener
 	{
 		/// <summary>
