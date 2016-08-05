@@ -45,6 +45,7 @@ namespace GAF
 	/// </summary>
 #if !PCL
 	[Serializable]
+	[DataContract]
 #endif
 	public class Chromosome : IEnumerable, IComparable<Chromosome>
 	{
@@ -208,21 +209,33 @@ namespace GAF
 		/// Internal property used to indicate whether this chromosome was evaluated by an operator.
 		/// This is used to prevent unnessesary evaluations occuring.
 		/// </summary>
+		#if !PCL
+		[DataMember]
+		#endif
 		internal bool EvaluatedByOperator { set; get; }
 
 		/// <summary>
 		/// Stores the fitness value of the most recent evaluation.
 		/// </summary>
+		#if !PCL
+		[DataMember]
+		#endif
 		public double Fitness { get; internal set; }
 
 		/// <summary>
 		/// Stores the linearly normalised fitness value of the most recent evaluation.
 		/// </summary>
+		#if !PCL
+		[DataMember]
+		#endif
 		public double FitnessNormalised { get; internal set; }
 
 		/// <summary>
 		/// Returns the globally unique ID for this chromosome.
 		/// </summary>
+		#if !PCL
+		[DataMember]
+		#endif
 		public Guid Id {
 			get { return _id; }
 			internal set { _id = value; }
@@ -231,6 +244,9 @@ namespace GAF
 		/// <summary>
 		/// Returns the genes.
 		/// </summary>
+		#if !PCL
+		[DataMember]
+		#endif
 		public List<Gene> Genes {
 			get { return _genes; }
 			internal set { _genes = value; }
@@ -241,6 +257,9 @@ namespace GAF
 		/// custom Genetic Operators to determine if the Chromosome was selected 
 		/// as an Elite chromosome.
 		/// </summary>
+		#if !PCL
+		[DataMember]
+		#endif
 		public bool IsElite { set; get; }
 
 		/// <summary>
@@ -388,6 +407,18 @@ namespace GAF
 		}
 
 		/// <summary>
+		/// Clones and adds the specified range.
+		/// </summary>
+		/// <param name="genes">Genes.</param>
+		public void AddRangeCloned(IEnumerable<Gene> genes)
+		{
+			foreach (var gene in genes) {
+
+				this.Genes.Add(gene.DeepClone());
+			}
+		}
+
+		/// <summary>
 		/// IComparable implementation.
 		/// </summary>
 		/// <param name="other"></param>
@@ -403,6 +434,9 @@ namespace GAF
 		/// Typically the tag property would be used to pass any chromosome related data to the fitness function.
 		/// </summary>
 		/// <value>The tag.</value>
+		#if !PCL
+		[DataMember]
+		#endif
 		public object Tag { get; set; }
 	}
 }
