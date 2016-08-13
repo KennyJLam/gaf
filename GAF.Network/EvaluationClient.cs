@@ -38,7 +38,7 @@ namespace GAF.Network
 	{
 		private Socket [] _clients;
 		private List<IPEndPoint> _endPoints;
-		private bool [] _initialised;
+		private bool [] _reInitialiseFlags;
 
 		private object _syncLock = new object ();
 		private FitnessAssembly _fitnessAssembly;
@@ -83,7 +83,17 @@ namespace GAF.Network
 			//create a number of tasks
 			int epCount = _endPoints.Count;
 
-			_initialised = new bool [epCount];
+			_reInitialiseFlags = new bool [epCount];
+		}
+
+		/// <summary>
+		/// ReInitialises the remote endpoints and re-transmits the FitnessAssembly.
+		/// </summary>
+		public void ReInitialise ()
+		{
+			for (var index = 0; index < _reInitialiseFlags.Length; index++) {
+				_reInitialiseFlags[index] = true;
+			}
 		}
 
 		/// <summary>
@@ -166,6 +176,8 @@ namespace GAF.Network
 		private void EvaluateTask (System.Collections.Queue syncQueue, FitnessFunction fitnessFunctionDelegate, int taskId, CancellationToken token)
 		{
 
+			bool initialised;
+
 			// Establish the remote endpoint using the appropriate endpoint and socket client
 			IPEndPoint remoteEndPoint = EndPoints [taskId];
 			_clients [taskId] = SocketClient.Connect (remoteEndPoint);
@@ -175,14 +187,20 @@ namespace GAF.Network
 			var statusRequestPacket = new Packet (PacketId.Status);
 			var statusPacket = SocketClient.TransmitData (_clients [taskId], statusRequestPacket);
 
-			//check the status value by converting from the (double) result to an integer and 
-			// ANDing this with ServerStatus.Initialised.
-			bool initialised;
-			if (statusPacket != null) {
-				var result = (int)BitConverter.ToDouble (statusPacket.Data, 0);
-				initialised = (result & (int)ServerStatus.Initialised) == (int)ServerStatus.Initialised;
+			//see if this is to be reinitialised, if not then check the remote status
+			if (_reInitialiseFlags [taskId]) {
+				initialised = false;
+				_reInitialiseFlags [taskId] = false;
 			} else {
-				throw new GAF.Exceptions.SocketException ("Data Packet was not received or was empty.");
+
+				//check the status value by converting from the (double) result to an integer and 
+				// ANDing this with ServerStatus.Initialised.
+				if (statusPacket != null) {
+					var result = (int)BitConverter.ToDouble (statusPacket.Data, 0);
+					initialised = (result & (int)ServerStatus.Initialised) == (int)ServerStatus.Initialised;
+				} else {
+					throw new GAF.Exceptions.SocketException ("Data Packet was not received or was empty.");
+				}
 			}
 
 			if (!initialised) {

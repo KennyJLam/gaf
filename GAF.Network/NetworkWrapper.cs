@@ -55,16 +55,17 @@ namespace GAF.Network
 				Console.WriteLine (e.Message);
 		}
 
+		public void ReInitialise ()
+		{
+			_remoteEval.ReInitialise ();
+		}
+
 		private void OnEvaluationBegin (object sender, EvaluationEventArgs args)
 		{
 			try {
 				
-				//TODO: reload the endpoints incase there are new servers?
+				//TODO: Reload the endpoints incase there are new servers? Is this correct?
 				_remoteEval.EndPoints = _serviceDiscoveryClient.GetActiveServices(ServiceName);
-
-				//var remoteEval = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
-				//remoteEval.OnEvaluationException += (object s, ExceptionEventArgs e) =>
-				//	Console.WriteLine (e.Message);
 
 				var evaluations = _remoteEval.Evaluate (args.SolutionsToEvaluate);
 
