@@ -204,7 +204,7 @@ namespace GAF
 		{
 			Gene gene = obj as Gene;
 
-			if (obj == null)
+            if (gene == null)
 				return false;
 			
 			return Object.ReferenceEquals (this, obj);
