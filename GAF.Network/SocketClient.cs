@@ -130,7 +130,7 @@ namespace GAF.Network
 		/// <param name="client">Client.</param>
 		public static void TransmitETX (Socket client)
 		{
-			TransmitData (client, new Packet (new byte[0], PacketId.Etx, new Guid ()));
+			TransmitData (client, new Packet (PacketId.Etx));
 		}
 
 		/// <summary>

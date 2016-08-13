@@ -17,7 +17,6 @@
 
 	http://johnnewcombe.net
 */
-using System;
 
 namespace GAF.Network
 {

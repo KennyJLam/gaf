@@ -20,10 +20,9 @@
 
 
 using System;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Json;
-using System.Collections.Generic;
 
 namespace GAF.Network
 {

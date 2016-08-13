@@ -6,7 +6,7 @@
     <ProjectGuid>{3A089051-A784-4791-8D77-719EAB592F20}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>GAF.Network</RootNamespace>
-    <AssemblyName>GAF.Net</AssemblyName>
+    <AssemblyName>GAF.Network</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -51,6 +51,9 @@
     <Compile Include="SynchronisedQueue.cs" />
     <Compile Include="IServiceDiscovery.cs" />
     <Compile Include="ChromosomeExtensions.cs" />
+    <Compile Include="IRemoteFitness.cs" />
+    <Compile Include="StaticServices.cs" />
+    <Compile Include="ServerStatus.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GAF.45\GAF.45.csproj">

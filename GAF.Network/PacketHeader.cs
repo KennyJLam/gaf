@@ -69,7 +69,7 @@ namespace GAF.Network
 			_headerBytes = headerBytes;
 
 			if (_headerBytes.Length != HeaderLength) {
-				throw new ArgumentOutOfRangeException ("headerBytes", string.Format("The header must be a byte array of length {0}", HeaderLength));
+			    throw new ArgumentOutOfRangeException ("headerBytes", string.Format("The header must be a byte array of length {0}", HeaderLength));
 			}
 
 			// header consists of 

@@ -63,28 +63,27 @@ namespace GAF.Network
 
 			// Create a TCP/IP socket.
 			Socket listener = new Socket (AddressFamily.InterNetwork,
-				                  SocketType.Stream, ProtocolType.Tcp);
+								  SocketType.Stream, ProtocolType.Tcp);
 
 
 			// Bind the socket to the local endpoint and listen for incoming connections.
 
-				listener.Bind (localEndPoint);
-				listener.Listen (100);
+			listener.Bind (localEndPoint);
+			listener.Listen (100);
 
-				while (true) {
-					// Set the event to nonsignaled state.
-					_allDone.Reset ();
+			while (true) {
+				// Set the event to nonsignaled state.
+				_allDone.Reset ();
 
-					// Start an asynchronous socket to listen for connections.
-					listener.BeginAccept (
-						new AsyncCallback (AcceptCallback),
-						listener);
+				// Start an asynchronous socket to listen for connections.
+				listener.BeginAccept (
+					new AsyncCallback (AcceptCallback),
+					listener);
 
-					// Wait until a connection is made before continuing.
-					_allDone.WaitOne ();
+				// Wait until a connection is made before continuing.
+				_allDone.WaitOne ();
 
-				}
-
+			}
 
 		}
 
@@ -115,51 +114,47 @@ namespace GAF.Network
 			Socket handler = state.WorkSocket;
 			bool etxReceived = false;
 
-				// Read data from the client socket. 
-				int bytesRead = handler.EndReceive (ar);
+			// Read data from the client socket. 
+			int bytesRead = handler.EndReceive (ar);
 
-				if (bytesRead > 0) {
-			
-					// At this point all of the read bytes are in the state.Buffer. The
-					// state.Buffer is 1024 bytes in size, so bytes will need to be transferred to 
-					// the PacketManager in 1024 byte chunks (or less if its the last chunk).
-					//Console.WriteLine ("Read {0} bytes from socket.", bytesRead);
+			if (bytesRead > 0) {
 
-					state.PacMan.Add (state.Buffer);
+				// At this point all of the read bytes are in the state.Buffer. The
+				// state.Buffer is 1024 bytes in size, so bytes will need to be transferred to 
+				// the PacketManager in 1024 byte chunks (or less if its the last chunk).
+				//Console.WriteLine ("Read {0} bytes from socket.", bytesRead);
 
-					//see if we have any packets
-					var packet = state.PacMan.GetPacket ();
+				state.PacMan.Add (state.Buffer);
 
-					if (packet != null) {
+				//see if we have any packets
+				var packet = state.PacMan.GetPacket ();
 
-						double fitness = 0.0;
+				if (packet != null) {
 
-						_packetCount++;
+					double result = 0.0;
 
-						if (OnPacketReceived != null) {
+					_packetCount++;
 
-							var args = new PacketEventArgs (_packetCount, packet);
-							OnPacketReceived (null, args);
-							fitness = args.Result;
+					if (OnPacketReceived != null) {
 
-						}
+						var args = new PacketEventArgs (_packetCount, packet);
+						OnPacketReceived (null, args);
+						result = args.Result;
 
-						//have we received all for this transmission?
+					}
+
+					//have we received all for this transmission?
 					etxReceived = packet.Header.PacketId == PacketId.Etx;
 
-						//Packets other than 0 are control packets
-						if (packet.Header.PacketId == 0) {
-							Send (ar, new Packet (BitConverter.GetBytes (fitness), 0, packet.Header.ObjectId));
-						} else {
-							Send (ar, new Packet (new byte[0], 0, packet.Header.ObjectId));
-						}
-					}
+					//Packets other than 0 are control packets
+					Send (ar, new Packet (BitConverter.GetBytes (result), PacketId.Result, packet.Header.ObjectId));
+				}
 
-					//if not end of transmission get more data
-					if (!etxReceived) {
-						state.WorkSocket.BeginReceive (state.Buffer, 0, StateObject.BufferSize, 0,
-							new AsyncCallback (ReadCallback), state);
-					}
+				//if not end of transmission get more data
+				if (!etxReceived) {
+					state.WorkSocket.BeginReceive (state.Buffer, 0, StateObject.BufferSize, 0,
+						new AsyncCallback (ReadCallback), state);
+				}
 
 			}
 		}
@@ -172,7 +167,7 @@ namespace GAF.Network
 			// Begin sending the data to the remote device.
 			handler.BeginSend (data.ToByteArray (), 0, data.Header.DataLength + PacketHeader.HeaderLength, 0,
 				new AsyncCallback (SendCallback), state);
-			
+
 
 		}
 
@@ -183,9 +178,9 @@ namespace GAF.Network
 			Socket handler = state.WorkSocket;
 
 			try {
-				
-			// Complete sending the data to the remote device.
-			handler.EndSend (ar);
+
+				// Complete sending the data to the remote device.
+				handler.EndSend (ar);
 
 				if (state.PacMan.LastPidReceived == PacketId.Etx) {
 					handler.LingerState = new LingerOption (true, 1);

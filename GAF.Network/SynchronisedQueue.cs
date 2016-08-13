@@ -17,12 +17,6 @@
 
 	http://johnnewcombe.net
 */
-	
-using System.Collections.Generic;
-using System.Collections;
-
-
-using System;
 
 namespace GAF.Network
 {

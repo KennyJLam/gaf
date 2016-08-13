@@ -138,7 +138,7 @@ namespace GAF.Network
 								} else {
 								
 									//no data for this packet so all done											
-									_currentPacket = new Packet (new byte[0], _currentHeader.PacketId, _currentHeader.ObjectId);
+									_currentPacket = new Packet (_currentHeader.PacketId, _currentHeader.ObjectId);
 									_state = State.LookingForSOH;
 
 									LastPidReceived = _currentPacket.Header.PacketId;

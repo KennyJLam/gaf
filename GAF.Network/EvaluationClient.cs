@@ -38,10 +38,13 @@ namespace GAF.Network
 	{
 		private Socket [] _clients;
 		private List<IPEndPoint> _endPoints;
-		private object _syncLock = new object ();
-		private string _consumerFunctionsAssembleName;
+		private bool [] _initialised;
 
-		private const int pidInit = 10;
+		private object _syncLock = new object ();
+		private FitnessAssembly _fitnessAssembly;
+		private string _fitnessAssemblyName;
+
+		//private const int pidInit = 10;
 
 		#region Task Declarations
 
@@ -57,21 +60,30 @@ namespace GAF.Network
 		/// </summary>
 		public event EvaluationExceptionHandler OnEvaluationException;
 
-
 		#endregion
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GAF.Net.EvaluationClient"/> class.
 		/// </summary>
 		/// <param name="endPoints">End points.</param>
-		public EvaluationClient (List<IPEndPoint> endPoints, string consumerFunctionsAssembleName)
+		public EvaluationClient (List<IPEndPoint> endPoints, string fitnessAssemblyName)
 		{
 			if (endPoints == null) {
-				throw new ArgumentNullException (nameof (endPoints), "The parameter is null (or empty).");
+				throw new ArgumentNullException (nameof (endPoints), "The parameter is null.");
+			}
+
+			if (string.IsNullOrWhiteSpace (fitnessAssemblyName)) {
+				throw new ArgumentException ("The specified fitness assembly name is null or empty.", nameof (fitnessAssemblyName));
 			}
 
 			_endPoints = endPoints;
-			_consumerFunctionsAssembleName = consumerFunctionsAssembleName;
+			_fitnessAssemblyName = fitnessAssemblyName;
+			_fitnessAssembly = new FitnessAssembly (fitnessAssemblyName);
+
+			//create a number of tasks
+			int epCount = _endPoints.Count;
+
+			_initialised = new bool [epCount];
 		}
 
 		/// <summary>
@@ -87,11 +99,10 @@ namespace GAF.Network
 
 			//determine how many endpoints we are to be using
 			int epCount = _endPoints.Count;
+			Task [] tasks = new Task [epCount];
+			_clients = new Socket [epCount];
 
 			if (epCount > 0) {
-				//create a number of tasks
-				Task [] tasks = new Task [epCount];
-				_clients = new Socket [epCount];
 
 				//create a single queue and add the solutions to the queue
 				var queue = new System.Collections.Queue ();
@@ -154,56 +165,71 @@ namespace GAF.Network
 
 		private void EvaluateTask (System.Collections.Queue syncQueue, FitnessFunction fitnessFunctionDelegate, int taskId, CancellationToken token)
 		{
-			try {
-				
-				// Establish the remote endpoint using the appropriate endpoint and socket client
-				IPEndPoint remoteEndPoint = EndPoints [taskId];
-				_clients [taskId] = SocketClient.Connect (remoteEndPoint);
+
+			// Establish the remote endpoint using the appropriate endpoint and socket client
+			IPEndPoint remoteEndPoint = EndPoints [taskId];
+			_clients [taskId] = SocketClient.Connect (remoteEndPoint);
+
+			//send a status packet to see if we have already initialised this connection
+			//i.e. passed the fitness function accross
+			var statusRequestPacket = new Packet (PacketId.Status);
+			var statusPacket = SocketClient.TransmitData (_clients [taskId], statusRequestPacket);
+
+			//check the status value by converting from the (double) result to an integer and 
+			// ANDing this with ServerStatus.Initialised.
+			bool initialised;
+			if (statusPacket != null) {
+				var result = (int)BitConverter.ToDouble (statusPacket.Data, 0);
+				initialised = (result & (int)ServerStatus.Initialised) == (int)ServerStatus.Initialised;
+			} else {
+				throw new GAF.Exceptions.SocketException ("Data Packet was not received or was empty.");
+			}
+
+			if (!initialised) {
 
 				//serialise the consumer functions
-				//TODO: This name should be passed in
-				var functionBytes = File.ReadAllBytes (_consumerFunctionsAssembleName);
+				var functionBytes = File.ReadAllBytes (_fitnessAssemblyName);
 
 				//at this point we need the name of the consumer functions DLL in order to pass it to the 
 				//far end of each endPoint.
 				var xmitPacket = new Packet (functionBytes, PacketId.Init, Guid.Empty);
 
-				//var recPacket = SocketClient.TransmitData (_clients [taskId], xmitPacket);
 				SocketClient.TransmitData (_clients [taskId], xmitPacket);
 
-				//read the queue, each task will be doing this
-				while (syncQueue.Count > 0) {
+				//_initialised [taskId] = true;
+			}
 
-					Chromosome solution = null;
+			//read the queue, each task will be doing this
+			while (syncQueue.Count > 0) {
 
-					//take a solution from the queue
-					//this can cause an exception if the queue is emptied
-					//between the count (above) and the next statement
-					try {
-						solution = (Chromosome)syncQueue.Dequeue ();
-					} catch {
-						break;
-					}
+				Chromosome solution = null;
 
-					//add the task Id, this is used in the fitness function 
-					//to determine a suitable endpoint
-					solution.Tag = taskId;
-					if (token.IsCancellationRequested) {
-						break;
-					}
-
-					//evaluate the solution in the normal way by passing in the fitness delegate
-					solution.Evaluate (fitnessFunctionDelegate);
-
+				//take a solution from the queue
+				//this can cause an exception if the queue is emptied
+				//between the count (above) and the next statement
+				try {
+					solution = (Chromosome)syncQueue.Dequeue ();
+				} catch {
+					break;
 				}
 
-				//all done so send ETX to inform the server
-				SocketClient.TransmitETX (_clients [taskId]);
-				SocketClient.Close (_clients [taskId]);
-			} catch {
-				//remove faulty endpoint from the collection
-				RemoveEndPointAt (taskId);
+				//add the task Id, this is used in the fitness function 
+				//to determine a suitable endpoint
+				solution.Tag = taskId;
+				if (token.IsCancellationRequested) {
+					break;
+				}
+
+				//evaluate the solution in the normal way however pass the locally defined 
+				//'Remote Fitness Function' this will initiate a remote connection to the
+				//real fitness function at the server end.
+				solution.Evaluate (fitnessFunctionDelegate);
+
 			}
+
+			//all done so send ETX to inform the server
+			SocketClient.TransmitETX (_clients [taskId]);
+			SocketClient.Close (_clients [taskId]);
 
 		}
 
@@ -215,8 +241,7 @@ namespace GAF.Network
 			if (client == null || client.Connected) {
 
 				// Convert the passed chromosome to a byte array
-				//var jsonData = chromosome.Serialise();
-				var byteData = Serializer.Serialize<Chromosome> (chromosome);
+				var byteData = Serializer.Serialize<Chromosome> (chromosome, _fitnessAssembly.KnownTypes);
 				var xmitPacket = new Packet (byteData, PacketId.Data, chromosome.Id);
 
 				var recPacket = SocketClient.TransmitData (client, xmitPacket);
@@ -224,11 +249,14 @@ namespace GAF.Network
 				if (recPacket != null) {
 					fitness = BitConverter.ToDouble (recPacket.Data, 0);
 				} else {
-					throw new GAF.Exceptions.SocketException ("Ack Packet was not received or was empty.");
+					throw new GAF.Exceptions.SocketException ("Data Packet was not received or was empty.");
 				}
 
-				if (recPacket.Header.ObjectId.ToString () != xmitPacket.Header.ObjectId.ToString ()) {
-					throw new GAF.Exceptions.SocketException ("Acknowledgement (ObjectId) was incorrect.");
+				//TODO: Look at re-writing the protocol to handle full bi-directional transfers 
+				//rather than just using the returned GUID.
+				if (recPacket.Header.PacketId == PacketId.Result &&
+					recPacket.Header.ObjectId.ToString () != xmitPacket.Header.ObjectId.ToString ()) {
+					throw new GAF.Exceptions.SocketException ("Received PacketID or ObjectId was incorrect.");
 				}
 
 			} else {
@@ -297,6 +325,12 @@ namespace GAF.Network
 			get {
 				lock (_syncLock) {
 					return _endPoints;
+				}
+			}
+			set {
+
+				lock (_syncLock) {
+					_endPoints = value;
 				}
 			}
 		}

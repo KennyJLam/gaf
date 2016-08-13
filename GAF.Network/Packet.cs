@@ -27,7 +27,24 @@ namespace GAF.Network
 	/// </summary>
 	public class Packet
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:GAF.Network.Packet"/> class.
+		/// </summary>
+		/// <param name="packetId">Packet identifier.</param>
+		public Packet (PacketId packetId)
+			: this (packetId, Guid.Empty)
+		{
+		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:GAF.Network.Packet"/> class.
+		/// </summary>
+		/// <param name="packetId">Packet identifier.</param>
+		/// <param name="objectId">Object identifier.</param>
+		public Packet (PacketId packetId, Guid objectId) 
+			: this (new byte [0], packetId, objectId)
+		{
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GAF.Net.Packet"/> class.
@@ -35,32 +52,29 @@ namespace GAF.Network
 		/// <param name="data">Data.</param>
 		/// <param name = "packetId"></param>
 		/// <param name="objectId">Object identifier.</param>
-		public Packet (byte[] data, PacketId packetId, Guid objectId)
+		public Packet (byte [] data, PacketId packetId, Guid objectId)
 		{
-			if (data != null) {
-
-				var dataLength = data.GetLength (0);
-
-				Header = new PacketHeader (packetId, objectId, dataLength);
-				Data = data;
-
-			} else {
-				//create an empty data array (header already empty)
-				Data = new byte[0];
+			if (data == null) {
+				data = new byte [0];
 			}
+
+			var dataLength = data.GetLength (0);
+			Header = new PacketHeader (packetId, objectId, dataLength);
+			Data = data;
+
 		}
 
-//		public Packet (byte[] data, PacketHeader header)
-//		{
-//			if (data != null) {
-//				Header = header;
-//				Data = data;
-//			} else {
-//				//create an empty data array (header already empty)
-//				Data = new byte[0];
-//			}
-//
-//		}
+		//		public Packet (byte[] data, PacketHeader header)
+		//		{
+		//			if (data != null) {
+		//				Header = header;
+		//				Data = data;
+		//			} else {
+		//				//create an empty data array (header already empty)
+		//				Data = new byte[0];
+		//			}
+		//
+		//		}
 		/// <summary>
 		/// Factopry method to create a new packet based on raw data. The argument rawBytes should contain 
 		/// both header and data. The number of data bytes should be at least as long as that specified 
@@ -68,7 +82,7 @@ namespace GAF.Network
 		/// </summary>
 		/// <returns>A new instance of the Packet type.</returns>
 		/// <param name="rawBytes">Raw bytes.</param>
-		internal static Packet CreatePacket(byte[] rawBytes)
+		internal static Packet CreatePacket (byte [] rawBytes)
 		{
 			// header consists of 
 			//soh (Guid) 16 bytes
@@ -76,22 +90,22 @@ namespace GAF.Network
 			//oid (Guid) 16 bytes
 			//length (int) 4 bytes
 			if (rawBytes.Length < PacketHeader.HeaderLength) {
-			
+
 				throw new ArgumentOutOfRangeException ("rawBytes", "The length of data is too small to form a valid packet.");
 			}
-				
-			var headerBytes = new byte[PacketHeader.HeaderLength];
+
+			var headerBytes = new byte [PacketHeader.HeaderLength];
 			Array.Copy (rawBytes, 0, headerBytes, 0, PacketHeader.HeaderLength);
 
 			var header = new PacketHeader (headerBytes);
 
 			//determine the data length of the incomming data and compare to that specified in the header
-			var actualDataLength = rawBytes.GetLength (0)-PacketHeader.HeaderLength;
+			var actualDataLength = rawBytes.GetLength (0) - PacketHeader.HeaderLength;
 			if (actualDataLength < header.DataLength) {
 				throw new ArgumentException ("Length of the data is less than that specified in the header.", "rawBytes");
 			}
 
-			var data= new byte[header.DataLength];
+			var data = new byte [header.DataLength];
 			Array.Copy (rawBytes, PacketHeader.HeaderLength, data, 0, header.DataLength);
 
 			return new Packet (data, (PacketId)header.PacketId, header.ObjectId);
@@ -108,20 +122,20 @@ namespace GAF.Network
 		/// Gets or sets the data.
 		/// </summary>
 		/// <value>The data.</value>
-		public byte[] Data { get; private set; }
+		public byte [] Data { get; private set; }
 
 
 		/// <summary>
 		/// Gets the bytes.
 		/// </summary>
 		/// <returns>The bytes.</returns>
-		public byte[] ToByteArray ()
+		public byte [] ToByteArray ()
 		{
 			//create an array for the data and the header
-			var byteData = new byte[PacketHeader.HeaderLength + Header.DataLength];
+			var byteData = new byte [PacketHeader.HeaderLength + Header.DataLength];
 
 			//concatenate the header and data
-			Array.Copy (Header.ToByteArray(), 0, byteData, 0, PacketHeader.HeaderLength);
+			Array.Copy (Header.ToByteArray (), 0, byteData, 0, PacketHeader.HeaderLength);
 			Array.Copy (Data, 0, byteData, PacketHeader.HeaderLength, Header.DataLength);
 
 			return byteData;

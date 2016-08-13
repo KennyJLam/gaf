@@ -20,6 +20,7 @@
 using System.Net;
 using System.IO;
 using System;
+using System.Collections.Generic;
 
 namespace GAF.Network
 {
@@ -28,7 +29,8 @@ namespace GAF.Network
 	/// </summary>
 	public class EvaluationServer
 	{
-		private readonly FitnessFunction _fitnessFunction;
+		private const string _fitnessAssemblyName = "f60011de-c680-4ccc-b69e-8c958b91ff4d.dll";
+		private FitnessAssembly _fitnessAssembly;
 
 		/// <summary>
 		/// Delegate definition for the InitialEvaluationComplete event handler.
@@ -43,12 +45,26 @@ namespace GAF.Network
 		public event EvaluationCompleteHandler OnEvaluationComplete;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="GAF.Net.EvaluationServer"/> class.
+		/// Initializes a new instance of the <see cref="T:GAF.Network.EvaluationServer"/> class.
 		/// </summary>
-		/// <param name="fitnessFunctionDelegate">Fitness function delegate.</param>
-		public EvaluationServer (FitnessFunction fitnessFunctionDelegate)
+		/// <param name="fitnessAssemblyName">Fitness assembly name.</param>
+		//public EvaluationServer (string fitnessAssemblyName)
+		//{
+		//	if (string.IsNullOrWhiteSpace (fitnessAssemblyName)) {
+		//		throw new ArgumentException ("The specified fitness assembly name is null or empty.", nameof (fitnessAssemblyName));
+		//	}
+		//	_fitnessAssembly = new FitnessAssembly (fitnessAssemblyName);
+
+		//}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:GAF.Network.EvaluationServer"/> class.
+		/// </summary>
+		public EvaluationServer ()
 		{
-			_fitnessFunction = fitnessFunctionDelegate;
+			if (File.Exists (_fitnessAssemblyName)) {
+				_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
+			}
 		}
 
 		/// <summary>
@@ -65,25 +81,60 @@ namespace GAF.Network
 
 		private void listener_OnPacketReceived (object sender, PacketEventArgs e)
 		{
-			if (e.Packet.Header.DataLength > 0) {
+			//Console.WriteLine ("Packet Received: {0}", e.Packet.Header.PacketId);
 
-				switch ((PacketId)e.Packet.Header.PacketId) {
+			switch ((PacketId)e.Packet.Header.PacketId) {
 
-				case PacketId.Data: {
-						var chromosome = Serializer.DeSerialize<Chromosome> (e.Packet.Data);
-						e.Result = chromosome.Evaluate (_fitnessFunction);
+			case PacketId.Data: {
+					if (e.Packet.Header.DataLength > 0) {
+
+						//if (_fitnessAssembly == null) {
+						//	_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
+						//}
+
+						var chromosome = Serializer.DeSerialize<Chromosome> (e.Packet.Data, _fitnessAssembly.KnownTypes);
+						e.Result = chromosome.Evaluate (_fitnessAssembly.FitnessFunction);
+
 						if (OnEvaluationComplete != null) {
 
 							var eventArgs = new RemoteEvaluationEventArgs (chromosome);
 							this.OnEvaluationComplete (this, eventArgs);
 						}
-						break;
 					}
-				case PacketId.Init: {
-						File.WriteAllBytes ("GAF.ConsumerFunctions.Dynamic.dll", e.Packet.Data);
 
-						break;
+					break;
+				}
+
+			case PacketId.Init: {
+
+					//if (_fitnessAssembly == null) {
+					//	_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
+					//}
+
+					if (e.Packet.Header.DataLength > 0) {
+						File.WriteAllBytes (_fitnessAssemblyName, e.Packet.Data);
+						_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
 					}
+
+					break;
+				}
+
+			case PacketId.Status: {
+
+					Console.WriteLine ("Status Packet Received: {0}", e.Packet.Header.PacketId);
+
+					var result = 0x0;
+
+					//check for fitness file
+					if (File.Exists (_fitnessAssemblyName)) {
+						result = result | (int)ServerStatus.Initialised;
+						Console.WriteLine ("File.Exists: {0}", _fitnessAssemblyName);
+					} else {
+						Console.WriteLine ("File.does not Exist: {0}", _fitnessAssemblyName);
+					}
+					e.Result = (double)result;
+
+					break;
 				}
 			}
 		}

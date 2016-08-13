@@ -3,7 +3,9 @@ namespace GAF.Network
 {
 	public enum PacketId
 	{
-		Data,
+		Data = 1,
+		Result,
+		Status,
 		Init,
 		Etx
 	}

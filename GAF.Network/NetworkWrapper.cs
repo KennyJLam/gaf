@@ -7,9 +7,6 @@ using System.Net;
 namespace GAF.Network
 {
 
-	//TODO: Need to have a reference to the Fitness function within the GA somehow or passed in here?
-	//see the OnEvaluationBegin handler in this class...
-
 	/// <summary>
 	/// This class is a wrapper for the GAF.GeneticAlgorithm class and provides networking funtionality.
 	/// </summary>
@@ -17,11 +14,14 @@ namespace GAF.Network
 	{
 		private const string ServiceName = "gaf-evaluation-server";
 		private IServiceDiscovery _serviceDiscoveryClient;
-		/// <summary>
+        private string _fitnessAssemblyName;
+		private EvaluationClient _remoteEval;
+
+        /// <summary>
 		/// Initializes a new instance of the <see cref="T:GAF.Net.GeneticAlgorithm"/> class.
 		/// </summary>
 		/// <param name="geneticAlgorithm">Genetic algorithm.</param>
-		public NetworkWrapper (GAF.GeneticAlgorithm geneticAlgorithm, IServiceDiscovery serviceDiscoveryClient)
+        public NetworkWrapper (GAF.GeneticAlgorithm geneticAlgorithm, IServiceDiscovery serviceDiscoveryClient, string fitnessAssemblyName)
 		{
 			if (geneticAlgorithm == null)
 				throw new ArgumentNullException (nameof (geneticAlgorithm));
@@ -35,27 +35,38 @@ namespace GAF.Network
 			if (serviceDiscoveryClient == null) {
 				throw new NullReferenceException ("The specified IServiceDiscovery object is null");
 			}
+
+            if (string.IsNullOrEmpty(fitnessAssemblyName)) {
+                throw new NullReferenceException ("The specified fitness assembly name is null or empty");
+            }
+
 			_serviceDiscoveryClient = serviceDiscoveryClient;
+            _fitnessAssemblyName = fitnessAssemblyName;
 
 			//store the referenc to the GA and hook up to the evaluation begin class
 			this.GeneticAlgorithm = geneticAlgorithm;
 			this.GeneticAlgorithm.Population.OnEvaluationBegin += OnEvaluationBegin;
 
+
 			//get the endpoints from consul
 			this.EndPoints = serviceDiscoveryClient.GetActiveServices(ServiceName);
-
+			_remoteEval = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
+			_remoteEval.OnEvaluationException += (object s, ExceptionEventArgs e) =>
+				Console.WriteLine (e.Message);
 		}
 
 		private void OnEvaluationBegin (object sender, EvaluationEventArgs args)
 		{
 			try {
-				this.EndPoints = _serviceDiscoveryClient.GetActiveServices(ServiceName);
-				//TODO: Need to get the ConsumerFunctions dll name from somewhere or move this ouside of the event
-				var remoteEval = new EvaluationClient (this.EndPoints, "GAF.ConsumerFunctions.TravellingSalesman.dll");
-				remoteEval.OnEvaluationException += (object s, ExceptionEventArgs e) =>
-					Console.WriteLine (e.Message);
+				
+				//TODO: reload the endpoints incase there are new servers?
+				_remoteEval.EndPoints = _serviceDiscoveryClient.GetActiveServices(ServiceName);
 
-				var evaluations = remoteEval.Evaluate (args.SolutionsToEvaluate);
+				//var remoteEval = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
+				//remoteEval.OnEvaluationException += (object s, ExceptionEventArgs e) =>
+				//	Console.WriteLine (e.Message);
+
+				var evaluations = _remoteEval.Evaluate (args.SolutionsToEvaluate);
 
 				if (evaluations > 0) {
 					args.Evaluations = evaluations;
