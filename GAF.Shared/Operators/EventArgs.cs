@@ -5,7 +5,8 @@ namespace GAF.Operators
 	/// <summary>
 	/// Event arguments for the Crossover events.
 	/// </summary>
-	public class CrossoverEventArgs : EventArgs
+    /// 
+   	public class CrossoverEventArgs : EventArgs
 	{
 		private readonly CrossoverData _crossoverResult;
 		private readonly Chromosome _parent1;
@@ -13,10 +14,15 @@ namespace GAF.Operators
 		private readonly Chromosome _child1;
 		private readonly Chromosome _child2;
 
-		/// <summary>
-		/// Constructor.
-		/// </summary>
-		/// <param name="crossoverResult"></param>
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GAF.Operators.CrossoverEventArgs"/> class.
+        /// </summary>
+        /// <param name="crossoverResult">Crossover result.</param>
+        /// <param name="parent1">Parent1.</param>
+        /// <param name="parent2">Parent2.</param>
+        /// <param name="child1">Child1.</param>
+        /// <param name="child2">Child2.</param>
 		public CrossoverEventArgs (CrossoverData crossoverResult, Chromosome parent1, Chromosome parent2, Chromosome child1, Chromosome child2 )
 		{
 			_crossoverResult = crossoverResult;
