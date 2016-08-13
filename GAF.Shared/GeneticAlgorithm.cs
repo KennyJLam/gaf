@@ -139,7 +139,7 @@ namespace GAF
 
 			this.Operators = new List<IGeneticOperator> ();
 		}
-
+            
 		#endregion
 
 		#region Public Methods
