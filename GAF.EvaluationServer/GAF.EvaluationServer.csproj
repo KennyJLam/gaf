@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2317836C-E4A8-4C8F-9833-A28BE8D2895A}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>GAF.EvaluationServer</RootNamespace>
+    <AssemblyName>GAF.EvaluationServer</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <Commandlineparameters>-consul:192.168.1.90:8500 -f:GAF.ConsumerFunctions.TravellingSalesman.dll</Commandlineparameters>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Externalconsole>true</Externalconsole>
+    <Commandlineparameters>-consul:192.168.1.90:8500 -cf:GAF.ConsumerFunctions.TravellingSalesman.dll</Commandlineparameters>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Parameters.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\GAF.45\GAF.45.csproj">
+      <Project>{A49A025E-F146-4D04-8F07-8C0A5D1F803F}</Project>
+      <Name>GAF.45</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GAF.Consul\GAF.Consul.csproj">
+      <Project>{BBBD65E6-3C44-4123-AF24-805B4D30C129}</Project>
+      <Name>GAF.Consul</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GAF.ConsumerFunctions.BinaryF6\GAF.ConsumerFunctions.BinaryF6.csproj">
+      <Project>{2578BCC7-9C16-48BF-B298-F2C44DC007C5}</Project>
+      <Name>GAF.ConsumerFunctions.BinaryF6</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GAF.ConsumerFunctions.TravellingSalesman\GAF.ConsumerFunctions.TravellingSalesman.csproj">
+      <Project>{02E5A665-E74A-4972-B3B8-FC49351490B0}</Project>
+      <Name>GAF.ConsumerFunctions.TravellingSalesman</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GAF.Network\GAF.Network.csproj">
+      <Project>{3A089051-A784-4791-8D77-719EAB592F20}</Project>
+      <Name>GAF.Network</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>
