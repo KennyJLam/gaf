@@ -177,6 +177,7 @@ namespace GAF.Network
 		{
 
 			bool initialised;
+			bool serverDefinedFitness;
 
 			// Establish the remote endpoint using the appropriate endpoint and socket client
 			IPEndPoint remoteEndPoint = EndPoints [taskId];
@@ -187,34 +188,28 @@ namespace GAF.Network
 			var statusRequestPacket = new Packet (PacketId.Status);
 			var statusPacket = SocketClient.TransmitData (_clients [taskId], statusRequestPacket);
 
-			//see if this is to be reinitialised, if not then check the remote status
-			if (_reInitialiseFlags [taskId]) {
-				initialised = false;
-				_reInitialiseFlags [taskId] = false;
-			} else {
-
-				//check the status value by converting from the (double) result to an integer and 
-				// ANDing this with ServerStatus.Initialised.
-				if (statusPacket != null) {
-					var result = (int)BitConverter.ToDouble (statusPacket.Data, 0);
-					initialised = (result & (int)ServerStatus.Initialised) == (int)ServerStatus.Initialised;
-				} else {
-					throw new GAF.Exceptions.SocketException ("Data Packet was not received or was empty.");
-				}
+			//check the status packet and decode with the ServerStatus class.
+			if (statusPacket == null) {
+				throw new GAF.Exceptions.SocketException ("Status Packet was not received or was empty.");
 			}
 
-			if (!initialised) {
+			var serverStatus = new ServerStatus (statusPacket);
 
-				//serialise the consumer functions
+			//we only reinitialise if not already initialised and serverside fitness is NOT being used
+			if (!serverStatus.ServerDefinedFitness && (!serverStatus.Initialised || _reInitialiseFlags [taskId])) {
+
+				//ok to init server with fitness etc
+
+				//reset init flag
+				_reInitialiseFlags [taskId] = false;
+
+				//serialise the fitness function
 				var functionBytes = File.ReadAllBytes (_fitnessAssemblyName);
 
-				//at this point we need the name of the consumer functions DLL in order to pass it to the 
-				//far end of each endPoint.
+				//send to server
 				var xmitPacket = new Packet (functionBytes, PacketId.Init, Guid.Empty);
-
 				SocketClient.TransmitData (_clients [taskId], xmitPacket);
 
-				//_initialised [taskId] = true;
 			}
 
 			//read the queue, each task will be doing this
@@ -260,7 +255,7 @@ namespace GAF.Network
 
 				// Convert the passed chromosome to a byte array
 				var byteData = Serializer.Serialize<Chromosome> (chromosome, _fitnessAssembly.KnownTypes);
-				var xmitPacket = new Packet (byteData, PacketId.Data, chromosome.Id);
+				var xmitPacket = new Packet (byteData, PacketId.Chromosome, chromosome.Id);
 
 				var recPacket = SocketClient.TransmitData (client, xmitPacket);
 

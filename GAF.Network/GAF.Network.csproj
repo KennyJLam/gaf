@@ -53,6 +53,7 @@
     <Compile Include="ChromosomeExtensions.cs" />
     <Compile Include="IRemoteFitness.cs" />
     <Compile Include="StaticServices.cs" />
+    <Compile Include="ServerStatusFlags.cs" />
     <Compile Include="ServerStatus.cs" />
   </ItemGroup>
   <ItemGroup>
