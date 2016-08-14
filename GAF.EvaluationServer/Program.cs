@@ -41,17 +41,12 @@ namespace GAF.EvaluationServer
 					Console.WriteLine ("Consul Registration Failed [{0}].", ex.Message);
 				}
 
-				//get fitness function from a dll
-				if (string.IsNullOrWhiteSpace (settings.FitnessAssemblyName)) {
-					throw new ApplicationException ("The Fitness assembly name must be specified using the -f argument.");
-				}
-
 				//nice welcome message
 				Console.WriteLine ("GAF Evaluation Server Listening on {0}:{1}.",
 					settings.IPAddress,
 					settings.Port);
 
-				var evaluationServer = new GAF.Network.EvaluationServer ();
+				Network.EvaluationServer evaluationServer = new GAF.Network.EvaluationServer (settings.FitnessAssemblyName);
 				evaluationServer.OnEvaluationComplete += OnEvaluationComplete;
 
 				//start the server
