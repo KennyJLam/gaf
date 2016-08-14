@@ -14,14 +14,32 @@ namespace GAF.Network
 	{
 		private const string ServiceName = "gaf-evaluation-server";
 		private IServiceDiscovery _serviceDiscoveryClient;
-        private string _fitnessAssemblyName;
+		private string _fitnessAssemblyName;
 		private EvaluationClient _remoteEval;
 
-        /// <summary>
-		/// Initializes a new instance of the <see cref="T:GAF.Net.GeneticAlgorithm"/> class.
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:GAF.Network.NetworkWrapper"/> class.
 		/// </summary>
 		/// <param name="geneticAlgorithm">Genetic algorithm.</param>
-        public NetworkWrapper (GAF.GeneticAlgorithm geneticAlgorithm, IServiceDiscovery serviceDiscoveryClient, string fitnessAssemblyName)
+		/// <param name="serviceDiscoveryClient">Service discovery client.</param>
+		/// <param name="fitnessAssemblyName">Fitness assembly name.</param>
+		public NetworkWrapper (GAF.GeneticAlgorithm geneticAlgorithm, IServiceDiscovery serviceDiscoveryClient, string fitnessAssemblyName)
+			: this (geneticAlgorithm, serviceDiscoveryClient, fitnessAssemblyName, false)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:GAF.Network.NetworkWrapper"/> class.
+		/// </summary>
+		/// <param name="geneticAlgorithm">Genetic algorithm.</param>
+		/// <param name="serviceDiscoveryClient">Service discovery client.</param>
+		/// <param name="fitnessAssemblyName">Fitness assembly name.</param>
+		/// <param name="reInitialise">If set to <c>true</c> to re-initialise the server.</param>
+		/// <remarks>
+		/// Re-initialising the server will, if the fitness function is not defined by the server, 
+		/// re-transmit the the fitness function to the server.
+		/// </remarks>
+		public NetworkWrapper (GAF.GeneticAlgorithm geneticAlgorithm, IServiceDiscovery serviceDiscoveryClient, string fitnessAssemblyName, bool reInitialise)
 		{
 			if (geneticAlgorithm == null)
 				throw new ArgumentNullException (nameof (geneticAlgorithm));
@@ -36,12 +54,12 @@ namespace GAF.Network
 				throw new NullReferenceException ("The specified IServiceDiscovery object is null");
 			}
 
-            if (string.IsNullOrEmpty(fitnessAssemblyName)) {
-                throw new NullReferenceException ("The specified fitness assembly name is null or empty");
-            }
+			if (string.IsNullOrEmpty (fitnessAssemblyName)) {
+				throw new NullReferenceException ("The specified fitness assembly name is null or empty");
+			}
 
 			_serviceDiscoveryClient = serviceDiscoveryClient;
-            _fitnessAssemblyName = fitnessAssemblyName;
+			_fitnessAssemblyName = fitnessAssemblyName;
 
 			//store the referenc to the GA and hook up to the evaluation begin class
 			this.GeneticAlgorithm = geneticAlgorithm;
@@ -49,12 +67,21 @@ namespace GAF.Network
 
 
 			//get the endpoints from consul
-			this.EndPoints = serviceDiscoveryClient.GetActiveServices(ServiceName);
+			this.EndPoints = serviceDiscoveryClient.GetActiveServices (ServiceName);
 			_remoteEval = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
 			_remoteEval.OnEvaluationException += (object s, ExceptionEventArgs e) =>
 				Console.WriteLine (e.Message);
+
+			if (reInitialise) {
+				_remoteEval.ReInitialise ();
+			}
+
 		}
 
+		/// <summary>
+		/// Re-initialises the server. If the fitness function is not defined by the server, 
+		/// the fitness function will be re-transmitted to the server. 
+		/// </summary>
 		public void ReInitialise ()
 		{
 			_remoteEval.ReInitialise ();
@@ -63,9 +90,9 @@ namespace GAF.Network
 		private void OnEvaluationBegin (object sender, EvaluationEventArgs args)
 		{
 			try {
-				
+
 				//TODO: Reload the endpoints incase there are new servers? Is this correct?
-				_remoteEval.EndPoints = _serviceDiscoveryClient.GetActiveServices(ServiceName);
+				_remoteEval.EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
 
 				var evaluations = _remoteEval.Evaluate (args.SolutionsToEvaluate);
 
@@ -88,6 +115,9 @@ namespace GAF.Network
 			}
 		}
 
+		public void Run ()
+		{
+		}
 		/// <summary>
 		/// Gets a reference to the 'wrapped' GeneticAlgorithm object.
 		/// </summary>
