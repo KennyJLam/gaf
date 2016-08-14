@@ -91,13 +91,11 @@ namespace GAF.Network
 		/// <summary>
 		/// Start the server listening on the specified ipAddress and port.
 		/// </summary>
-		/// <param name="ipAddress">Ip address.</param>
-		/// <param name="port">Port.</param>
-		public void Start (IPAddress ipAddress, int port)
+		/// <param name="endPoint">End point.</param>
+		public void Start (IPEndPoint endPoint)
 		{
-
 			SocketListener.OnPacketReceived += listener_OnPacketReceived;
-			SocketListener.StartListening (ipAddress, port);
+			SocketListener.StartListening (endPoint);
 		}
 
 		private void listener_OnPacketReceived (object sender, PacketEventArgs e)

@@ -15,6 +15,11 @@ namespace GAF.EvaluationServer
 				//retrieves the parameters from the commant line.
 				var settings = new Parameters (args);
 
+				if (settings.DisplayHelp) {
+					Console.WriteLine (Resources.Usage);
+					return 0;
+				}
+
 				//register service with consul
 				//if (settings.ConsulNodeEndPoint != null) {
 
@@ -27,11 +32,8 @@ namespace GAF.EvaluationServer
 								   consulClient.NodeEndPoint.ToString ());
 				try {
 					//consulClient.RegisterService (serviceDefinition);
-					var serviceId = string.Format ("GAF-Server:{0}:{1}", settings.IPAddress, settings.Port);
-					var endPoint = ConsulClient.CreateEndpoint (string.Format ("{0}:{1}", settings.IPAddress, settings.Port));
-					var testEndPoint = ConsulClient.CreateEndpoint (string.Format ("{0}:{1}", settings.IPAddress, settings.Port));
-
-					consulClient.RegisterService (serviceId, endPoint, testEndPoint);
+					var serviceId = string.Format ("GAF-Server:{0}:{1}", settings.EndPoint.Address, settings.EndPoint.Port);
+					consulClient.RegisterService (serviceId, settings.EndPoint, settings.EndPoint);
 					//consulClient.DeRegisterService ("");
 
 				} catch (Exception ex) {
@@ -43,14 +45,14 @@ namespace GAF.EvaluationServer
 
 				//nice welcome message
 				Console.WriteLine ("GAF Evaluation Server Listening on {0}:{1}.",
-					settings.IPAddress,
-					settings.Port);
+					settings.EndPoint.Address,
+					settings.EndPoint.Port);
 
 				Network.EvaluationServer evaluationServer = new GAF.Network.EvaluationServer (settings.FitnessAssemblyName);
 				evaluationServer.OnEvaluationComplete += OnEvaluationComplete;
 
 				//start the server
-				evaluationServer.Start (settings.IPAddress, settings.Port);
+				evaluationServer.Start (settings.EndPoint);
 
 
 			} catch (Exception ex) {

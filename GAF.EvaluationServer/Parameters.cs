@@ -14,46 +14,32 @@ namespace GAF.EvaluationServer
 		{
 			if (args != null) {
 
-				var paramPort = args.SingleOrDefault (arg => arg.StartsWith ("-port:", StringComparison.InvariantCultureIgnoreCase));
-				var paramIP = args.SingleOrDefault (arg => arg.StartsWith ("-ip:", StringComparison.InvariantCultureIgnoreCase));
+				var paramHelp = args.SingleOrDefault (arg => arg.StartsWith ("-h", StringComparison.InvariantCultureIgnoreCase));
+				var paramEndpoint = args.SingleOrDefault (arg => arg.StartsWith ("-endpoint:", StringComparison.InvariantCultureIgnoreCase));
 				var paramFitnessAssembly = args.SingleOrDefault (arg => arg.StartsWith ("-f:", StringComparison.InvariantCultureIgnoreCase));
-				var paramConsul = args.SingleOrDefault (arg => arg.StartsWith ("-consul:", StringComparison.InvariantCultureIgnoreCase));
+				var paramConsulEndpoint = args.SingleOrDefault (arg => arg.StartsWith ("-consul:", StringComparison.InvariantCultureIgnoreCase));
 
-				//Port
-				if (!string.IsNullOrEmpty (paramPort)) {
-					paramPort = paramPort.Replace ("-port:", "");
-					var newPort = 0;
-					if (int.TryParse (paramPort, out newPort)) {
-						this.Port = newPort;
-					}
-				} else {
-					this.Port = defaultServerPort;
-				}
+				//Help
+				DisplayHelp = !string.IsNullOrEmpty (paramHelp);
 
-				//IP Address
-				if (!string.IsNullOrEmpty (paramIP)) {
-
-					paramIP = paramIP.Replace ("-ip:", "");
-					IPAddress addr;
-					if (IPAddress.TryParse (paramIP, out addr)) {
-						this.IPAddress = addr;
-					}
-
+				//Endpoint Address
+				if (!string.IsNullOrEmpty (paramEndpoint)) {
+					paramEndpoint = paramEndpoint.Replace ("-endpoint:", "");
+					this.EndPoint = CreateEndpoint (paramEndpoint);
 				} else {
 					//nothing specified so use local address
 					IPHostEntry ipHostInfo = Dns.GetHostEntry (Dns.GetHostName ());
-					this.IPAddress = ipHostInfo.AddressList [0];
+					this.EndPoint = new IPEndPoint (ipHostInfo.AddressList [0], defaultServerPort);
 				}
-
 				//Consumer Functions
 				if (!string.IsNullOrEmpty (paramFitnessAssembly)) {
 					this.FitnessAssemblyName = paramFitnessAssembly.Replace ("-f:", "");
 				}
 
 				//Consul Node Address
-				if (!string.IsNullOrEmpty (paramConsul)) {
-					paramConsul = paramConsul.Replace ("-consul:", "");
-					this.ConsulNodeEndPoint = CreateEndpoint (paramConsul);
+				if (!string.IsNullOrEmpty (paramConsulEndpoint)) {
+					paramConsulEndpoint = paramConsulEndpoint.Replace ("-consul:", "");
+					this.ConsulNodeEndPoint = CreateEndpoint (paramConsulEndpoint);
 				} else {
 					//nothing specified so use local address
 					IPHostEntry ipHostInfo = Dns.GetHostEntry (Dns.GetHostName ());
@@ -64,14 +50,13 @@ namespace GAF.EvaluationServer
 
 		}
 
-		public int Port { get; set; }
+		public string FitnessAssemblyName { private set; get;}
 
-		public IPAddress IPAddress { get; set; }
+		public IPEndPoint ConsulNodeEndPoint { private set; get; }
 
-		public string FitnessAssemblyName { set; get;}
+		public IPEndPoint EndPoint { private set; get; }
 
-		public IPEndPoint ConsulNodeEndPoint { set; get; }
-
+		public bool DisplayHelp { private set; get;}
 
 		#region Helper Methods
 

@@ -53,13 +53,11 @@ namespace GAF.Network
 		private const int pidEtx = 15;
 
 		/// <summary>
-		/// Starts the listening.
+		/// Start listening.
 		/// </summary>
-		/// <param name = "ipAddress"></param>
-		/// <param name="port">Port.</param>
-		public static void StartListening (IPAddress ipAddress, int port)
+		/// <param name="endPoint">End point.</param>
+		public static void StartListening (IPEndPoint endPoint)
 		{
-			IPEndPoint localEndPoint = new IPEndPoint (ipAddress, port);
 
 			// Create a TCP/IP socket.
 			Socket listener = new Socket (AddressFamily.InterNetwork,
@@ -68,7 +66,7 @@ namespace GAF.Network
 
 			// Bind the socket to the local endpoint and listen for incoming connections.
 
-			listener.Bind (localEndPoint);
+			listener.Bind (endPoint);
 			listener.Listen (100);
 
 			while (true) {
