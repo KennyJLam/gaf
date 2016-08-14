@@ -31,6 +31,7 @@ namespace GAF.Network
 	{
 		private const string _fitnessAssemblyName = "f60011de-c680-4ccc-b69e-8c958b91ff4d.dll";
 		private FitnessAssembly _fitnessAssembly;
+		private bool _serverDefinedFitness;
 
 		/// <summary>
 		/// Delegate definition for the InitialEvaluationComplete event handler.
@@ -62,8 +63,28 @@ namespace GAF.Network
 		/// </summary>
 		public EvaluationServer ()
 		{
+			_serverDefinedFitness = false;
 			if (File.Exists (_fitnessAssemblyName)) {
 				_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
+			}
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="T:GAF.Network.EvaluationServer"/> class.
+		/// </summary>
+		/// <param name="fitnessAssemblyName">Fitness assembly name.</param>
+		public EvaluationServer (string fitnessAssemblyName)
+		{
+			//if the parameter ios null or empty use the dynamic name
+			if (string.IsNullOrWhiteSpace (fitnessAssemblyName)) {
+				_serverDefinedFitness = false;
+				fitnessAssemblyName = _fitnessAssemblyName;
+			} else {
+				_serverDefinedFitness = true;
+			}
+
+			if (File.Exists (fitnessAssemblyName)) {
+				_fitnessAssembly = new FitnessAssembly (fitnessAssemblyName);
 			}
 		}
 
@@ -85,7 +106,7 @@ namespace GAF.Network
 
 			switch ((PacketId)e.Packet.Header.PacketId) {
 
-			case PacketId.Data: {
+			case PacketId.Chromosome: {
 					if (e.Packet.Header.DataLength > 0) {
 
 						//if (_fitnessAssembly == null) {
@@ -127,11 +148,13 @@ namespace GAF.Network
 
 					//check for fitness file
 					if (File.Exists (_fitnessAssemblyName)) {
-						result = result | (int)ServerStatus.Initialised;
-						Console.WriteLine ("File.Exists: {0}", _fitnessAssemblyName);
-					} else {
-						Console.WriteLine ("File.does not Exist: {0}", _fitnessAssemblyName);
+						result = result | (int)ServerStatusFlags.Initialised;
 					}
+
+					if (_serverDefinedFitness) {
+						result = result | (int)ServerStatusFlags.ServerDefinedFitness;
+					}
+
 					e.Result = (double)result;
 
 					break;

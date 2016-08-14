@@ -168,7 +168,6 @@ namespace GAF.Network
 			handler.BeginSend (data.ToByteArray (), 0, data.Header.DataLength + PacketHeader.HeaderLength, 0,
 				new AsyncCallback (SendCallback), state);
 
-
 		}
 
 		private static void SendCallback (IAsyncResult ar)
