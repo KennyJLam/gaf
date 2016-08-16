@@ -176,9 +176,6 @@ namespace GAF.Network
 		private void EvaluateTask (System.Collections.Queue syncQueue, FitnessFunction fitnessFunctionDelegate, int taskId, CancellationToken token)
 		{
 
-			bool initialised;
-			bool serverDefinedFitness;
-
 			// Establish the remote endpoint using the appropriate endpoint and socket client
 			IPEndPoint remoteEndPoint = EndPoints [taskId];
 			_clients [taskId] = SocketClient.Connect (remoteEndPoint);

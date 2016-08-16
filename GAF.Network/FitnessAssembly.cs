@@ -19,30 +19,30 @@ namespace GAF.Network
 				throw new FileNotFoundException (string.Format ("Cannot find Assembly '{0}'", assemblyPath));
 			}
 			    
-			var fitnessDll = Assembly.LoadFile (assemblyPath);
+			var assembly = Assembly.LoadFile (assemblyPath);
 			var type = typeof (IRemoteFitness);
-			var types = fitnessDll.DefinedTypes.Where (type.IsAssignableFrom).ToList ();
+			var types = assembly.DefinedTypes.Where (type.IsAssignableFrom).ToList ();
 			//var types = fitnessDll.GetTypes();
 
 			if (types.Count == 0) {
-				throw new ApplicationException (string.Format ("An IRemoteFitness type connot be found within the specified dll [{0}].", assemblyPath));
+				throw new ApplicationException (string.Format ("An IRemoteFitness type connot be found within the specified assembly [{0}].", assemblyPath));
 			}
 
 			//get the first type available
-			var fitnessFunction = types [0];
+			var fitnessClass = types [0];
 
 			//get method inf objects based on method names as defined in IConsumerFunctions
-			var fitnessMethodInfo = fitnessFunction.GetDeclaredMethod ("EvaluateFitness");
+			var fitnessMethodInfo = fitnessClass.GetDeclaredMethod ("EvaluateFitness");
 			//var knownTypesMethodInfo = fitnessFunction.GetDeclaredMethod ("GetKnownTypes");
 
-			var typeAsInstance = Activator.CreateInstance (fitnessFunction);
+			var typeAsInstance = Activator.CreateInstance (fitnessClass);
 
 			FitnessFunction =
 				(FitnessFunction)Delegate.CreateDelegate (typeof (FitnessFunction), typeAsInstance, fitnessMethodInfo);
 
 			KnownTypes = ((IRemoteFitness)typeAsInstance).GetKnownTypes ();
 
-			AssemblyName = fitnessDll.FullName.Split(',')[0];
+			AssemblyName = assembly.FullName.Split(',')[0];
 		}
 
 		/// <summary>

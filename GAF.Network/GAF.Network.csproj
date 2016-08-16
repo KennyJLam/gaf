@@ -55,6 +55,7 @@
     <Compile Include="StaticServices.cs" />
     <Compile Include="ServerStatusFlags.cs" />
     <Compile Include="ServerStatus.cs" />
+    <Compile Include="ServiceDiscoveryAssembly.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GAF.45\GAF.45.csproj">
