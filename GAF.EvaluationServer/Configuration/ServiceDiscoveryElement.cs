@@ -2,18 +2,23 @@
 
 namespace GAF.EvaluationServer.Configuration
 {
-    public class SettingElement : ConfigurationElement
+    public class ServiceDiscoveryElement : ConfigurationElement
     {
-        [ConfigurationProperty("key", IsKey = true, IsRequired = true)]
-        public string Key
+        [ConfigurationProperty("assemblyName", IsKey = true, IsRequired = false)]
+        public string AssemblyName
         {
-            get { return (string)base["key"]; }
+            get { return (string)base["assemblyName"]; }
         }
 
-        [ConfigurationProperty("value", IsKey = false, IsRequired = true)]
-        public string Value
+        [ConfigurationProperty("ipAddress", IsKey = false, IsRequired = false)]
+        public string IpAddress
         {
-            get { return (string)base["value"]; }
+            get { return (string)base["ipAddress"]; }
         }
+
+		[ConfigurationProperty ("port", IsKey = false, IsRequired = false)]
+		public string Port {
+			get { return (string)base ["port"]; }
+		}
     }
 }

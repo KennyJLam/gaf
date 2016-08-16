@@ -2,7 +2,7 @@
 
 namespace GAF.EvaluationServer.Configuration
 {
-    public class CustomSection : ConfigurationSection
+    public class ServerSection : ConfigurationSection
     {
         ///// <summary>
         ///// 

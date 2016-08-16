@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace WebUI.Configuration
+namespace GAF.EvaluationServer.Configuration
 {
 
     [ConfigurationCollection(typeof(SettingElement), AddItemName = "setting",

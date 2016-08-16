@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using GAF.Consul;
 using GAF.ConsumerFunctions.TravellingSalesman;
+using GAF.EvaluationServer.Configuration;
 using GAF.Network;
 
 namespace GAF.EvaluationServer
@@ -12,35 +14,60 @@ namespace GAF.EvaluationServer
 		{
 			try {
 
-				//retrieves the parameters from the commant line.
+				//retrieve the parameters from the commant line.
 				var settings = new Parameters (args);
-
 				if (settings.DisplayHelp) {
 					Console.WriteLine (Resources.Usage);
 					return 0;
 				}
 
-				//register service with consul
-				//if (settings.ConsulNodeEndPoint != null) {
+				var sdIp = ConfigurationManager.Server.ServiceDiscovery.IpAddress;
+				var sdPortS = ConfigurationManager.Server.ServiceDiscovery.Port;
+				int sdPort = 0;
 
-				//var endPoint = ConsulClient.CreateEndpoint ("192.168.1.90:8500");
-				//var consulClient = new ConsulClient ("192.168.1.91", 8500);
-				var consulClient = new ConsulClient (settings.ConsulNodeEndPoint);
+				if (int.TryParse (sdPortS, out sdPort))
+				{
+					var sdNodeEndPoint = CreateEndpoint (sdIp, Convert.ToInt32 (sdPort));
 
+					//register service with service discovery
 
-				Console.WriteLine ("Registering GAF Evaluation Server with Consul Node at address {0}.",
-								   consulClient.NodeEndPoint.ToString ());
-				try {
-					//consulClient.RegisterService (serviceDefinition);
-					var serviceId = string.Format ("GAF-Server:{0}:{1}", settings.EndPoint.Address, settings.EndPoint.Port);
-					consulClient.RegisterService (serviceId, settings.EndPoint, settings.EndPoint);
-					//consulClient.DeRegisterService ("");
+					var serviceDiscoveryAssemblyName = ConfigurationManager.Server.ServiceDiscovery.AssemblyName;
+					if (!string.IsNullOrWhiteSpace (serviceDiscoveryAssemblyName))
+					{
+						try {
+							//assembly name specified so load the assembly
+							var serviceDiscovery = new ServiceDiscoveryAssembly (serviceDiscoveryAssemblyName, sdNodeEndPoint);
 
-				} catch (Exception ex) {
-					while (ex.InnerException != null) {
-						ex = ex.InnerException;
+							Console.WriteLine ("Registering GAF Evaluation Server with Consul Node at address {0}.", sdNodeEndPoint.ToString ());
+							var serviceId = string.Format ("GAF-Server:{0}:{1}", settings.EndPoint.Address, settings.EndPoint.Port);
+							serviceDiscovery.RegisterService (serviceId, settings.EndPoint, settings.EndPoint);
+
+						} catch (Exception ex) {
+
+							while (ex.InnerException != null) {
+								ex = ex.InnerException;
+							}
+							Console.WriteLine ("Service Discovery Registration Failed [{0}].", ex.Message);
+
+						}
 					}
-					Console.WriteLine ("Consul Registration Failed [{0}].", ex.Message);
+
+					//var sdClient = new ConsulClient (sdNodeEndPoint);
+
+
+					//try {
+					//	//consulClient.RegisterService (serviceDefinition);
+					//	var serviceId = string.Format ("GAF-Server:{0}:{1}", settings.EndPoint.Address, settings.EndPoint.Port);
+					//	sdClient.RegisterService (serviceId, settings.EndPoint, settings.EndPoint);
+					//	//consulClient.DeRegisterService ("");
+
+					//} catch (Exception ex) {
+					//	while (ex.InnerException != null) {
+					//		ex = ex.InnerException;
+					//	}
+					//	Console.WriteLine ("Consul Registration Failed [{0}].", ex.Message);
+					//}
+
 				}
 
 				//nice welcome message
@@ -48,7 +75,8 @@ namespace GAF.EvaluationServer
 					settings.EndPoint.Address,
 					settings.EndPoint.Port);
 
-				Network.EvaluationServer evaluationServer = new GAF.Network.EvaluationServer (settings.FitnessAssemblyName);
+				var fitnessAssemblyName = ConfigurationManager.Server.Fitness.AssemblyName;
+				Network.EvaluationServer evaluationServer = new GAF.Network.EvaluationServer (fitnessAssemblyName);
 				evaluationServer.OnEvaluationComplete += OnEvaluationComplete;
 
 				//start the server
@@ -72,5 +100,21 @@ namespace GAF.EvaluationServer
 			Console.WriteLine ("Evaluated solution {0}, Fitness={1}", e.Solution.Id, e.Solution.Fitness);
 		}
 
+		public static IPEndPoint CreateEndpoint (string ipAddress, int port)
+		{
+			IPEndPoint ipEndPoint = null;
+
+			if (!string.IsNullOrWhiteSpace (ipAddress) && port > 0) {
+
+				IPAddress addr = null;
+				if (IPAddress.TryParse (ipAddress, out addr)) {
+
+					ipEndPoint = new IPEndPoint (addr, port);
+
+				}
+			}
+
+			return ipEndPoint;
+		}
 	}
 }

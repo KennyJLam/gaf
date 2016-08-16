@@ -16,8 +16,8 @@ namespace GAF.EvaluationServer
 
 				var paramHelp = args.SingleOrDefault (arg => arg.StartsWith ("-h", StringComparison.InvariantCultureIgnoreCase));
 				var paramEndpoint = args.SingleOrDefault (arg => arg.StartsWith ("-endpoint:", StringComparison.InvariantCultureIgnoreCase));
-				var paramFitnessAssembly = args.SingleOrDefault (arg => arg.StartsWith ("-f:", StringComparison.InvariantCultureIgnoreCase));
-				var paramConsulEndpoint = args.SingleOrDefault (arg => arg.StartsWith ("-consul:", StringComparison.InvariantCultureIgnoreCase));
+				//var paramFitnessAssembly = args.SingleOrDefault (arg => arg.StartsWith ("-f:", StringComparison.InvariantCultureIgnoreCase));
+				//var paramConsulEndpoint = args.SingleOrDefault (arg => arg.StartsWith ("-consul:", StringComparison.InvariantCultureIgnoreCase));
 
 				//Help
 				DisplayHelp = !string.IsNullOrEmpty (paramHelp);
@@ -31,28 +31,28 @@ namespace GAF.EvaluationServer
 					IPHostEntry ipHostInfo = Dns.GetHostEntry (Dns.GetHostName ());
 					this.EndPoint = new IPEndPoint (ipHostInfo.AddressList [0], defaultServerPort);
 				}
-				//Consumer Functions
-				if (!string.IsNullOrEmpty (paramFitnessAssembly)) {
-					this.FitnessAssemblyName = paramFitnessAssembly.Replace ("-f:", "");
-				}
+				////Consumer Functions
+				//if (!string.IsNullOrEmpty (paramFitnessAssembly)) {
+				//	this.FitnessAssemblyName = paramFitnessAssembly.Replace ("-f:", "");
+				//}
 
-				//Consul Node Address
-				if (!string.IsNullOrEmpty (paramConsulEndpoint)) {
-					paramConsulEndpoint = paramConsulEndpoint.Replace ("-consul:", "");
-					this.ConsulNodeEndPoint = CreateEndpoint (paramConsulEndpoint);
-				} else {
-					//nothing specified so use local address
-					IPHostEntry ipHostInfo = Dns.GetHostEntry (Dns.GetHostName ());
-					this.ConsulNodeEndPoint = new IPEndPoint(ipHostInfo.AddressList [0], defaultConsulPort);
-				}
+				////Consul Node Address
+				//if (!string.IsNullOrEmpty (paramConsulEndpoint)) {
+				//	paramConsulEndpoint = paramConsulEndpoint.Replace ("-consul:", "");
+				//	this.ConsulNodeEndPoint = CreateEndpoint (paramConsulEndpoint);
+				//} else {
+				//	//nothing specified so use local address
+				//	IPHostEntry ipHostInfo = Dns.GetHostEntry (Dns.GetHostName ());
+				//	this.ConsulNodeEndPoint = new IPEndPoint(ipHostInfo.AddressList [0], defaultConsulPort);
+				//}
 
 			}
 
 		}
 
-		public string FitnessAssemblyName { private set; get;}
+		//public string FitnessAssemblyName { private set; get;}
 
-		public IPEndPoint ConsulNodeEndPoint { private set; get; }
+		//public IPEndPoint ConsulNodeEndPoint { private set; get; }
 
 		public IPEndPoint EndPoint { private set; get; }
 
@@ -60,7 +60,7 @@ namespace GAF.EvaluationServer
 
 		#region Helper Methods
 
-		private IPEndPoint CreateEndpoint (string endpointAddress)
+		public IPEndPoint CreateEndpoint (string endpointAddress)
 		{
 			IPEndPoint ipEndPoint = null;
 

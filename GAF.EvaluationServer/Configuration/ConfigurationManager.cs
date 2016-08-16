@@ -5,134 +5,68 @@ using System.Web;
 //using J8.Umbraco.Diagnostics;
 
 
-namespace WebUI.Configuration
+namespace GAF.EvaluationServer.Configuration
 {
     public static class ConfigurationManager
     {
-        private const string SectionName = "customSection";
+        private const string SectionName = "server";
         private const string SettingsNodeName = "settings";
-		private const string RedirectsNodeName = "redirects";
+		private const string FitnessNodeName = "fitness";
+		private const string ServiceDiscoveryNodeName = "serviceDiscovery";
 
-
-
-        public static T GetSetting<T>(string key)
-        {
-            if(typeof (T) == typeof(string))
-            {
-                return (T)(object)GetSettingAsString(key);
-            }
-            if (typeof(T) == typeof(int))
-            {
-                return (T)(object)GetSettingAsInteger(key);
-            }
-            if (typeof(T) == typeof(double))
-            {
-                return (T)(object)GetSettingAsDouble(key);
-            }
-            if (typeof(T) == typeof(bool))
-            {
-                return (T)(object)GetSettingAsBool(key);
-            }
-
-            throw new ConfigurationErrorsException("A conversion for the specified C# Type, could not be found.");
-        }
-			
-		public static string GetRedirect(string oldUrl)
-		{
-			var element = GetRedirectElement (oldUrl);
-
-			//redirect is allowed to return null
-			if (element == null) {
-				return null;
-			} else {
-				return element.NewUrl;
-			}
-		}
-
-        #region Private Methods
-
-		private static string GetSettingAsString(string key)
+		public static string GetSetting(string key)
 		{
 			var element = GetSettingElement(key);
 			if (element == null)
 			{
 				throw new ConfigurationErrorsException(string.Format(
-					"<setting key='{0}'... is set incorrectly.", key));
+					"<setting key='{0}'... is set incorrectly or is missing.", key));
 			}
 
 			return element.Value;
 		}
 
-		private static int GetSettingAsInteger(string key)
-		{
-			var setting = GetSettingAsString(key);
-			var result = -1;
-
-			if (string.IsNullOrWhiteSpace(setting))
-			{
-
-				if (!int.TryParse(setting, out result))
-				{
-					throw new ConfigurationErrorsException(string.Format(
-						"<setting key='{0}'... is set incorrectly.", key));
+		public static ServerSection Server {
+			get {
+				var kcConfig = System.Configuration.ConfigurationManager.GetSection (SectionName) as ServerSection;
+				if (kcConfig == null) {
+					throw new ApplicationException (
+						string.Format ("Configuration section '{0}' cannot be found in the configuration file.", SectionName));
 				}
-			}
 
-			return result;
+				return kcConfig;
+			}
 		}
 
-		private static double GetSettingAsDouble(string key)
-		{
-			var setting = GetSettingAsString(key);
-			var result = -1.0;
+		//public static FitnessElement Fitness {
+		//	get {
+		//		var e = Server.Fitness;
 
-			if (string.IsNullOrWhiteSpace(setting))
-			{
+		//		if (e == null) {
+		//			throw new Exception (
+		//				string.Format ("The configuration node '{0}' cannot be found in the configuration file.",
+		//					FitnessNodeName));
+		//		}
 
-				if (!double.TryParse(setting, out result))
-				{
-					throw new ConfigurationErrorsException(string.Format(
-						"<setting key='{0}'... is set incorrectly.", key));
-				}
-			}
+		//		return e;
+		//	}
+		//}
 
-			return result;
-		}
+		//public static ServiceDiscoveryElement ServiceDiscovery {
+		//	get {
+		//		var e = Server.ServiceDiscovery;
 
-		private static bool GetSettingAsBool(string key)
-		{
-			var setting = GetSettingAsString(key);
-			var result = false;
+		//		if (e == null) {
+		//			throw new Exception (
+		//				string.Format ("The configuration node '{0}' cannot be found in the configuration file.",
+		//					FitnessNodeName));
+		//		}
 
-			if (string.IsNullOrWhiteSpace(setting))
-			{
+		//		return e;
+		//	}
+		//}
 
-				if (!bool.TryParse(setting, out result))
-				{
-					throw new ConfigurationErrorsException(string.Format(
-						"<setting key='{0}'... is set incorrectly.", key));
-				}
-			}
-
-			return result;
-		}
-
-        private static SettingCollection GetSettingCollection()
-        {
-            var section = GetConfigSection();
-			var settings = section.Settings;
-
-			if (settings == null)
-            {
-                throw new Exception(
-                    string.Format("The configuration node '{0}' cannot be found in the configuration file.",
-						SettingsNodeName));
-            }
-
-			return settings;
-        }
-			
-        private static SettingElement GetSettingElement(string key)
+		private static SettingElement GetSettingElement(string key)
         {
             SettingElement result = null;
             var elements = GetSettingCollection();
@@ -151,53 +85,19 @@ namespace WebUI.Configuration
             return result;
         }
 
-		private static RedirectCollection GetRedirectCollection()
+		private static SettingCollection GetSettingCollection ()
 		{
-			var section = GetConfigSection();
-			var redirects = section.Redirects;
+			var settings = Server.Settings;
 
-			if (redirects == null)
-			{
-				throw new Exception(
-					string.Format("The configuration node '{0}' cannot be found in the configuration file.",
-						RedirectsNodeName));
+			if (settings == null) {
+				throw new Exception (
+					string.Format ("The configuration node '{0}' cannot be found in the configuration file.",
+						SettingsNodeName));
 			}
 
-			return redirects;
+			return settings;
 		}
 
-		private static RedirectElement GetRedirectElement(string oldUrl)
-		{
-			RedirectElement result = null;
-			var elements = GetRedirectCollection();
-
-			foreach (var element in elements)
-			{
-				var typedElement = element as RedirectElement;
-				if (typedElement != null &&
-					typedElement.OldUrl.Equals(oldUrl, StringComparison.InvariantCultureIgnoreCase))
-				{
-					result = typedElement;
-					break;
-				}
-			}
-
-			return result;
-		}
-
-        private static CustomSection GetConfigSection()
-        {
-            var kcConfig = System.Configuration.ConfigurationManager.GetSection(SectionName) as CustomSection;
-            if (kcConfig == null)
-            {
-                throw new ApplicationException(
-                    string.Format("Configuration section '{0}' cannot be found in the configuration file.", SectionName));
-            }
-
-            return kcConfig;
-        }
-
-        #endregion
 
     }
 }

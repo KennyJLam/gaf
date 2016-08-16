@@ -2,12 +2,12 @@
 
 namespace GAF.EvaluationServer.Configuration
 {
-    public class FitnessAssemblyElement : ConfigurationElement
+    public class FitnessElement : ConfigurationElement
     {
-        [ConfigurationProperty("name", IsKey = true, IsRequired = true)]
-        public string Name
+        [ConfigurationProperty("assemblyName", IsKey = true, IsRequired = false)]
+        public string AssemblyName
         {
-            get { return (string)base["name"]; }
+            get { return (string)base["assemblyName"]; }
         }
 
     }
