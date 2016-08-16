@@ -29,9 +29,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -40,7 +38,7 @@
     <Compile Include="Node.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="ServiceDefinition.cs" />
-    <Compile Include="Services.cs" />
+    <Compile Include="AvailableServices.cs" />
     <Compile Include="TaggedAddresses.cs" />
   </ItemGroup>
   <ItemGroup>

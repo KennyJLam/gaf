@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using GAF.Network;
-using Newtonsoft.Json;
 
 namespace GAF.Consul
 {
@@ -149,23 +148,15 @@ namespace GAF.Consul
             return serviceDefinition;
         }
 
-
 		private bool Register (ServiceDefinition serviceDefinition)
 		{
 			//const string registerUrl = baseUrl + "/v1/agent/service/register";
 			var url = string.Format ("http://{0}/v1/agent/service/register", this.NodeEndPoint);
 
-			var jsonSettings = new JsonSerializerSettings ();
-			jsonSettings.Formatting = Formatting.Indented;
-			jsonSettings.DefaultValueHandling = DefaultValueHandling.Ignore;
-
-			var jsonDocument = JsonConvert.SerializeObject (serviceDefinition, jsonSettings);
-
-			//var result = Put (url, jsonDocument);
-			var result = SendRequest (url, HttpMethod.Put, jsonDocument);
+			var jsonDoc = Serializer.SerialiseToJson<ServiceDefinition> (serviceDefinition);
+			var result = SendRequest (url, HttpMethod.Put, jsonDoc);
 			return result.StatusCode == HttpStatusCode.OK;
 		}
-
 		private bool DeRegister (string serviceId)
 		{
 			var url = string.Format ("http://{0}/v1/agent/service/deregister/{1}", this.NodeEndPoint, serviceId);
@@ -175,9 +166,8 @@ namespace GAF.Consul
 			return result.StatusCode == HttpStatusCode.OK;
 		}
 
-		private List<Services> GetServices (string serviceName, bool passing)
+		private List<AvailableServices> GetServices (string serviceName, bool passing)
 		{
-			//var url = string.Format ("http://{0}/v1/health/service/{1}?passing", _endPoint, serviceName);
 			var url = string.Format ("http://{0}/v1/health/service/{1}", this.NodeEndPoint, serviceName);
 
 			if (passing) {
@@ -187,11 +177,17 @@ namespace GAF.Consul
 			var result = SendRequest (url, HttpMethod.Get);
 			var json = result.Content.ReadAsStringAsync ().Result;
 
-			var services = JsonConvert.DeserializeObject<List<Services>> (json);
+			var knownTypes = new List<Type> ();
+			knownTypes.Add (typeof (Node));
+			knownTypes.Add (typeof (Check));
+			knownTypes.Add (typeof (Service));
+			knownTypes.Add (typeof (TaggedAddresses));
+
+			var services = Serializer.DeSerialize<List<AvailableServices>> (json, knownTypes);
+			//var services2 = JsonConvert.DeserializeObject<List<AvailableServices>> (json);
 
 			return services;
 		}
-
 		#endregion
 
 		#region Helper Methods

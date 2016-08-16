@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace GAF.Consul
 {
-	public class Services
+	[DataContract]
+	public class AvailableServices
 	{
+		[DataMember]
 		public Node Node { get; set; }
+		[DataMember]
 		public Service Service { get; set; }
+		[DataMember]
 		public List<Check> Checks { get; set; }
 	}
 }

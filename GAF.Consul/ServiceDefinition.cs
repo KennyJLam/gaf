@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace GAF.Consul
 {
+	[DataContract]
 	public class ServiceDefinition
 	{
 		public ServiceDefinition ()
@@ -10,28 +12,41 @@ namespace GAF.Consul
 			Tags = new List<string> ();
 			Check = new CheckDefinition ();
 		}
-
+		[DataMember]
 		public string Id { get; set; }
+		[DataMember]
 		public string Name { get; set; }
+		[DataMember]
 		public List<string> Tags { get; set; }
+		[DataMember]
 		public string Address { get; set; }
+		[DataMember]
 		public int Port { get; set; }
+		[DataMember]
 		public CheckDefinition Check { get; set; }
 
 	}
 
+	[DataContract]
 	public class CheckDefinition
 	{
 		public CheckDefinition ()
 		{
 		}
 
+		[DataMember]
 		public string Script { get; set; }
+		[DataMember]
 		public string HTTP { get; set; }
+		[DataMember]
 		public string TCP { get; set; }
+		[DataMember]
 		public string Interval { get; set; }
-        public string Timeout { get; set; }
+		[DataMember]
+		public string Timeout { get; set; }
+		[DataMember]
 		public int TTL { get; set; }
+		[DataMember]
 		public string Notes { set; get; }
 	}
 }
