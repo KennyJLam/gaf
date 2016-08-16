@@ -80,7 +80,7 @@ namespace GAF.EvaluationServer
 		public static void OnEvaluationComplete (object sender, GAF.Network.RemoteEvaluationEventArgs e)
 		{
 			//this event fires each time an evaluation is undertaken by the server
-			Console.WriteLine ("Evaluated solution {0}, Fitness={1}", e.Solution.Id, e.Solution.Fitness);
+			//Console.WriteLine ("Evaluated solution {0}, Fitness={1}", e.Solution.Id, e.Solution.Fitness);
 		}
 
 		public static IPEndPoint CreateEndpoint (string ipAddress, int port)
