@@ -38,7 +38,7 @@ namespace GAF.EvaluationServer
 							//assembly name specified so load the assembly
 							var serviceDiscovery = new ServiceDiscoveryAssembly (serviceDiscoveryAssemblyName, sdNodeEndPoint);
 
-							Console.WriteLine ("Registering GAF Evaluation Server with Consul Node at address {0}.", sdNodeEndPoint.ToString ());
+							Console.WriteLine ("Registering GAF Evaluation Server with Service Discovery at address {0}.", sdNodeEndPoint.ToString ());
 							var serviceId = string.Format ("GAF-Server:{0}:{1}", settings.EndPoint.Address, settings.EndPoint.Port);
 							serviceDiscovery.RegisterService (serviceId, settings.EndPoint, settings.EndPoint);
 
@@ -51,23 +51,6 @@ namespace GAF.EvaluationServer
 
 						}
 					}
-
-					//var sdClient = new ConsulClient (sdNodeEndPoint);
-
-
-					//try {
-					//	//consulClient.RegisterService (serviceDefinition);
-					//	var serviceId = string.Format ("GAF-Server:{0}:{1}", settings.EndPoint.Address, settings.EndPoint.Port);
-					//	sdClient.RegisterService (serviceId, settings.EndPoint, settings.EndPoint);
-					//	//consulClient.DeRegisterService ("");
-
-					//} catch (Exception ex) {
-					//	while (ex.InnerException != null) {
-					//		ex = ex.InnerException;
-					//	}
-					//	Console.WriteLine ("Consul Registration Failed [{0}].", ex.Message);
-					//}
-
 				}
 
 				//nice welcome message
