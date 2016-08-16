@@ -45,7 +45,6 @@ namespace GAF.Network
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static T DeSerialize<T> (byte [] byteData, List<Type> knownTypes)
 		{
-
 			DataContractJsonSerializer js = new DataContractJsonSerializer (typeof (T), knownTypes);
 			MemoryStream memoryStream = new MemoryStream (byteData);
 
@@ -53,7 +52,6 @@ namespace GAF.Network
 			memoryStream.Close ();
 
 			return objectData;
-
 		}
 
 		public static T DeSerialize<T> (string json, List<Type> knownTypes)

@@ -252,6 +252,7 @@ namespace GAF.Network
 
 				// Convert the passed chromosome to a byte array
 				var byteData = Serializer.Serialize<Chromosome> (chromosome, _fitnessAssembly.KnownTypes);
+				//var testChrome = Serializer.DeSerialize<Chromosome> (byteData, _fitnessAssembly.KnownTypes);
 				var xmitPacket = new Packet (byteData, PacketId.Chromosome, chromosome.Id);
 
 				var recPacket = SocketClient.TransmitData (client, xmitPacket);

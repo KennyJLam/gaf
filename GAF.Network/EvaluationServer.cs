@@ -48,19 +48,6 @@ namespace GAF.Network
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:GAF.Network.EvaluationServer"/> class.
 		/// </summary>
-		/// <param name="fitnessAssemblyName">Fitness assembly name.</param>
-		//public EvaluationServer (string fitnessAssemblyName)
-		//{
-		//	if (string.IsNullOrWhiteSpace (fitnessAssemblyName)) {
-		//		throw new ArgumentException ("The specified fitness assembly name is null or empty.", nameof (fitnessAssemblyName));
-		//	}
-		//	_fitnessAssembly = new FitnessAssembly (fitnessAssemblyName);
-
-		//}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="T:GAF.Network.EvaluationServer"/> class.
-		/// </summary>
 		public EvaluationServer ()
 		{
 			_serverDefinedFitness = false;
@@ -100,16 +87,11 @@ namespace GAF.Network
 
 		private void listener_OnPacketReceived (object sender, PacketEventArgs e)
 		{
-			//Console.WriteLine ("Packet Received: {0}", e.Packet.Header.PacketId);
-
 			switch ((PacketId)e.Packet.Header.PacketId) {
 
 			case PacketId.Chromosome: {
+					
 					if (e.Packet.Header.DataLength > 0) {
-
-						//if (_fitnessAssembly == null) {
-						//	_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
-						//}
 
 						var chromosome = Serializer.DeSerialize<Chromosome> (e.Packet.Data, _fitnessAssembly.KnownTypes);
 						e.Result = chromosome.Evaluate (_fitnessAssembly.FitnessFunction);
@@ -126,10 +108,6 @@ namespace GAF.Network
 
 			case PacketId.Init: {
 
-					//if (_fitnessAssembly == null) {
-					//	_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
-					//}
-
 					if (e.Packet.Header.DataLength > 0) {
 						File.WriteAllBytes (_fitnessAssemblyName, e.Packet.Data);
 						_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
@@ -139,8 +117,6 @@ namespace GAF.Network
 				}
 
 			case PacketId.Status: {
-
-					Console.WriteLine ("Status Packet Received: {0}", e.Packet.Header.PacketId);
 
 					var result = 0x0;
 
