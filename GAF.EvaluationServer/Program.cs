@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using GAF.Consul;
 using GAF.ConsumerFunctions.TravellingSalesman;
@@ -12,6 +13,8 @@ namespace GAF.EvaluationServer
 	{
 		public static int Main (String [] args)
 		{
+			Log.WriteHeader ();
+
 			try {
 
 				//retrieve the parameters from the commant line.
@@ -25,20 +28,18 @@ namespace GAF.EvaluationServer
 				var sdPortS = ConfigurationManager.Server.ServiceDiscovery.Port;
 				int sdPort = 0;
 
-				if (int.TryParse (sdPortS, out sdPort))
-				{
+				if (int.TryParse (sdPortS, out sdPort)) {
 					var sdNodeEndPoint = CreateEndpoint (sdIp, Convert.ToInt32 (sdPort));
 
 					//register service with service discovery
-
 					var serviceDiscoveryAssemblyName = ConfigurationManager.Server.ServiceDiscovery.AssemblyName;
-					if (!string.IsNullOrWhiteSpace (serviceDiscoveryAssemblyName))
-					{
+					if (!string.IsNullOrWhiteSpace (serviceDiscoveryAssemblyName)) {
 						try {
 							//assembly name specified so load the assembly
 							var serviceDiscovery = new ServiceDiscoveryAssembly (serviceDiscoveryAssemblyName, sdNodeEndPoint);
 
-							Console.WriteLine ("Registering GAF Evaluation Server with Service Discovery at address {0}.", sdNodeEndPoint.ToString ());
+							Log.Info (string.Format ("Registering GAF Evaluation Server with Service Discovery at address {0}.", sdNodeEndPoint.ToString ()));
+
 							var serviceId = string.Format ("GAF-Server:{0}:{1}", settings.EndPoint.Address, settings.EndPoint.Port);
 							serviceDiscovery.RegisterService (serviceId, settings.EndPoint, settings.EndPoint);
 
@@ -47,35 +48,74 @@ namespace GAF.EvaluationServer
 							while (ex.InnerException != null) {
 								ex = ex.InnerException;
 							}
-							Console.WriteLine ("Service Discovery Registration Failed [{0}].", ex.Message);
-
+							Log.Warning (string.Format ("Service Discovery Registration Failed [{0}].", ex.Message));
 						}
+					} else {
+						Log.Warning ("Service Discovery not defined... skipped.");
 					}
 				}
 
-				//nice welcome message
-				Console.WriteLine ("GAF Evaluation Server Listening on {0}:{1}.",
-					settings.EndPoint.Address,
-					settings.EndPoint.Port);
-
 				var fitnessAssemblyName = ConfigurationManager.Server.Fitness.AssemblyName;
+
 				Network.EvaluationServer evaluationServer = new GAF.Network.EvaluationServer (fitnessAssemblyName);
 				evaluationServer.OnEvaluationComplete += OnEvaluationComplete;
+				//evaluationServer.OnLogging += (object sender, GAF.Network.LoggingEventArgs e) => {
+				//	Log (e.Message);
+				//};
 
 				//start the server
 				evaluationServer.Start (settings.EndPoint);
 
 
 			} catch (Exception ex) {
-
-				while (ex.InnerException != null) {
-					ex = ex.InnerException;
-				}
-				Console.WriteLine (ex.Message);
+				Log.Error (ex);
 			}
 
-			return 0;
+			//program should never return so if we get here it must be an exception
+			return -1;
 		}
+
+		//private static void Log (string message)
+		//{
+		//	var dt = DateTime.Now.ToString ("yyyy-MM-dd hh:mm:ss");
+		//	Console.WriteLine ("    {0} [INFO] {1}", dt, message);
+		//}
+
+		//private static void Log (Network.LoggingEventArgs logArgs)
+		//{
+		//	string level = string.Empty;
+		//	var dt = DateTime.Now.ToString ("yyyy-MM-dd hh:mm:ss");
+		//	var message = string.Format ("    {0} [{1}] {2}", dt, level, logArgs.Message);
+
+		//	switch (logArgs.LoggingType) {
+		//	case LoggingType.Info:
+		//		level = "INFO";
+		//		break;
+		//	case LoggingType.Warning:
+		//		level = "WARN";
+		//		break;
+		//	case LoggingType.Error:
+		//		level = "ERR";
+		//		break;
+		//	default:
+		//		level = "INFO";
+		//		break;
+		//	}
+
+		//	Trace.TraceInformation ("Hello TraceInformation");
+		//	Trace.TraceWarning ("Hello TraceWarning");
+		//	Trace.TraceError ("Hello TraceError");
+		//}
+
+		//private static void Log (Exception ex)
+		//{
+		//	while (ex.InnerException != null) {
+		//		ex = ex.InnerException;
+		//	}
+		//	var level = "WARN";
+		//	var dt = DateTime.Now.ToString ("yyyy-MM-dd hh:mm:ss");
+		//	Console.WriteLine ("    {0} {1} {2}", dt, level, ex.Message);
+		//}
 
 		public static void OnEvaluationComplete (object sender, GAF.Network.RemoteEvaluationEventArgs e)
 		{
