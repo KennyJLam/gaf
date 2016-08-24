@@ -205,6 +205,17 @@ namespace GAF
 		}
 
 		/// <summary>
+		/// Returns the globally unique ID for this chromosome.
+		/// </summary>
+		#if !PCL
+		[DataMember]
+		#endif
+		public Guid Id {
+			get { return _id; }
+			internal set { _id = value; }
+		}
+
+		/// <summary>
 		/// Internal property used to indicate whether this chromosome was evaluated by an operator.
 		/// This is used to prevent unnessesary evaluations occuring.
 		/// </summary>
@@ -228,17 +239,6 @@ namespace GAF
 		[DataMember]
 		#endif
 		public double FitnessNormalised { get; internal set; }
-
-		/// <summary>
-		/// Returns the globally unique ID for this chromosome.
-		/// </summary>
-		#if !PCL
-		[DataMember]
-		#endif
-		public Guid Id {
-			get { return _id; }
-			internal set { _id = value; }
-		}
 
 		/// <summary>
 		/// Returns the genes.
