@@ -240,7 +240,7 @@ namespace GAF.Consul
 
 			var httpResponse = _httpClient.SendAsync (httpRequest).Result;
 
-			Debug.WriteLine ("Result of PUT ({0}) = {1}.", resourceUrl, httpResponse.StatusCode, null);
+			//Debug.WriteLine ("Result of PUT ({0}) = {1}.", resourceUrl, httpResponse.StatusCode, null);
 
 			return httpResponse;
 		}
