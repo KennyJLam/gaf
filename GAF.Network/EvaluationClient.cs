@@ -59,16 +59,6 @@ namespace GAF.Network
 		public event EvaluationExceptionHandler OnEvaluationException;
 
 		/// <summary>
-		/// Delegate for the logging event.
-		/// </summary>
-		//public delegate void LoggngEventHandler (object sender,LoggingEventArgs e);
-
-		/// <summary>
-		/// Event definition for logging event.
-		/// </summary>
-		//public event EvaluationServer.LoggngEventHandler OnLogging;
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="GAF.Net.EvaluationClient"/> class.
 		/// </summary>
 		/// <param name="endPoints">End points.</param>
@@ -287,13 +277,7 @@ namespace GAF.Network
 
 			return fitness;
 		}
-			
-		//private void Log(string format,  params object[] args) {
-		//	if (OnLogging != null) {
-		//		var eArgs = new LoggingEventArgs (format,args);
-		//		this.OnLogging (this, eArgs);
-		//	}
-		//}
+
 
 		#region Static Methods
 

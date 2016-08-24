@@ -51,7 +51,6 @@
     <Compile Include="StateObject.cs" />
     <Compile Include="SynchronisedQueue.cs" />
     <Compile Include="IServiceDiscovery.cs" />
-    <Compile Include="ChromosomeExtensions.cs" />
     <Compile Include="IRemoteFitness.cs" />
     <Compile Include="StaticServices.cs" />
     <Compile Include="ServerStatusFlags.cs" />

@@ -1,4 +1,24 @@
-﻿using System;
+﻿/*
+	Genetic Algorithm Framework for .Net
+	Copyright (C) 2016  John Newcombe
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU Lesser General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU Lesser General Public License for more details.
+
+		You should have received a copy of the GNU Lesser General Public License
+		along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+	http://johnnewcombe.net
+*/
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -16,16 +36,6 @@ namespace GAF.Network
 		private IServiceDiscovery _serviceDiscoveryClient;
 		private string _fitnessAssemblyName;
 		private EvaluationClient _remoteEval;
-
-		/// <summary>
-		/// Delegate for the logging event.
-		/// </summary>
-		//public delegate void LoggngEventHandler (object sender, LoggingEventArgs e);
-
-		/// <summary>
-		/// Event definition for logging event.
-		/// </summary>
-		//public event LoggngEventHandler OnLogging;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:GAF.Network.NetworkWrapper"/> class.
@@ -89,12 +99,6 @@ namespace GAF.Network
 			_remoteEval.OnEvaluationException += (object s, ExceptionEventArgs e) => {
 				throw new ApplicationException (e.Message);
 			};
-
-			//_remoteEval.OnLogging += (object s, LoggingEventArgs e) => {
-			//	if (this.OnLogging != null) {
-			//		this.OnLogging (this, e);
-			//	}
-			//};
 			
 			if (reInitialise) {
 				_remoteEval.ReInitialise ();
@@ -189,14 +193,6 @@ namespace GAF.Network
 			return ipEndPoint;
 		}
 
-		//private void Log (string format, params object [] args)
-		//{ 
-		//	//TODO move this to its own class
-		//	if (this.OnLogging != null) {
-		//		var eArgs = new LoggingEventArgs (format, args);
-		//		this.OnLogging (this, eArgs);
-		//	}
-		//}
 	}
 }
 

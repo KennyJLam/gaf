@@ -47,16 +47,6 @@ namespace GAF.Network
 		public event EvaluationCompleteHandler OnEvaluationComplete;
 
 		/// <summary>
-		/// Delegate for the logging event.
-		/// </summary>
-		//public delegate void LoggngEventHandler (object sender, LoggingEventArgs e);
-
-		/// <summary>
-		/// Event definition for logging event.
-		/// </summary>
-		//public event EvaluationServer.LoggngEventHandler OnLogging;
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="T:GAF.Network.EvaluationServer"/> class.
 		/// </summary>
 		public EvaluationServer ()
@@ -99,7 +89,7 @@ namespace GAF.Network
 			if (File.Exists (FitnessAssemblyName)) {
 				_fitnessAssembly = new FitnessAssembly (FitnessAssemblyName);
 				if (FitnessAssemblyName == null) {
-					Log.Info (string.Format ("The Assembly {0} exists, but could not be loaded.", FitnessAssemblyName));
+					Log.Error (string.Format ("The Assembly {0} exists, but could not be loaded.", FitnessAssemblyName));
 				} else {
 					Log.Info (string.Format ("Assembly {0} has been loaded.", FitnessAssemblyName));
 				}
@@ -121,7 +111,7 @@ namespace GAF.Network
 
 				case PacketId.Chromosome: {
 
-						Log.Info (string.Format ("Packets Received:{0} Bytes Read:{1}", e.PacketsReceived, e.Packet.Data.Length));
+						Log.Debug (string.Format ("Packets Received:{0} Bytes Read:{1}", e.PacketsReceived, e.Packet.Data.Length));
 
 						if (e.Packet.Header.DataLength > 0) {
 
@@ -155,7 +145,7 @@ namespace GAF.Network
 								_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
 
 							} else {
-								Log.Info ("Fitness Assembly not accesible or missing.");
+								Log.Error ("Fitness Assembly not accesible or missing.");
 							}
 						}
 
@@ -189,17 +179,5 @@ namespace GAF.Network
 			}
 		}
 
-		//private void Log (string format, params object [] args)
-		//{
-		//	Log (LoggingType.Info, format, args);
-		//}
-
-		//private void Log (LoggingType loggingType, string format, params object [] args)
-		//{
-		//	if (OnLogging != null) {
-		//		var eArgs = new LoggingEventArgs (loggingType, format, args);
-		//		this.OnLogging (this, eArgs);
-		//	}
-		//}
 	}
 }
