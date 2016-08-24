@@ -18,6 +18,16 @@ namespace GAF.Network
 		private EvaluationClient _remoteEval;
 
 		/// <summary>
+		/// Delegate for the logging event.
+		/// </summary>
+		//public delegate void LoggngEventHandler (object sender, LoggingEventArgs e);
+
+		/// <summary>
+		/// Event definition for logging event.
+		/// </summary>
+		//public event LoggngEventHandler OnLogging;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="T:GAF.Network.NetworkWrapper"/> class.
 		/// </summary>
 		/// <param name="geneticAlgorithm">Genetic algorithm.</param>
@@ -65,13 +75,27 @@ namespace GAF.Network
 			this.GeneticAlgorithm = geneticAlgorithm;
 			this.GeneticAlgorithm.Population.OnEvaluationBegin += OnEvaluationBegin;
 
-
 			//get the endpoints from consul
+			Log.Info("Getting remote endpoints from Service Discovery.");
 			this.EndPoints = serviceDiscoveryClient.GetActiveServices (ServiceName);
-			_remoteEval = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
-			_remoteEval.OnEvaluationException += (object s, ExceptionEventArgs e) =>
-				Console.WriteLine (e.Message);
 
+			Log.Info ("Endpoints detected:");
+			foreach (var endpoint in EndPoints) {
+				Log.Info (string.Format("    Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
+			}
+
+			_remoteEval = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
+
+			_remoteEval.OnEvaluationException += (object s, ExceptionEventArgs e) => {
+				throw new ApplicationException (e.Message);
+			};
+
+			//_remoteEval.OnLogging += (object s, LoggingEventArgs e) => {
+			//	if (this.OnLogging != null) {
+			//		this.OnLogging (this, e);
+			//	}
+			//};
+			
 			if (reInitialise) {
 				_remoteEval.ReInitialise ();
 			}
@@ -164,6 +188,15 @@ namespace GAF.Network
 
 			return ipEndPoint;
 		}
+
+		//private void Log (string format, params object [] args)
+		//{ 
+		//	//TODO move this to its own class
+		//	if (this.OnLogging != null) {
+		//		var eArgs = new LoggingEventArgs (format, args);
+		//		this.OnLogging (this, eArgs);
+		//	}
+		//}
 	}
 }
 

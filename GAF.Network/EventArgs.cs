@@ -113,5 +113,60 @@ namespace GAF.Network
 			get { return _solution; }
 		}
 	}
+	/// <summary>
+	/// Event arguments used within the logging events.
+	/// </summary>
+	public class LoggingEventArgs : EventArgs
+	{
+		private readonly string _message;
+		private readonly LoggingType _loggingType;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GAF.LoggingEventArgs"/> class.
+		/// </summary>
+		/// <param name="format">Format.</param>
+		/// <param name="args">Arguments.</param>
+		public LoggingEventArgs (string format, params object[] args) : this (LoggingType.Info, format, args)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GAF.LoggingEventArgs"/> class.
+		/// </summary>
+		/// <param name = "loggingType"></param>
+		/// <param name="format">Format.</param>
+		/// <param name="args">Arguments.</param>
+		public LoggingEventArgs (LoggingType loggingType, string format, params object[] args)
+		{
+			var msg = string.Format (format, args);
+			_message = msg;
+			_loggingType = loggingType;
+		}
+
+		/// <summary>
+		/// Returns the list of Exception messages.
+		/// </summary>
+		public string Message {
+			get { return _message; }
+		}
+		public LoggingType LoggingType {
+			get { return _loggingType; }
+		}
+
+	}
+
+	//public enum LoggingLevel
+	//{
+	//	Warning,
+	//	Info,
+	//	Debug
+	//}
+
+	public enum LoggingType
+	{
+		Error,
+		Warning,
+		Info//,
+		//Debug
+	}
 }

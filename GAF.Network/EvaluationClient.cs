@@ -46,8 +46,6 @@ namespace GAF.Network
 
 		//private const int pidInit = 10;
 
-		#region Task Declarations
-
 		/// <summary>
 		/// Delegate definition for the EvaluationException event handler.
 		/// </summary>
@@ -60,7 +58,15 @@ namespace GAF.Network
 		/// </summary>
 		public event EvaluationExceptionHandler OnEvaluationException;
 
-		#endregion
+		/// <summary>
+		/// Delegate for the logging event.
+		/// </summary>
+		//public delegate void LoggngEventHandler (object sender,LoggingEventArgs e);
+
+		/// <summary>
+		/// Event definition for logging event.
+		/// </summary>
+		//public event EvaluationServer.LoggngEventHandler OnLogging;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GAF.Net.EvaluationClient"/> class.
@@ -253,7 +259,12 @@ namespace GAF.Network
 				// Convert the passed chromosome to a byte array
 				var byteData = Serializer.Serialize<Chromosome> (chromosome, _fitnessAssembly.KnownTypes);
 				//var testChrome = Serializer.DeSerialize<Chromosome> (byteData, _fitnessAssembly.KnownTypes);
+
+				Log.Debug (string.Format("Bytes Sent:{0}", byteData.Length));
+
 				var xmitPacket = new Packet (byteData, PacketId.Chromosome, chromosome.Id);
+
+				Log.Debug (string.Format("Bytes Received:{0}", xmitPacket.Data.Length));
 
 				var recPacket = SocketClient.TransmitData (client, xmitPacket);
 
@@ -276,6 +287,13 @@ namespace GAF.Network
 
 			return fitness;
 		}
+			
+		//private void Log(string format,  params object[] args) {
+		//	if (OnLogging != null) {
+		//		var eArgs = new LoggingEventArgs (format,args);
+		//		this.OnLogging (this, eArgs);
+		//	}
+		//}
 
 		#region Static Methods
 

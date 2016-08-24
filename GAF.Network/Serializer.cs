@@ -21,8 +21,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.Serialization.Json;
+using System.Text;
 
 namespace GAF.Network
 {
@@ -31,7 +33,6 @@ namespace GAF.Network
 	/// </summary>
 	public static class Serializer
 	{
-
 		public static T DeSerialize<T> (byte [] byteData)
 		{
 			return DeSerialize<T> (byteData, new List<Type> ());
@@ -45,22 +46,34 @@ namespace GAF.Network
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static T DeSerialize<T> (byte [] byteData, List<Type> knownTypes)
 		{
-			DataContractJsonSerializer js = new DataContractJsonSerializer (typeof (T), knownTypes);
-			MemoryStream memoryStream = new MemoryStream (byteData);
+			string json = string.Empty;
 
-			var objectData = (T)js.ReadObject (memoryStream);
-			memoryStream.Close ();
+			try {
+				json = Encoding.UTF8.GetString (byteData);
 
-			return objectData;
+				//Console.WriteLine (json);
+				return DeSerialize<T> (json, knownTypes);
+				//			DataContractJsonSerializer js = new DataContractJsonSerializer (typeof (T), knownTypes);
+				//			MemoryStream memoryStream = new MemoryStream (byteData);
+
+				//			var objectData = (T)js.ReadObject (memoryStream);
+				//			memoryStream.Close ();
+
+				//			return objectData;
+
+			} catch (Exception) {
+				
+				//Log.Debug (json);
+				Log.Debug (byteData);
+				throw;
+			}
 		}
 
 		public static T DeSerialize<T> (string json, List<Type> knownTypes)
 		{
 
 			DataContractJsonSerializer js = new DataContractJsonSerializer (typeof (T), knownTypes);
-
-
-			MemoryStream memoryStream = new MemoryStream (System.Text.Encoding.ASCII.GetBytes (json));
+			MemoryStream memoryStream = new MemoryStream (System.Text.Encoding.UTF8.GetBytes (json));
 
 			var objectData = (T)js.ReadObject (memoryStream);
 			memoryStream.Close ();
@@ -73,6 +86,7 @@ namespace GAF.Network
 		{
 			return Serialize<T> (obj, new List<Type> ());
 		}
+
 		/// <summary>
 		/// Serialize the specified obj.
 		/// </summary>
@@ -80,20 +94,42 @@ namespace GAF.Network
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static byte [] Serialize<T> (object obj, List<Type> knownTypes)
 		{
-			using (MemoryStream memoryStream = new MemoryStream ()) {
+			string json = string.Empty;
+			byte [] byteData = null;
 
-				DataContractJsonSerializer serializer = new DataContractJsonSerializer (typeof (T), knownTypes);
-				serializer.WriteObject (memoryStream, obj);
+			try {
+				//using (MemoryStream memoryStream = new MemoryStream ()) {
 
-				memoryStream.Position = 0;
-				var bytes = memoryStream.ToArray ();
+				//	DataContractJsonSerializer serializer = new DataContractJsonSerializer (typeof (T), knownTypes);
+				//	serializer.WriteObject (memoryStream, (T)obj);
 
-				memoryStream.Close ();
+				//	memoryStream.Position = 0;
+				//	StreamReader sr = new StreamReader (memoryStream, System.Text.Encoding.UTF8);
 
-				return bytes;
+				//	var json = sr.ReadToEnd ();
+
+				//	//var bytes = memoryStream.ToArray ();
+				//	var bytes = Encoding.UTF8.GetBytes (json);
+
+				//	memoryStream.Close ();
+
+				//	return bytes;
+				//}
+
+				json = SerialiseToJson<T> (obj, knownTypes);
+				byteData = Encoding.UTF8.GetBytes (json);
+
+
+
+			} catch (Exception) {
+
+				//Log.Debug (json);
+				Log.Debug (byteData);
+				throw;
 			}
-
+			return byteData;
 		}
+
 		public static string SerialiseToJson<T> (object obj)
 		{
 			return SerialiseToJson<T> (obj, new List<Type> ());
@@ -104,10 +140,10 @@ namespace GAF.Network
 			using (MemoryStream memoryStream = new MemoryStream ()) {
 
 				DataContractJsonSerializer serializer = new DataContractJsonSerializer (typeof (T), knownTypes);
-				serializer.WriteObject (memoryStream, obj);
+				serializer.WriteObject (memoryStream, (T)obj);
 
 				memoryStream.Position = 0;
-				StreamReader sr = new StreamReader (memoryStream);
+				StreamReader sr = new StreamReader (memoryStream, System.Text.Encoding.UTF8);
 
 				var json = sr.ReadToEnd ();
 
@@ -116,5 +152,7 @@ namespace GAF.Network
 				return json;
 			}
 		}
+
+
 	}
 }

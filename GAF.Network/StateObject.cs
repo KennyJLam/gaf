@@ -40,6 +40,7 @@ namespace GAF.Network
 		/// The size of the data buffer.
 		/// </summary>
 		public const int BufferSize = 1024;
+		//public const int BufferSize = 4096;
 
 		/// <summary>
 		/// Data buffer.

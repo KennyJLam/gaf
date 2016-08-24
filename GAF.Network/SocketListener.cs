@@ -82,7 +82,6 @@ namespace GAF.Network
 				_allDone.WaitOne ();
 
 			}
-
 		}
 
 		private static void AcceptCallback (IAsyncResult ar)
@@ -105,6 +104,7 @@ namespace GAF.Network
 
 		private static void ReadCallback (IAsyncResult ar)
 		{
+			Log.Debug ("Receiving...");
 
 			// Retrieve the state object and the handler socket
 			// from the asynchronous state object.
@@ -117,17 +117,26 @@ namespace GAF.Network
 
 			if (bytesRead > 0) {
 
-				// At this point all of the read bytes are in the state.Buffer. The
-				// state.Buffer is 1024 bytes in size, so bytes will need to be transferred to 
-				// the PacketManager in 1024 byte chunks (or less if its the last chunk).
-				//Console.WriteLine ("Read {0} bytes from socket.", bytesRead);
+				Log.Debug (string.Format ("Bytes read from socket:0x{0} ({1})", bytesRead.ToString ("X6"), bytesRead));
+				//Log.Debug ("Buffer:");
+				//Log.Debug (state.Buffer);
 
-				state.PacMan.Add (state.Buffer);
+				// At this point all of the read bytes are in the state.Buffer. The
+				// state.Buffer is fixed in size, so bytes will need to be transferred to 
+				// the PacketManager in chunks (or part chunk if its the last chunk).
+				byte[] dataBytes = new byte[bytesRead];
+				Array.Copy (state.Buffer, dataBytes, bytesRead);
+
+				Log.Debug (string.Format("Adding {0} bytes to the Packet Manager queue.", bytesRead));
+
+				state.PacMan.Add (dataBytes);
 
 				//see if we have any packets
 				var packet = state.PacMan.GetPacket ();
 
 				if (packet != null) {
+
+					Log.Debug ("Packet received.");
 
 					double result = 0.0;
 
@@ -144,7 +153,8 @@ namespace GAF.Network
 					//have we received all for this transmission?
 					etxReceived = packet.Header.PacketId == PacketId.Etx;
 
-					//Packets other than 0 are control packets
+					//Send the result/respose packet
+					Log.Debug ("Sending response packet;");
 					Send (ar, new Packet (BitConverter.GetBytes (result), PacketId.Result, packet.Header.ObjectId));
 				}
 
@@ -152,7 +162,10 @@ namespace GAF.Network
 				if (!etxReceived) {
 					state.WorkSocket.BeginReceive (state.Buffer, 0, StateObject.BufferSize, 0,
 						new AsyncCallback (ReadCallback), state);
+				} else {
+					Log.Debug ("ETX received.");
 				}
+
 
 			}
 		}

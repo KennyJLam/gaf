@@ -21,6 +21,7 @@ using System.Net;
 using System.IO;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace GAF.Network
 {
@@ -46,14 +47,22 @@ namespace GAF.Network
 		public event EvaluationCompleteHandler OnEvaluationComplete;
 
 		/// <summary>
+		/// Delegate for the logging event.
+		/// </summary>
+		//public delegate void LoggngEventHandler (object sender, LoggingEventArgs e);
+
+		/// <summary>
+		/// Event definition for logging event.
+		/// </summary>
+		//public event EvaluationServer.LoggngEventHandler OnLogging;
+
+		/// <summary>
 		/// Initializes a new instance of the <see cref="T:GAF.Network.EvaluationServer"/> class.
 		/// </summary>
 		public EvaluationServer ()
 		{
 			_serverDefinedFitness = false;
-			if (File.Exists (_fitnessAssemblyName)) {
-				_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
-			}
+			FitnessAssemblyName = _fitnessAssemblyName;
 		}
 
 		/// <summary>
@@ -62,78 +71,135 @@ namespace GAF.Network
 		/// <param name="fitnessAssemblyName">Fitness assembly name.</param>
 		public EvaluationServer (string fitnessAssemblyName)
 		{
-			//if the parameter ios null or empty use the dynamic name
+			//if the parameter is null or empty use the dynamic name
 			if (string.IsNullOrWhiteSpace (fitnessAssemblyName)) {
 				_serverDefinedFitness = false;
-				fitnessAssemblyName = _fitnessAssemblyName;
+				FitnessAssemblyName = _fitnessAssemblyName;
 			} else {
 				_serverDefinedFitness = true;
+				FitnessAssemblyName = fitnessAssemblyName;
 			}
 
-			if (File.Exists (fitnessAssemblyName)) {
-				_fitnessAssembly = new FitnessAssembly (fitnessAssemblyName);
-			}
 		}
 
 		/// <summary>
-		/// Start the server listening on the specified ipAddress and port.
+		/// Gets the name of the fitness assembly being used.
+		/// </summary>
+		/// <value>The name of the fitness assembly.</value>
+		public string FitnessAssemblyName { private set; get; }
+
+		/// <summary>
+		/// Start the server listening on the specified endpoint.
 		/// </summary>
 		/// <param name="endPoint">End point.</param>
 		public void Start (IPEndPoint endPoint)
 		{
+			Log.Info (string.Format ("Attempting to load the assemby {0}.", FitnessAssemblyName));
+
+			if (File.Exists (FitnessAssemblyName)) {
+				_fitnessAssembly = new FitnessAssembly (FitnessAssemblyName);
+				if (FitnessAssemblyName == null) {
+					Log.Info (string.Format ("The Assembly {0} exists, but could not be loaded.", FitnessAssemblyName));
+				} else {
+					Log.Info (string.Format ("Assembly {0} has been loaded.", FitnessAssemblyName));
+				}
+			} else {
+				Log.Error (string.Format ("Assembly {0} not loaded. File does not exist.", FitnessAssemblyName));
+			}
+
+			Log.Info (string.Format ("GAF Evaluation Server Listening on {0}:{1}.",
+									endPoint.Address, endPoint.Port));
+
 			SocketListener.OnPacketReceived += listener_OnPacketReceived;
 			SocketListener.StartListening (endPoint);
 		}
 
 		private void listener_OnPacketReceived (object sender, PacketEventArgs e)
 		{
-			switch ((PacketId)e.Packet.Header.PacketId) {
+			try {
+				switch ((PacketId)e.Packet.Header.PacketId) {
 
-			case PacketId.Chromosome: {
-					
-					if (e.Packet.Header.DataLength > 0) {
+				case PacketId.Chromosome: {
 
-						var chromosome = Serializer.DeSerialize<Chromosome> (e.Packet.Data, _fitnessAssembly.KnownTypes);
-						e.Result = chromosome.Evaluate (_fitnessAssembly.FitnessFunction);
+						Log.Info (string.Format ("Packets Received:{0} Bytes Read:{1}", e.PacketsReceived, e.Packet.Data.Length));
 
-						if (OnEvaluationComplete != null) {
+						if (e.Packet.Header.DataLength > 0) {
 
-							var eventArgs = new RemoteEvaluationEventArgs (chromosome);
-							this.OnEvaluationComplete (this, eventArgs);
+							var chromosome = Serializer.DeSerialize<Chromosome> (e.Packet.Data, _fitnessAssembly.KnownTypes);
+							e.Result = chromosome.Evaluate (_fitnessAssembly.FitnessFunction);
+
+							if (OnEvaluationComplete != null) {
+
+								var eventArgs = new RemoteEvaluationEventArgs (chromosome);
+								this.OnEvaluationComplete (this, eventArgs);
+							}
 						}
+
+						break;
 					}
 
-					break;
+				case PacketId.Init: {
+
+						Log.Info ("Initialisation initiated.");
+
+						if (e.Packet.Header.DataLength > 0) {
+
+							Log.Info ("Writing Fitness Assembly to filesystem.");
+
+							File.WriteAllBytes (_fitnessAssemblyName, e.Packet.Data);
+
+							//check for fitness file
+							if (File.Exists (_fitnessAssemblyName)) {
+
+								Log.Info ("Loading the Fitness Assembly.");
+								_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
+
+							} else {
+								Log.Info ("Fitness Assembly not accesible or missing.");
+							}
+						}
+
+						break;
+					}
+
+				case PacketId.Status: {
+
+						var result = 0x0;
+
+						//check for fitness file
+						if (File.Exists (_fitnessAssemblyName)) {
+							result = result | (int)ServerStatusFlags.Initialised;
+						}
+
+						if (_serverDefinedFitness) {
+							result = result | (int)ServerStatusFlags.ServerDefinedFitness;
+						}
+
+						e.Result = (double)result;
+
+						break;
+					}
 				}
+			} catch (Exception ex) {
 
-			case PacketId.Init: {
-
-					if (e.Packet.Header.DataLength > 0) {
-						File.WriteAllBytes (_fitnessAssemblyName, e.Packet.Data);
-						_fitnessAssembly = new FitnessAssembly (_fitnessAssemblyName);
-					}
-
-					break;
+				while (ex.InnerException != null) {
+					ex = ex.InnerException;
 				}
-
-			case PacketId.Status: {
-
-					var result = 0x0;
-
-					//check for fitness file
-					if (File.Exists (_fitnessAssemblyName)) {
-						result = result | (int)ServerStatusFlags.Initialised;
-					}
-
-					if (_serverDefinedFitness) {
-						result = result | (int)ServerStatusFlags.ServerDefinedFitness;
-					}
-
-					e.Result = (double)result;
-
-					break;
-				}
+				Log.Error (ex);
 			}
 		}
+
+		//private void Log (string format, params object [] args)
+		//{
+		//	Log (LoggingType.Info, format, args);
+		//}
+
+		//private void Log (LoggingType loggingType, string format, params object [] args)
+		//{
+		//	if (OnLogging != null) {
+		//		var eArgs = new LoggingEventArgs (loggingType, format, args);
+		//		this.OnLogging (this, eArgs);
+		//	}
+		//}
 	}
 }
