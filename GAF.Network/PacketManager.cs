@@ -115,6 +115,8 @@ namespace GAF.Network
 							_queue.Dequeue (orphanedBytes);
 							_state = State.LookingForHeader;
 
+							Log.Debug ("SOH found.");
+
 						} else {
 							//no soh so exit this loop to allow more data to be added to the buffer
 							exit = true;
@@ -135,13 +137,20 @@ namespace GAF.Network
 
 								if (_currentHeader.DataLength > 0) {
 									_state = State.LookingForData;
+
+									Log.Debug ("Header found.");
+
 								} else {
 								
 									//no data for this packet so all done											
 									_currentPacket = new Packet (_currentHeader.PacketId, _currentHeader.ObjectId);
+
+									//reset the state for the next packet 
 									_state = State.LookingForSOH;
 
 									LastPidReceived = _currentPacket.Header.PacketId;
+
+									Log.Debug ("Packet found (no data bytes).");
 
 									return _currentPacket;
 
@@ -156,7 +165,7 @@ namespace GAF.Network
 								}
 							}
 						} else {
-							//no soh so exit this loop to allow more data to be added to the buffer
+							//no header so exit this loop to allow more data to be added to the buffer
 							exit = true;
 						}
 
@@ -165,12 +174,18 @@ namespace GAF.Network
 
 				case State.LookingForData:
 					{
+						var qc = _queue.Count;
+
+						Log.Debug (string.Format ("Queued data bytes:{0}", qc));
+
 						//try and get the data
-						if (_queue.Count >= _currentHeader.DataLength) {
+						if (qc >= _currentHeader.DataLength) {
 
 							var dataBytes = _queue.Dequeue (_currentHeader.DataLength);
 
 							if (dataBytes != null) {
+
+								Log.Debug ("Data found.");
 
 								_state = State.LookingForSOH;
 
@@ -182,7 +197,7 @@ namespace GAF.Network
 
 							}
 						} else {
-							//no soh so exit this loop to allow more data to be added to the buffer
+							//no all data so exit this loop to allow more data to be added to the buffer
 							exit = true;
 						}
 
