@@ -368,7 +368,8 @@ namespace GAF.Api
 
 				#region Hamming Distance
 
-				//TODO: Check that this is correct. We safely compare to ourselves as this will produce a 0 result.
+				//TODO: Check that this is correct. 
+				//We safely compare to ourselves as this will produce a 0 result.
 
 				//compare the current solution with all others. Note that we only need
 				//to compare each once hence the shortened 'innerIndex' loop

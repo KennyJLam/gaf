@@ -332,7 +332,7 @@ namespace GAF.Api
 				_ga.Resume ();
 				IsPaused = false;
 
-				//TODO: Fix this as it is far to crude! Consider settin pause after the next generation.
+				//TODO: Fix this as it is far to crude! Consider setting pause after the next generation.
 				Thread.Sleep (1); //1ms should never be enough for a generation but is enough for the thread to resume.
 				_ga.Pause ();
 				IsPaused = true;
