@@ -93,6 +93,10 @@ namespace GAF.Network
 			Socket listener = (Socket)ar.AsyncState;
 			Socket handler = listener.EndAccept (ar);
 
+			if (handler.RemoteEndPoint != null) {
+				Log.Info (string.Format ("Connected to {0}.", handler.RemoteEndPoint.ToString ()));
+			}
+
 			// Create the state object.
 			StateObject state = new StateObject ();
 			state.WorkSocket = handler;
