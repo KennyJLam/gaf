@@ -44,6 +44,7 @@ namespace GAF
 	/// This clas represents a chromosome.
 	/// </summary>
 #if !PCL
+	[Serializable]
 	[DataContract]
 #endif
 	public class Chromosome : IEnumerable, IComparable<Chromosome>

@@ -94,8 +94,6 @@ namespace GAF.Net
 		/// <returns>The packet.</returns>
 		public Packet GetPacket ()
 		{
-			//TODO: Deal with scenario where SOH is valid but not enough header or data bytes are received
-			//this would cause method to keep looping
 			var timestamp = DateTime.Now.Ticks;
 
 			var soh = PacketHeader.SOH.ToByteArray ();

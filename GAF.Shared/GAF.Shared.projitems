@@ -42,7 +42,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\PopulationSelectionException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\GeneTypeException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ChromosomeNotUniqueException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)AssemblyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IConsumerFunctions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Net\StateObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Net\BinarySerializer.cs" />

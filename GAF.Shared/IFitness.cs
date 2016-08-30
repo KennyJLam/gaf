@@ -27,7 +27,6 @@ using System;
 		/// </summary>
 		public interface IFitness
 		{
-
 			/// <summary>
 			/// This method should implement the GA's evaluation function.
 			/// </summary>

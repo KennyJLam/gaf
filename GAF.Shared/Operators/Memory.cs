@@ -148,8 +148,7 @@ namespace GAF.Operators
             }
             else
             {
-                //TODO: Adding these every n generations 
-                //simply add the best to our memory
+                //Adding these every n generations, simply add the best to our memory
                 if (_currentGeneration % _generationalUpdatePeriod == 0)
                 {
                     this.AddToMemory(newPopulation.GetTop(1)[0]);
