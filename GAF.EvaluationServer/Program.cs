@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
-using GAF.Consul;
-using GAF.ConsumerFunctions.TravellingSalesman;
 using GAF.EvaluationServer.Configuration;
 using GAF.Network;
 
