@@ -3,10 +3,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BBBD65E6-3C44-4123-AF24-805B4D30C129}</ProjectGuid>
+    <ProjectGuid>{2578BCC7-9C16-48BF-B298-F2C44DC007C5}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>GAF.Consul</RootNamespace>
-    <AssemblyName>GAF.Consul</AssemblyName>
+    <RootNamespace>Example.IFitness</RootNamespace>
+    <AssemblyName>Example.IFitness</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -28,27 +28,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Check.cs" />
-    <Compile Include="ConsulClient.cs" />
-    <Compile Include="Node.cs" />
-    <Compile Include="Service.cs" />
-    <Compile Include="ServiceDefinition.cs" />
-    <Compile Include="AvailableServices.cs" />
-    <Compile Include="TaggedAddresses.cs" />
+    <Compile Include="BinaryF6Functions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GAF.Network\GAF.Network.csproj">
-      <Project>{3A089051-A784-4791-8D77-719EAB592F20}</Project>
-      <Name>GAF.Network</Name>
+    <ProjectReference Include="..\GAF.45\GAF.45.csproj">
+      <Project>{A49A025E-F146-4D04-8F07-8C0A5D1F803F}</Project>
+      <Name>GAF.45</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

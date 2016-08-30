@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{55566466-1B23-4BAA-A531-CB4035EAE3C2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>GAF.Api</RootNamespace>
+    <AssemblyName>GAF.Api</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="GeneticAlgorithm.cs" />
+    <Compile Include="Population.cs" />
+    <Compile Include="EventArgs.cs" />
+    <Compile Include="Controller.cs" />
+    <Compile Include="ConsumerFunctions.cs" />
+    <Compile Include="HelpText.Designer.cs">
+      <DependentUpon>HelpText.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Operators\Crossover.cs" />
+    <Compile Include="Operators\Elite.cs" />
+    <Compile Include="Operators\BinaryMutate.cs" />
+    <Compile Include="Operators\SwapMutate.cs" />
+    <Compile Include="Operators\CrossoverType.cs" />
+    <Compile Include="Operators\Memory.cs" />
+    <Compile Include="Operators\RandomReplace.cs" />
+    <Compile Include="Operators\ReplacementMethod.cs" />
+    <Compile Include="Operators\IOperator.cs" />
+    <Compile Include="GeneticOperators.cs" />
+    <Compile Include="Operators\OperatorBase.cs" />
+    <Compile Include="CodeGeneration.cs" />
+    <Compile Include="OperatorOptionsAttribute.cs" />
+    <Compile Include="IGafLabConsumerFunctions.cs" />
+    <Compile Include="ParentSelectionMethod.cs" />
+    <Compile Include="PopulationState.cs" />
+    <Compile Include="PopulationStatistics.cs" />
+    <Compile Include="GafApiBase.cs" />
+    <Compile Include="ExceptionHandler.cs" />
+    <Compile Include="LoggingEventHandler.cs" />
+    <Compile Include="Info.cs" />
+    <Compile Include="PopulationHistory.cs" />
+    <Compile Include="PopulationHistoryItem.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <EmbeddedResource Include="HelpText.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>HelpText.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Operators\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\GAF\GAF.Pcl\GAF.Pcl.csproj">
+      <Project>{D99670E2-3E93-4251-A270-1ECC7D3C1336}</Project>
+      <Name>GAF.Pcl</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

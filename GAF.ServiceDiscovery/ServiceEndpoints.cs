@@ -23,9 +23,9 @@ using System.Collections.Generic;
 using System.Net;
 using GAF.Network;
 
-namespace GAF.Network
+namespace GAF.ServiceDiscovery
 {
-	public class StaticServices : IServiceDiscovery
+	public class ServiceEndpoints : IServiceDiscovery
 	{
 		private List<IPEndPoint> _endpoints;
 
@@ -34,7 +34,7 @@ namespace GAF.Network
 		/// Uses local with the specified port as the end point.
 		/// </summary>
 		/// <param name="port">Port.</param>
-		public StaticServices (int port)
+		public ServiceEndpoints (int port)
 		{
 			var endpoints = new List<IPEndPoint> ();
 
@@ -49,7 +49,7 @@ namespace GAF.Network
 		/// Uses the specified end points.
 		/// </summary>
 		/// <param name="endpoints">Endpoints.</param>
-		public StaticServices (List<IPEndPoint> endpoints)
+		public ServiceEndpoints (List<IPEndPoint> endpoints)
 		{			
 			_endpoints = endpoints;
 		}

@@ -1,15 +1,15 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 
-// Information about this assembly is defined by the following attributes. 
+// Information about this assembly is defined by the following attributes.
 // Change them to the values specific to your project.
 
-[assembly: AssemblyTitle ("GAF.Net")]
+[assembly: AssemblyTitle ("Example.IRemoteFitness")]
 [assembly: AssemblyDescription ("")]
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("")]
-[assembly: AssemblyProduct ("")]
-[assembly: AssemblyCopyright ("John Newcombe")]
+[assembly: AssemblyProduct ("Example.IRemoteFitness")]
+[assembly: AssemblyCopyright ("Copyright ©  2016")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 
@@ -19,11 +19,9 @@ using System.Runtime.CompilerServices;
 
 [assembly: AssemblyVersion ("1.0.*")]
 
-// The following attributes are used to specify the signing key for the assembly, 
+// The following attributes are used to specify the signing key for the assembly,
 // if desired. See the Mono documentation for more information about signing.
 
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyFile("")]
 
-//used to give unit test access
-[assembly: InternalsVisibleTo ("GAF.UnitTests")]

@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<data name="CrossoverDescription" xml:space="preserve">
+    	<value>The Crossover Operator, when enabled, takes two solutions (parents) from the current population and, at a random point (Single Point) along the chromosome, swaps one part of one chromosome with the respective part of the other chromosome. This gives two new solutions (children) that are based entirely on their parents. These are added to the next generation in one of two ways.
+
+Generational Replacement means that the two children are simply added to the population, when the population is full, the process stops. Delete Last is different in that it only adds the children if they are better than the solutions that are already in the next generation. Delete Last should be used with care as it is necessary for the Crossover Operator to evaluate each new child in order to determine whether to add the child to the next generation. Depending upon the Fitness Function being used, this could be computationally expensive.
+
+Typically this operator would be followed by a some form of Mutate Operator in order to better reflect nature and add diversity into the population.
+
+The Crossover Operator can perform Single, Double Point and Double Point Ordered crossover. Double Point crossover selects two points in order to isolate a center section of the chromosome. The respective center sections of the parents are swapped in order to make two new children. Double Point Ordered is similar to double point except that a child is created from one parent. The centre section of the double point selection is taken to the child, the remaining values of the same parent are passed to the child in the order in which they appear in the second parent. If the second parent does not include the value an exception is thrown.
+
+The Crossover Probability sets the probability of a crossover occurring. If the probability is low then the chances of parents creating children is less. Parents that do not create children simply pass through to the next generation.
+		</value>
+    	<comment></comment>
+	</data>
+	<data name="EliteDescription" xml:space="preserve">
+		<value>The Elite operator, when enabled, ensures that a specified percentage of the fittest chromosomes are passed to the next generation without modification.
+
+The Elite operator ensures that each generation produces a solution that is at least as good as that produced by the previous generation.
+
+Each solution identified as an Elite is marked as such, this to ensure that subsequent operators respect the 'elite' status of these solutions.
+		</value>
+    	<comment></comment>
+    </data>
+	<data name="BinaryMutateDescription" xml:space="preserve">
+		<value>The Binary Mutate Operator, when enabled, considers each gene in the population and, based on the probability swaps a gene from one state to the other. The aim of this opperator is to better reflect nature and add diversity to the population.
+		</value>
+    	<comment></comment>
+    </data>
+	<data name="CopyDescription" xml:space="preserve">
+		<value>The Copy operator, when enabled, is designed to copy a specified percentage of randomly selected individuals from within the curent population, to the new population.
+		</value>
+    	<comment></comment>
+    </data>
+	<data name="RandomReplaceDescription" xml:space="preserve">
+		<value>The Random Replace operator, when enabled, is designed to replace a specified percentage of the least fit individuals within the population, with newly generated random solutions.
+
+The Random Replace operator will never replace solutions marked as Elite.
+		</value>
+    	<comment></comment>
+    </data>
+	<data name="SwapMutateDescription" xml:space="preserve">
+		<value>The Swap Mutate operator, when enabled, traverses each gene in the population and, based on the probability swaps one gene in the chromosome with another. The aim of this operator is to provide mutation without changing any gene values.
+		</value>
+    	<comment></comment>
+    </data>
+	<data name="MemoryDescription" xml:space="preserve">
+		<value>The Memory operator maintains a 'memory' of solutions and ensures that the best solution in that memory is included in the GA population if it is better than the best in the population. The memory is kept up to date with good solutions during the GA run.</value>
+    	<comment></comment>
+    </data>
+	<data name="StatisticsDescription" xml:space="preserve">
+		<value>The statistics pane shows the status of the GA during its run the details of each element are described below.
+
+Average Hamming Distance: The average hamming distance of a population is the average distance between all pairs of binary strings in a population. As the GA converges the average hamming distance moves towards zero. The Binary Mutation operator will increase the average hamming distance depending upon the probability setting.
+
+Average Fitness: This is the average fitness of the whole population.
+
+Maximum Fitness: This represents the fitness of the fittest individual in the population.
+
+Minimum Fitness: This represents the fitness of the least fit individual in the population.
+
+Fitness Standard Deviation: The Standard Deviation is a measure of how spread out the fitness values are.
+
+Convergence: This is a visual representation of how the GA is converging. The convergence is derived from the average hamming distance. This value is not available for non-binary chromosomes.
+
+Diversity: This is a visual representation of how diverse the GA population is. The diversity is derived from the average hamming distance. This value is not available for non-binary chromosomes.
+
+Convergence (F): This is a visual representation of how the GA is converging. The convergence is derived from the average fitness distance.
+
+Diversity (F): This is a visual representation of how diverse the GA population is. The diversity is derived from the average fitness distance.
+
+Fitness: This is a visual representation of the maximum fitness of the population expressed in C9 Fitness. This represents the fitness of the fittest individual in the population. C9 Fitness refers to the number of 9s that appear in the fitness value, this measure can often be better for producing graphical output.
+
+Distribution of Fitness: This gives a visual representation of where the concentration of fitness values, across the fitness value range [0 - 1], lie.
+
+		</value>
+    	<comment></comment>
+    </data>
+    <data name="SourceCodeDescription" xml:space="preserve">
+		<value>This view shows the C# code required to implement the currently specified genetic algorithm.
+		</value>
+    	<comment></comment>
+    </data>
+        <data name="GenotypicViewDescription" xml:space="preserve">
+		<value>This view shows the genotypic view of the population for the most recent generations.
+		</value>
+    	<comment></comment>
+    </data>
+    <data name="Licence" xml:space="preserve">
+		<value>This work is licensed under the Creative Commons 
+Attribution-NonCommercial-NoDerivs 3.0 Unported License. 
+
+To view a copy of this license, visit 
+http://creativecommons.org/licenses/by-nc-nd/3.0/ 
+or send a letter to Creative Commons, PO Box 1866, 
+Mountain View, CA 94042, USA.
+</value>
+    	<comment></comment>
+    </data>
+</root>
+
+
+
