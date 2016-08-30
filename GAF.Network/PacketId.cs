@@ -23,7 +23,7 @@ namespace GAF.Network
 {
 	public enum PacketId
 	{
-		Chromosome = 1,
+		Data = 1,
 		Result,
 		Status,
 		Init,

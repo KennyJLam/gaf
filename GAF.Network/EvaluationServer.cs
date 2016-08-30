@@ -109,13 +109,17 @@ namespace GAF.Network
 			try {
 				switch ((PacketId)e.Packet.Header.PacketId) {
 
-				case PacketId.Chromosome: {
+				case PacketId.Data: {
 
 						Log.Debug (string.Format ("Packets Received:{0} Bytes Read:{1}", e.PacketsReceived, e.Packet.Data.Length));
 
 						if (e.Packet.Header.DataLength > 0) {
 
-							var chromosome = Serializer.DeSerialize<Chromosome> (e.Packet.Data, _fitnessAssembly.KnownTypes);
+							//deserialise to get the genes, create a new chromosome from these
+							//this saves having to send the whole chromosome
+							var genes = Serializer.DeSerialize<List<Gene>> (e.Packet.Data, _fitnessAssembly.KnownTypes);
+							var chromosome = new Chromosome (genes);
+
 							e.Result = chromosome.Evaluate (_fitnessAssembly.FitnessFunction);
 
 							if (OnEvaluationComplete != null) {

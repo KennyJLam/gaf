@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 using System.IO;
+using System.Diagnostics;
 
 namespace GAF.Network
 {
@@ -44,13 +45,9 @@ namespace GAF.Network
 		private FitnessAssembly _fitnessAssembly;
 		private string _fitnessAssemblyName;
 
-		//private const int pidInit = 10;
-
 		/// <summary>
 		/// Delegate definition for the EvaluationException event handler.
 		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
 		public delegate void EvaluationExceptionHandler (object sender, ExceptionEventArgs e);
 
 		/// <summary>
@@ -88,7 +85,7 @@ namespace GAF.Network
 		public void ReInitialise ()
 		{
 			for (var index = 0; index < _reInitialiseFlags.Length; index++) {
-				_reInitialiseFlags[index] = true;
+				_reInitialiseFlags [index] = true;
 			}
 		}
 
@@ -99,8 +96,13 @@ namespace GAF.Network
 		public int Evaluate (List<Chromosome> solutionsToEvaluate)
 		{
 
-			if (solutionsToEvaluate == null || solutionsToEvaluate.Count == 0) {
-				throw new ArgumentNullException (nameof (solutionsToEvaluate), "The parameter is null (or empty).");
+			if (solutionsToEvaluate == null) {
+				throw new ArgumentNullException (nameof (solutionsToEvaluate), "The parameter is null.");
+			}
+
+			var solutionCount = solutionsToEvaluate.Count;
+			if (solutionCount == 0) {
+				throw new ArgumentException ("The parameter is empty.", nameof (solutionsToEvaluate));
 			}
 
 			//determine how many endpoints we are to be using
@@ -121,7 +123,6 @@ namespace GAF.Network
 				//start each task passing in the queue, fitness function and that task id
 				//the task id is used within the fitness function to determine a specific endpoint
 				for (int i = 0; i < epCount; i++) {
-					//tasks [i] = RunTask (syncQueue, args.FitnessFunctionDelegate, i);
 					tasks [i] = RunTask (syncQueue, RemoteFitnessDelegateFunction, i);
 				}
 
@@ -129,7 +130,8 @@ namespace GAF.Network
 				Task.WaitAll (tasks);
 
 				// set the number of evaluations we have done (one per solution)
-				return solutionsToEvaluate.Count ();
+				return solutionCount;
+
 			} else {
 				return 0;
 			}
@@ -171,13 +173,16 @@ namespace GAF.Network
 
 		private void EvaluateTask (System.Collections.Queue syncQueue, FitnessFunction fitnessFunctionDelegate, int taskId, CancellationToken token)
 		{
+			//this task will run until the queue is emptied
 
 			// Establish the remote endpoint using the appropriate endpoint and socket client
 			IPEndPoint remoteEndPoint = EndPoints [taskId];
 			_clients [taskId] = SocketClient.Connect (remoteEndPoint);
 
+
 			//send a status packet to see if we have already initialised this connection
 			//i.e. passed the fitness function accross
+
 			var statusRequestPacket = new Packet (PacketId.Status);
 			var statusPacket = SocketClient.TransmitData (_clients [taskId], statusRequestPacket);
 
@@ -192,6 +197,7 @@ namespace GAF.Network
 			if (!serverStatus.ServerDefinedFitness && (!serverStatus.Initialised || _reInitialiseFlags [taskId])) {
 
 				//ok to init server with fitness etc
+				Log.Debug ("Sending the fitness function to the server.");
 
 				//reset init flag
 				_reInitialiseFlags [taskId] = false;
@@ -247,19 +253,16 @@ namespace GAF.Network
 			if (client == null || client.Connected) {
 
 				// Convert the passed chromosome to a byte array
-				var byteData = Serializer.Serialize<Chromosome> (chromosome, _fitnessAssembly.KnownTypes);
-				//var testChrome = Serializer.DeSerialize<Chromosome> (byteData, _fitnessAssembly.KnownTypes);
+				//actually just the genes are serialised as we dont need to sent the rest
+				//var byteData = Serializer.Serialize<Chromosome> (chromosome, _fitnessAssembly.KnownTypes);
+				var byteData = Serializer.Serialize<List<Gene>> (chromosome.Genes, _fitnessAssembly.KnownTypes);
 
-				Log.Debug (string.Format("Bytes Sent:{0}", byteData.Length));
-
-				var xmitPacket = new Packet (byteData, PacketId.Chromosome, chromosome.Id);
-
-				Log.Debug (string.Format("Bytes Received:{0}", xmitPacket.Data.Length));
+				var xmitPacket = new Packet (byteData, PacketId.Data, chromosome.Id);
 
 				var recPacket = SocketClient.TransmitData (client, xmitPacket);
-
 				if (recPacket != null) {
 					fitness = BitConverter.ToDouble (recPacket.Data, 0);
+
 				} else {
 					throw new GAF.Exceptions.SocketException ("Data Packet was not received or was empty.");
 				}
