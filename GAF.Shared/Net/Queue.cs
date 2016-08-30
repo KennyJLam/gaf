@@ -42,9 +42,6 @@ namespace GAF.Net
 		private int _outPtr = 0;
 		private int _bytesUsed = 0;
 
-		//TODO: Raise event/exception when data is overwritten
-		//TODO: Raise event when a packet is ready.
-
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GAF.Net.PacketManager"/> class
 		/// with a default buffer size of 1Mb.

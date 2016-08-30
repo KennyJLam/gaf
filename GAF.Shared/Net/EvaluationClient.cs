@@ -162,7 +162,6 @@ namespace GAF.Net
 				_clients [taskId] = GAF.Net.SocketClient.Connect (remoteEndPoint);
 
 				//serialise the consumer functions
-				//TODO: This name should be passed in
 				var functionBytes = File.ReadAllBytes (_consumerFunctionsAssembleName);
 
 				//at this point we need the name of the consumer functions DLL in order to pass it to the 
