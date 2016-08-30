@@ -70,14 +70,6 @@
       <Project>{55566466-1B23-4BAA-A531-CB4035EAE3C2}</Project>
       <Name>GAF.Api</Name>
     </ProjectReference>
-    <ProjectReference Include="..\GAF.ConsumerFunctions.BinaryF6\GAF.ConsumerFunctions.BinaryF6.csproj">
-      <Project>{2578BCC7-9C16-48BF-B298-F2C44DC007C5}</Project>
-      <Name>GAF.ConsumerFunctions.BinaryF6</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GAF.ConsumerFunctions.TravellingSalesman\GAF.ConsumerFunctions.TravellingSalesman.csproj">
-      <Project>{02E5A665-E74A-4972-B3B8-FC49351490B0}</Project>
-      <Name>GAF.ConsumerFunctions.TravellingSalesman</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
