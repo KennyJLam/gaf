@@ -35,6 +35,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <Import Project="..\GAF.Version\GAF.Version.projitems" Label="Shared" Condition="Exists('..\GAF.Version\GAF.Version.projitems')" />
   <Import Project="..\GAF.Shared\GAF.Shared.projitems" Label="Shared" Condition="Exists('..\GAF.Shared\GAF.Shared.projitems')" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
