@@ -9,7 +9,7 @@ using GAF;
 namespace Example.IRemoteFitness
 {
 	
-	public class TravellingSalesmanFunctions : GAF.Network.IRemoteFitness
+	public class TravellingSalesman : GAF.Network.IRemoteFitness
 	{
 		#region IRemoteFitness implementation
 

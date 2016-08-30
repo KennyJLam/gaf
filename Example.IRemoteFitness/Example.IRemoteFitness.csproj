@@ -34,7 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="City.cs" />
-    <Compile Include="TravellingSalesmanFunctions.cs" />
+    <Compile Include="TravellingSalesman.cs" />
     <Compile Include="Cities.cs" />
   </ItemGroup>
   <ItemGroup>

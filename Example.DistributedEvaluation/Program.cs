@@ -140,7 +140,7 @@ namespace Example.DistributedEvaluation
 		{
 			var fittest = e.Population.GetTop (1) [0];
 
-			var distanceToTravel = TravellingSalesmanFunctions.CalculateDistance (fittest);
+			var distanceToTravel = TravellingSalesman.CalculateDistance (fittest);
 			Console.WriteLine (String.Format ("Generation: {0}, Evaluations: {1}, Fitness: {2}, Distance: {3}",
 				e.Generation,
 				e.Evaluations,
