@@ -20,6 +20,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 
@@ -33,9 +34,9 @@ namespace GAF.Network
 	public class NetworkWrapper
 	{
 		private const string ServiceName = "gaf-evaluation-server";
-		private IServiceDiscovery _serviceDiscoveryClient;
 		private string _fitnessAssemblyName;
-		private EvaluationClient _remoteEval;
+		private EvaluationClient _evaluationClient;
+		private IServiceDiscovery _serviceDiscoveryClient;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="T:GAF.Network.NetworkWrapper"/> class.
@@ -77,7 +78,6 @@ namespace GAF.Network
 			if (string.IsNullOrEmpty (fitnessAssemblyName)) {
 				throw new NullReferenceException ("The specified fitness assembly name is null or empty");
 			}
-
 			_serviceDiscoveryClient = serviceDiscoveryClient;
 			_fitnessAssemblyName = fitnessAssemblyName;
 
@@ -87,21 +87,25 @@ namespace GAF.Network
 
 			//get the endpoints from consul
 			Log.Info("Getting remote endpoints from Service Discovery.");
-			this.EndPoints = serviceDiscoveryClient.GetActiveServices (ServiceName);
+			this.EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
+
+			if (this.EndPoints.Count == 0) {
+				throw new ServiceDiscoveryException ("No server endpoints detected. Check that servers are running and registered with the appropriate IServiceDiscovery service.");	
+			}
 
 			Log.Info ("Endpoints detected:");
 			foreach (var endpoint in EndPoints) {
 				Log.Info (string.Format("    Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
 			}
 
-			_remoteEval = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
+			_evaluationClient = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
 
-			_remoteEval.OnEvaluationException += (object s, ExceptionEventArgs e) => {
+			_evaluationClient.OnEvaluationException += (object s, ExceptionEventArgs e) => {
 				throw new ApplicationException (e.Message);
 			};
 			
 			if (reInitialise) {
-				_remoteEval.ReInitialise ();
+				_evaluationClient.ReInitialise ();
 			}
 
 		}
@@ -112,17 +116,20 @@ namespace GAF.Network
 		/// </summary>
 		public void ReInitialise ()
 		{
-			_remoteEval.ReInitialise ();
+			_evaluationClient.ReInitialise ();
 		}
 
 		private void OnEvaluationBegin (object sender, EvaluationEventArgs args)
 		{
 			try {
+				
+				var stopwatch = new Stopwatch ();
+				stopwatch.Start ();
 
-				//TODO: Reload the endpoints incase there are new servers? Is this correct?
-				_remoteEval.EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
+				//FIXME: Reload the endpoints incase there are new servers? Is this reasonable?
+				_evaluationClient.EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
 
-				var evaluations = _remoteEval.Evaluate (args.SolutionsToEvaluate);
+				var evaluations = _evaluationClient.Evaluate (args.SolutionsToEvaluate);
 
 				if (evaluations > 0) {
 					args.Evaluations = evaluations;
@@ -130,15 +137,21 @@ namespace GAF.Network
 					throw new ApplicationException ("No evaluations undertaken, check that a server exists.");
 				}
 
+				stopwatch.Stop ();
+				Log.Info (string.Format ("Evaluation time = {0} ms.", stopwatch.ElapsedMilliseconds));
+
 			} catch (Exception ex) {
 
 				while (ex.InnerException != null) {
 					ex = ex.InnerException;
 				}
+
+				Log.Error (ex);
+
 				throw;
 
 			} finally {
-
+				//prevent the normall evaluation process from taking place
 				args.Cancel = true;
 			}
 		}
@@ -166,7 +179,7 @@ namespace GAF.Network
 		public IPEndPoint ConsulNodeEndPoint { private set; get; }
 
 		/// <summary>
-		/// Creates an endpoint from the IPAddress and Port number as a colon delimetered string.
+		/// Creates an endpoint from the IP address and Port number as a colon delimetered string.
 		/// Parameter must be in the format IPAddress:PortNumber e.g. 192.168.1.64:11000.
 		/// </summary>
 		/// <returns>The endpoint.</returns>

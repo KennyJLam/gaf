@@ -10,7 +10,7 @@ using GAF.Network;
 
 namespace GAF.ServiceDiscovery.Consul
 {
-	public class ConsulClient : IServiceDiscovery
+	public class Client : IServiceDiscovery
 	{
 		#region IServiceDiscovery
 
@@ -62,7 +62,7 @@ namespace GAF.ServiceDiscovery.Consul
 		/// Initializes a new instance of the <see cref="T:RemoteEvaluationServer.ConsulClient"/> class.
 		/// Uses a default endpoint for Consul Agent of localhost:8500.
 		/// </summary>
-		public ConsulClient ()
+		public Client ()
 		{
 			//nothing specified so use local host details
 			var ipHostInfo = Dns.GetHostEntry (Dns.GetHostName ());
@@ -78,7 +78,7 @@ namespace GAF.ServiceDiscovery.Consul
 		/// </summary>
 		/// <param name="ipAddress">IP address.</param>
 		/// <param name="port">Port.</param>
-		public ConsulClient (string ipAddress, int port)
+		public Client (string ipAddress, int port)
 		{
 			var url = string.Format ("{0}:{1}", ipAddress, port);
 			this.NodeEndPoint = CreateEndpoint (url);
@@ -90,7 +90,7 @@ namespace GAF.ServiceDiscovery.Consul
 		/// </summary>
 		/// <param name="ipAddress">Ip address.</param>
 		/// <param name="port">Port.</param>
-		public ConsulClient (IPAddress ipAddress, int port)
+		public Client (IPAddress ipAddress, int port)
 		{
 			var url = string.Format ("{0}:{1}", ipAddress, port);
 			this.NodeEndPoint = CreateEndpoint (url);
@@ -101,7 +101,7 @@ namespace GAF.ServiceDiscovery.Consul
 		/// Initializes a new instance of the <see cref="T:RemoteEvaluationServer.ConsulClient"/> class.
 		/// </summary>
 		/// <param name="endPoint">End point of Consul Agent.</param>
-		public ConsulClient (EndPoint endPoint)
+		public Client (EndPoint endPoint)
 		{
 			this.NodeEndPoint = endPoint;
 			InitialiseHttpClient ();
@@ -138,8 +138,6 @@ namespace GAF.ServiceDiscovery.Consul
                 Port = serviceEndPoint.Port
             };
                     
-            //serviceDefinition.Tags.Add ("master");
-            //serviceDefinition.Tags.Add ("v1");
             serviceDefinition.Check.TCP = string.Format ("{0}:{1}", serviceEndPoint.Address.ToString(), serviceEndPoint.Port);
             serviceDefinition.Check.Interval = "10s";
             serviceDefinition.Check.Timeout = "1s";
@@ -150,7 +148,6 @@ namespace GAF.ServiceDiscovery.Consul
 
 		private bool Register (ServiceDefinition serviceDefinition)
 		{
-			//const string registerUrl = baseUrl + "/v1/agent/service/register";
 			var url = string.Format ("http://{0}/v1/agent/service/register", this.NodeEndPoint);
 
 			var jsonDoc = Serializer.SerialiseToJson<ServiceDefinition> (serviceDefinition);
@@ -184,7 +181,6 @@ namespace GAF.ServiceDiscovery.Consul
 			knownTypes.Add (typeof (TaggedAddresses));
 
 			var services = Serializer.DeSerialize<List<AvailableServices>> (json, knownTypes);
-			//var services2 = JsonConvert.DeserializeObject<List<AvailableServices>> (json);
 
 			return services;
 		}
@@ -240,49 +236,8 @@ namespace GAF.ServiceDiscovery.Consul
 
 			var httpResponse = _httpClient.SendAsync (httpRequest).Result;
 
-			//Debug.WriteLine ("Result of PUT ({0}) = {1}.", resourceUrl, httpResponse.StatusCode, null);
-
 			return httpResponse;
 		}
-
-
-		//private HttpStatusCode Get (string resourceUrl)
-		//{
-		//	var httpRequest = new HttpRequestMessage (HttpMethod.Put, resourceUrl);
-		//	var httpResponseTask = _httpClient.SendAsync (httpRequest).Result;
-
-		//	Debug.WriteLine ("Result of GET ({0}) = {1}.", resourceUrl, httpResponseTask.StatusCode, null);
-
-		//	return httpResponseTask.StatusCode;
-		//}
-
-		//private HttpStatusCode Put (string resourceUrl, string jsonDocument)
-		//{
-		//	var httpContent = new StringContent (jsonDocument, Encoding.UTF8, "application/json");
-		//	var httpRequest = new HttpRequestMessage (HttpMethod.Put, resourceUrl) {
-		//		Content = httpContent
-		//	};
-
-		//	var httpResponseTask = _httpClient.SendAsync (httpRequest).Result;
-
-		//	Debug.WriteLine ("Result of PUT ({0}) = {1}.", resourceUrl, httpResponseTask.StatusCode, null);
-
-		//	return httpResponseTask.StatusCode;
-		//}
-
-		//private HttpStatusCode Post (string resourceUrl, string jsonDocument)
-		//{
-		//	var httpContent = new StringContent (jsonDocument, Encoding.UTF8, "application/json");
-		//	var httpRequest = new HttpRequestMessage (HttpMethod.Post, resourceUrl) {
-		//		Content = httpContent
-		//	};
-
-		//	var httpResponseTask = _httpClient.SendAsync (httpRequest).Result;
-
-		//	Debug.WriteLine ("Result of PUT ({0}) = {1}.", resourceUrl, httpResponseTask.StatusCode, null);
-
-		//	return httpResponseTask.StatusCode;
-		//}
 
 		#endregion
 	}

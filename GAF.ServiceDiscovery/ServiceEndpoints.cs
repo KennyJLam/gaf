@@ -54,16 +54,33 @@ namespace GAF.ServiceDiscovery
 			_endpoints = endpoints;
 		}
 
+		/// <summary>
+		/// De-registers the specified service id.
+		/// </summary>
+		/// <returns><c>true</c>, if register service was ded, <c>false</c> otherwise.</returns>
+		/// <param name="serviceId">Service identifier.</param>
 		public bool DeRegisterService (string serviceId)
 		{
 			throw new NotImplementedException ();
 		}
 
+		/// <summary>
+		/// Gets the active services.
+		/// </summary>
+		/// <returns>The active services.</returns>
+		/// <param name="serviceName">Service name.</param>
 		public List<IPEndPoint> GetActiveServices (string serviceName)
 		{
 			return _endpoints;
 		}
 
+		/// <summary>
+		/// Registers a service.
+		/// </summary>
+		/// <returns><c>true</c>, if service was registered, <c>false</c> otherwise.</returns>
+		/// <param name="serviceId">Service identifier.</param>
+		/// <param name="serviceEndPoint">Service end point.</param>
+		/// <param name="checkEndPoint">Check end point.</param>
 		public bool RegisterService (string serviceId, IPEndPoint serviceEndPoint, IPEndPoint checkEndPoint)
 		{
 			throw new NotImplementedException ();

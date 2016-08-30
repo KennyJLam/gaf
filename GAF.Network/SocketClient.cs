@@ -114,7 +114,15 @@ namespace GAF.Network
 					
 					var tmp = new byte[bytesReceived];
 					Array.Copy (bytes, 0, tmp, 0, bytesReceived);
-					return Packet.CreatePacket (bytes);				
+					var result = Packet.CreatePacket (bytes);
+
+					Log.Debug (string.Format ("Sending packet: Packet ID={0}, Object ID={1}, Bytes Sent:{2}, Response:{3}",
+						  packet.Header.PacketId,
+						  packet.Header.ObjectId,
+						  packet.Header.DataLength + PacketHeader.HeaderLength,
+						  BitConverter.ToDouble (result.Data, 0)));
+
+					return result;
 				}
 
 				return null;
