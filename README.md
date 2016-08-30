@@ -16,6 +16,25 @@ To get started, simply install the GAF using the NuGet Package Manager. Execute 
 
 `PM> Install-Package GAF`
 
+Repository Info
+===============
+
+GAF.40
+GAF.45
+GAF.Pcl
+GAF.Shared
+GAF.Network
+GAF.Consul
+GAF.EvaluationServer
+
+Examples
+--------
+Example.BinaryF6
+Example.TravellingSalesman
+Example.DistributedEvaluation
+Example.IFitness
+Example.IRemoteFitness
+
 More Info
 =========
 For more information and repo contact details see [http://johnnewcombe.net/gaf](http://johnnewcombe.net/gaf).
