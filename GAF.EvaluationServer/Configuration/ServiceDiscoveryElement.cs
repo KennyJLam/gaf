@@ -10,6 +10,11 @@ namespace GAF.EvaluationServer.Configuration
             get { return (string)base["assemblyName"]; }
         }
 
+		[ConfigurationProperty ("type", IsKey = false, IsRequired = false)]
+		public string Type {
+			get { return (string)base ["type"]; }
+		}
+
         [ConfigurationProperty("ipAddress", IsKey = false, IsRequired = false)]
         public string IpAddress
         {
