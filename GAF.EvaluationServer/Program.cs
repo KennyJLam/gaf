@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net;
 using GAF.EvaluationServer.Configuration;
 using GAF.Network;
+using GAF.Network.Serialization;
 
 namespace GAF.EvaluationServer
 {
@@ -31,10 +32,12 @@ namespace GAF.EvaluationServer
 
 					//register service with service discovery
 					var serviceDiscoveryAssemblyName = ConfigurationManager.Server.ServiceDiscovery.AssemblyName;
+					var serviceDiscoveryType = ConfigurationManager.Server.ServiceDiscovery.Type;
+
 					if (!string.IsNullOrWhiteSpace (serviceDiscoveryAssemblyName)) {
 						try {
 							//assembly name specified so load the assembly
-							var serviceDiscovery = new ServiceDiscoveryAssembly (serviceDiscoveryAssemblyName, sdNodeEndPoint);
+							var serviceDiscovery = new ServiceDiscoveryClient (serviceDiscoveryAssemblyName, serviceDiscoveryType, sdNodeEndPoint);
 
 							Log.Info (string.Format ("Registering GAF Evaluation Server with Service Discovery at address {0}.", sdNodeEndPoint.ToString ()));
 
