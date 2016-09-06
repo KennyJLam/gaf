@@ -23,16 +23,23 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 
-namespace GAF.Network
+namespace GAF.Network.Serialization
 {
 	/// <summary>
 	/// Binary serializer.
 	/// </summary>
 	public static class Serializer
 	{
+		/// <summary>
+		/// Deserializes specified bytes.
+		/// </summary>
+		/// <returns>The serialize.</returns>
+		/// <param name="byteData">Byte data.</param>
+		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static T DeSerialize<T> (byte [] byteData)
 		{
 			return DeSerialize<T> (byteData, new List<Type> ());
@@ -61,7 +68,13 @@ namespace GAF.Network
 			}
 		}
 
-
+		/// <summary>
+		/// Deserializes specified json.
+		/// </summary>
+		/// <returns>The serialize.</returns>
+		/// <param name="json">Json.</param>
+		/// <param name="knownTypes">Known types.</param>
+		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static T DeSerialize<T> (string json, List<Type> knownTypes)
 		{
 
@@ -75,13 +88,13 @@ namespace GAF.Network
 
 		}
 
-		public static byte [] Serialize<T> (object obj)
+		public static byte [] SerializeObject<T> (T obj)
 		{
-			return Serialize<T> (obj, new List<Type> ());
+			return SerializeObject<T> (obj, new List<Type> ());
 		}
 
 
-		public static byte [] Serialize<T> (object obj, List<Type> knownTypes)
+		public static byte [] SerializeObject<T> (T obj, List<Type> knownTypes)
 		{
 			byte [] bytes = null;
 
@@ -101,6 +114,48 @@ namespace GAF.Network
 			} catch (Exception) {
 
 				Log.Debug (bytes);
+				throw;
+			}
+		}
+
+		public static byte [] Serialize2<T> (T obj, List<Type> knownTypes)
+		{
+			byte [] bytes = null;
+			try {
+				using (MemoryStream memStm = new MemoryStream ()) {
+					var serializer = new DataContractSerializer (typeof (T), knownTypes);
+					serializer.WriteObject (memStm, obj);
+
+					memStm.Seek (0, SeekOrigin.Begin);
+
+					using (var streamReader = new StreamReader (memStm)) {
+						var xml = streamReader.ReadToEnd ();
+						bytes = Encoding.UTF8.GetBytes (xml);
+						return bytes;
+					}
+
+				}
+			} catch (Exception) {
+
+				GAF.Network.Serialization.Log.Debug (bytes);
+				throw;
+			}
+		}
+		public static T DeSerialize2<T> (byte [] byteData, List<Type> knownTypes)
+		{
+			try {
+
+				var serializer = new DataContractSerializer (typeof (T), knownTypes);
+				MemoryStream memoryStream = new MemoryStream (byteData);
+
+				var objectData = (T)serializer.ReadObject (memoryStream);
+				memoryStream.Close ();
+
+				return objectData;
+
+			} catch (Exception) {
+
+				GAF.Network.Serialization.Log.Debug (byteData);
 				throw;
 			}
 		}

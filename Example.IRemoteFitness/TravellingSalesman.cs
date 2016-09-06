@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GAF.Extensions;
 using System.Text;
-using GAF.Network;
+using GAF.Network.Serialization;
 using GAF;
 
 namespace Example.IRemoteFitness
@@ -46,14 +46,17 @@ namespace Example.IRemoteFitness
 				var currentCity = (City)gene.ObjectValue;
 
 				if (previousCity != null) {
-					var distance = previousCity.GetDistanceFromPosition (currentCity.Latitude,
-						               currentCity.Longitude);
-
-					distanceToTravel += distance;
+					distanceToTravel += previousCity.GetDistanceFromPosition (currentCity.Latitude,
+																		currentCity.Longitude);
 				}
 
 				previousCity = currentCity;
 			}
+
+			//add distance back to the starting point
+			var firstCity = (City)chromosome.Genes [0].ObjectValue;
+			distanceToTravel += previousCity.GetDistanceFromPosition (firstCity.Latitude,
+													firstCity.Longitude);
 
 			return distanceToTravel;
 		}

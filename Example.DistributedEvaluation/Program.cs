@@ -1,5 +1,5 @@
 ﻿using System;
-using GAF.Network;
+using GAF.Network.Serialization;
 using System.Collections.Generic;
 using System.Linq;
 using GAF.Extensions;
@@ -7,12 +7,14 @@ using GAF.Operators;
 using GAF;
 using Example.IRemoteFitness;
 using System.Net;
+using System.Diagnostics;
+using GAF.Network;
 
 namespace Example.DistributedEvaluation
 {
 	public class Program
 	{
-
+		private static Stopwatch _stopWatch;
 		private const int RunCount = 1;
 		//private const int populationSize = 100;
 		private const int populationSize = 100;
@@ -94,7 +96,10 @@ namespace Example.DistributedEvaluation
 			 * 
 			 ***************************************************************************************/
 
-			var networkWrapper = new NetworkWrapper (ga, serviceDiscovery, "Example.IRemoteFitness.dll", false);
+			var networkWrapper = new NetworkWrapper (ga, serviceDiscovery, "Example.IRemoteFitness.dll", true);
+
+			_stopWatch = new Stopwatch ();
+			_stopWatch.Start ();
 
 			//locally declared terminate function
 			networkWrapper.GeneticAlgorithm.Run (TerminateAlgorithm);
@@ -141,12 +146,14 @@ namespace Example.DistributedEvaluation
 			var fittest = e.Population.GetTop (1) [0];
 
 			var distanceToTravel = TravellingSalesman.CalculateDistance (fittest);
-			Console.WriteLine (String.Format ("Generation: {0}, Evaluations: {1}, Fitness: {2}, Distance: {3}",
+			Console.WriteLine (String.Format ("Generation: {0}, Evaluations: {1}, Fitness: {2}, Distance: {3}, ElapsedTime:T {4}",
 				e.Generation,
 				e.Evaluations,
 				fittest.Fitness,
-				distanceToTravel)
+				distanceToTravel,
+				_stopWatch.ElapsedMilliseconds)
 			);
+			_stopWatch.Restart ();
 		}
 
 
