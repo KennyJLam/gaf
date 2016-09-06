@@ -27,14 +27,18 @@ using System.Reflection;
 
 namespace GAF.Network
 {
-	public class ServiceDiscoveryAssembly
+	public class ServiceDiscoveryClient
 	{
 		IServiceDiscovery _serviceDiscovery;
 
-		public ServiceDiscoveryAssembly (string assemblyPath, IPEndPoint endpoint)
+		public ServiceDiscoveryClient (string assemblyPath, string typeName, IPEndPoint endpoint)
 		{
 			if (string.IsNullOrWhiteSpace (assemblyPath)) {
 				throw new ArgumentException ("The specified path null or empty.", nameof (assemblyPath));
+			}
+
+			if (!assemblyPath.EndsWith (".dll", StringComparison.InvariantCultureIgnoreCase)) {
+				assemblyPath += ".dll";
 			}
 
 			if (!File.Exists (assemblyPath)) {
@@ -44,14 +48,16 @@ namespace GAF.Network
 			var assembly = Assembly.LoadFile (assemblyPath);
 			var type = typeof (IServiceDiscovery);
 			var types = assembly.DefinedTypes.Where (type.IsAssignableFrom).ToList ();
-			//var types = fitnessDll.GetTypes();
 
 			if (types.Count == 0) {
 				throw new ApplicationException (string.Format ("An IServiceDiscovery type connot be found within the specified assembly [{0}].", assemblyPath));
 			}
 
-			//get the first type available
-			var serviceDiscoveryClass = types [0];
+			//get the first type available that is not the ServiceEndpoints class.
+			var serviceDiscoveryClass = types.FirstOrDefault(t => t.FullName.Equals(typeName));
+			if (serviceDiscoveryClass == null) {
+				throw new ApplicationException (string.Format ("An IServiceDiscovery type {0} connot be found within the specified assembly. [{1}].", assemblyPath, typeName));
+			}
 
 			_serviceDiscovery = (IServiceDiscovery)Activator.CreateInstance (serviceDiscoveryClass, endpoint);
 
