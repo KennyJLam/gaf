@@ -29,17 +29,20 @@ using System.Text;
 
 namespace GAF.Network.Serialization
 {
+
+
 	/// <summary>
 	/// Binary serializer.
 	/// </summary>
-	public static class Serializer
+	public static class Binary
 	{
+		private const bool UseXml = true;
+
 		/// <summary>
 		/// Deserializes specified bytes.
 		/// </summary>
 		/// <returns>The serialize.</returns>
 		/// <param name="byteData">Byte data.</param>
-		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static T DeSerialize<T> (byte [] byteData)
 		{
 			return DeSerialize<T> (byteData, new List<Type> ());
@@ -53,48 +56,86 @@ namespace GAF.Network.Serialization
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static T DeSerialize<T> (byte [] byteData, List<Type> knownTypes)
 		{
-			string json = string.Empty;
+			if (UseXml) {
+				return DeSerializeViaXml<T> (byteData, knownTypes);
+			} else {
+				return DeSerializeViaJson<T> (byteData, knownTypes);
+			}
+		}
 
+
+		private static T DeSerializeViaJson<T> (byte [] byteData, List<Type> knownTypes)
+		{
 			try {
-				
-				json = Encoding.UTF8.GetString (byteData);
-				return DeSerialize<T> (json, knownTypes);
+
+				using (var memoryStream = new MemoryStream (byteData)) {
+
+					var js = new DataContractJsonSerializer (typeof (T), knownTypes);
+					var objectData = (T)js.ReadObject (memoryStream);
+					memoryStream.Close ();
+
+					return objectData;
+				}
 
 			} catch (Exception) {
 
-				//Log.Debug (json);
 				Log.Debug (byteData);
 				throw;
 			}
 		}
 
 		/// <summary>
-		/// Deserializes specified json.
+		/// Deserializes specified bytes.
 		/// </summary>
-		/// <returns>The serialize.</returns>
-		/// <param name="json">Json.</param>
+		/// <returns>The serialize new.</returns>
+		/// <param name="byteData">Byte data.</param>
 		/// <param name="knownTypes">Known types.</param>
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		public static T DeSerialize<T> (string json, List<Type> knownTypes)
+		private static T DeSerializeViaXml<T> (byte [] byteData, List<Type> knownTypes)
 		{
+			try {
 
-			DataContractJsonSerializer js = new DataContractJsonSerializer (typeof (T), knownTypes);
-			MemoryStream memoryStream = new MemoryStream (System.Text.Encoding.UTF8.GetBytes (json));
+				using (var memoryStream = new MemoryStream (byteData)) {
 
-			var objectData = (T)js.ReadObject (memoryStream);
-			memoryStream.Close ();
+					var serializer = new DataContractSerializer (typeof (T), knownTypes);
+					var objectData = (T)serializer.ReadObject (memoryStream);
+					memoryStream.Close ();
 
-			return objectData;
+					return objectData;
+				}
 
+			} catch (Exception) {
+				Log.Debug (byteData);
+				throw;
+			}
 		}
 
-		public static byte [] SerializeObject<T> (T obj)
+		/// <summary>
+		/// Serializes the specified object.
+		/// </summary>
+		/// <param name="obj">Object.</param>
+		/// <typeparam name="T">The 1st type parameter.</typeparam>
+		public static byte [] Serialize<T> (T obj)
 		{
-			return SerializeObject<T> (obj, new List<Type> ());
+			return Serialize<T> (obj, new List<Type> ());
 		}
 
+		/// <summary>
+		/// Serializes the specified object.
+		/// </summary>
+		/// <param name="obj">Object.</param>
+		/// <param name="knownTypes">Known types.</param>
+		/// <typeparam name="T">The 1st type parameter.</typepara
+		public static byte [] Serialize<T> (T obj, List<Type> knownTypes)
+		{
+			if (UseXml) {
+				return SerializeViaXml<T> (obj, knownTypes);
+			} else {
+				return SerializeViaJson<T> (obj, knownTypes);
+			}
+		}
 
-		public static byte [] SerializeObject<T> (T obj, List<Type> knownTypes)
+		private static byte [] SerializeViaJson<T> (T obj, List<Type> knownTypes)
 		{
 			byte [] bytes = null;
 
@@ -104,7 +145,7 @@ namespace GAF.Network.Serialization
 					DataContractJsonSerializer serializer = new DataContractJsonSerializer (typeof (T), knownTypes);
 					serializer.WriteObject (memoryStream, (T)obj);
 
-					memoryStream.Position = 0;
+					//memoryStream.Position = 0;
 					bytes = memoryStream.ToArray ();
 					memoryStream.Close ();
 
@@ -112,88 +153,36 @@ namespace GAF.Network.Serialization
 				}
 
 			} catch (Exception) {
-
-				Log.Debug (bytes);
 				throw;
 			}
 		}
 
-		public static byte [] Serialize2<T> (T obj, List<Type> knownTypes)
+		private static byte [] SerializeViaXml<T> (T obj, List<Type> knownTypes)
 		{
 			byte [] bytes = null;
 			try {
-				using (MemoryStream memStm = new MemoryStream ()) {
+				using (MemoryStream memoryStream = new MemoryStream ()) {
 					var serializer = new DataContractSerializer (typeof (T), knownTypes);
-					serializer.WriteObject (memStm, obj);
+					serializer.WriteObject (memoryStream, obj);
 
-					memStm.Seek (0, SeekOrigin.Begin);
+					bytes = memoryStream.ToArray ();
+					memoryStream.Close ();
 
-					using (var streamReader = new StreamReader (memStm)) {
-						var xml = streamReader.ReadToEnd ();
-						bytes = Encoding.UTF8.GetBytes (xml);
-						return bytes;
-					}
+					return bytes;
+
+					//memoryStream.Seek (0, SeekOrigin.Begin);
+
+					//using (var streamReader = new StreamReader (memoryStream)) {
+					//	var xml = streamReader.ReadToEnd ();
+					//	bytes = Encoding.UTF8.GetBytes (xml);
+					//	return bytes;
+					//}
 
 				}
 			} catch (Exception) {
-
-				GAF.Network.Serialization.Log.Debug (bytes);
-				throw;
-			}
-		}
-		public static T DeSerialize2<T> (byte [] byteData, List<Type> knownTypes)
-		{
-			try {
-
-				var serializer = new DataContractSerializer (typeof (T), knownTypes);
-				MemoryStream memoryStream = new MemoryStream (byteData);
-
-				var objectData = (T)serializer.ReadObject (memoryStream);
-				memoryStream.Close ();
-
-				return objectData;
-
-			} catch (Exception) {
-
-				GAF.Network.Serialization.Log.Debug (byteData);
 				throw;
 			}
 		}
 
-		/// <summary>
-		/// Serialises to json and returns a UTF8 Json string.
-		/// </summary>
-		/// <returns>The to json.</returns>
-		/// <param name="obj">Object.</param>
-		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		public static string SerialiseToJson<T> (object obj)
-		{
-			return SerialiseToJson<T> (obj, new List<Type> ());
-		}
-
-		/// <summary>
-		/// Serialises to json and returns a UTF8 Json string.
-		/// </summary>
-		/// <returns>The to json.</returns>
-		/// <param name="obj">Object.</param>
-		/// <param name="knownTypes">Known types.</param>
-		/// <typeparam name="T">The 1st type parameter.</typeparam>
-		public static string SerialiseToJson<T> (object obj, List<Type> knownTypes)
-		{
-			using (MemoryStream memoryStream = new MemoryStream ()) {
-
-				DataContractJsonSerializer serializer = new DataContractJsonSerializer (typeof (T), knownTypes);
-				serializer.WriteObject (memoryStream, (T)obj);
-
-				memoryStream.Position = 0;
-				StreamReader sr = new StreamReader (memoryStream, System.Text.Encoding.UTF8);
-
-				var json = sr.ReadToEnd ();
-
-				memoryStream.Close ();
-
-				return json;
-			}
-		}
 	}
 }
