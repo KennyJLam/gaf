@@ -31,7 +31,6 @@ namespace GAF.Network.Serialization
 			using (var memoryStream = new MemoryStream (System.Text.Encoding.UTF8.GetBytes (json))) {
 
 				try {
-
 					var serializer = new DataContractJsonSerializer (typeof (T), knownTypes);
 					return (T)serializer.ReadObject (memoryStream);
 
@@ -41,7 +40,6 @@ namespace GAF.Network.Serialization
 				}
 
 				memoryStream.Close ();
-
 				return default (T);
 			}
 		}

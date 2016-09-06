@@ -8,7 +8,7 @@ namespace GAF.Network.Serialization
 {
 	public class Xml
 	{
-		
+
 		/// <summary>
 		/// Deserializes specified xml.
 		/// </summary>
@@ -29,22 +29,21 @@ namespace GAF.Network.Serialization
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static T DeSerialize<T> (string xml, List<Type> knownTypes)
 		{
-			try {
+			using (var memoryStream = new MemoryStream (System.Text.Encoding.UTF8.GetBytes (xml))) {
 
-				using (var memoryStream = new MemoryStream (System.Text.Encoding.UTF8.GetBytes (xml))) {
-
+				try {
 					var serializer = new DataContractSerializer (typeof (T), knownTypes);
-					var objectData = (T)serializer.ReadObject (memoryStream);
-					memoryStream.Close ();
+					return (T)serializer.ReadObject (memoryStream);
 
-					return objectData;
+				} catch (Exception ex) {
+					Log.Error (ex);
+					Log.Error (xml);
 				}
 
-			} catch (Exception) {
-
-				Log.Debug (xml);
-				throw;
+				memoryStream.Close ();
+				return default (T);
 			}
+
 		}
 
 		/// <summary>
@@ -66,7 +65,7 @@ namespace GAF.Network.Serialization
 		public static string Serialize<T> (T obj, List<Type> knownTypes)
 		{
 			try {
-				
+
 				using (MemoryStream memStm = new MemoryStream ()) {
 
 					var serializer = new DataContractSerializer (typeof (T), knownTypes);
