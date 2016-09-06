@@ -66,6 +66,10 @@
       <Project>{02E5A665-E74A-4972-B3B8-FC49351490B0}</Project>
       <Name>Example.IRemoteFitness</Name>
     </ProjectReference>
+    <ProjectReference Include="..\GAF.ServiceDiscovery\GAF.ServiceDiscovery.csproj">
+      <Project>{BBBD65E6-3C44-4123-AF24-805B4D30C129}</Project>
+      <Name>GAF.ServiceDiscovery</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
