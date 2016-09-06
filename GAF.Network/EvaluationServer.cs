@@ -22,6 +22,7 @@ using System.IO;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using GAF.Network.Serialization;
 
 namespace GAF.Network
 {
@@ -94,7 +95,7 @@ namespace GAF.Network
 					Log.Info (string.Format ("Assembly {0} has been loaded.", FitnessAssemblyName));
 				}
 			} else {
-				Log.Error (string.Format ("Assembly {0} not loaded. File does not exist.", FitnessAssemblyName));
+				Log.Warning (string.Format ("Assembly {0} not loaded. File does not exist. Server may need initialising", FitnessAssemblyName));
 			}
 
 			Log.Info (string.Format ("GAF Evaluation Server Listening on {0}:{1}.",
@@ -107,17 +108,21 @@ namespace GAF.Network
 		private void listener_OnPacketReceived (object sender, PacketEventArgs e)
 		{
 			try {
+
+				Log.Debug (string.Format ("Packet Received, PacketId:{0} ObjectId:{1} Data Bytes:{2}", 
+				                          e.Packet.Header.PacketId, 
+				                          e.Packet.Header.ObjectId, 
+				                          e.Packet.Data.Length));
+
 				switch ((PacketId)e.Packet.Header.PacketId) {
 
 				case PacketId.Data: {
-
-						Log.Debug (string.Format ("Packets Received:{0} Bytes Read:{1}", e.PacketsReceived, e.Packet.Data.Length));
 
 						if (e.Packet.Header.DataLength > 0) {
 
 							//deserialise to get the genes, create a new chromosome from these
 							//this saves having to send the whole chromosome
-							var genes = Serializer.DeSerialize<List<Gene>> (e.Packet.Data, _fitnessAssembly.KnownTypes);
+							var genes = Binary.DeSerialize<List<Gene>> (e.Packet.Data, _fitnessAssembly.KnownTypes);
 							var chromosome = new Chromosome (genes);
 
 							e.Result = chromosome.Evaluate (_fitnessAssembly.FitnessFunction);
