@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using GAF.Network;
+using GAF.Network.Serialization;
 
 namespace GAF.ServiceDiscovery
 {
