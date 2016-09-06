@@ -34,6 +34,10 @@ namespace GAF.Network
 				throw new ArgumentException ("The specified path null or empty.", nameof (assemblyPath));
 			}
 
+			if (!assemblyPath.EndsWith (".dll", StringComparison.InvariantCultureIgnoreCase)) {
+				assemblyPath += ".dll";
+			}
+
 			if (!File.Exists (assemblyPath))
 			{
 				throw new FileNotFoundException (string.Format ("Cannot find Assembly '{0}'", assemblyPath));
