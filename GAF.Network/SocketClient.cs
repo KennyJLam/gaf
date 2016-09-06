@@ -47,11 +47,11 @@ namespace GAF.Network
 					throw new ArgumentNullException (nameof (ipAddress));
 				if (port < 1024)
 					throw new ArgumentOutOfRangeException (nameof (port));
-				
+
 				// Establish the remote endpoint
 				IPEndPoint remoteEndPoint = new IPEndPoint (ipAddress, port);
 				return Connect (remoteEndPoint);
-			
+
 			} catch (Exception ex) {
 				throw ex;
 			}
@@ -83,9 +83,9 @@ namespace GAF.Network
 				}
 
 				if (!client.Connected) {
-					throw new GAF.Exceptions.SocketException (string.Format ("Unable to connect to endpoint after {0} attempts.", maxRetries));
+					throw new GAF.Network.SocketException (string.Format ("Unable to connect to endpoint after {0} attempts.", maxRetries));
 				}
-					
+
 			} catch (Exception ex) {
 				throw ex;
 			}
@@ -103,24 +103,25 @@ namespace GAF.Network
 		public static Packet TransmitData (Socket client, Packet packet)
 		{
 			try {
-				
+
 				client.Send (packet.ToByteArray ());
-				byte[] bytes = new byte[1024];
+				byte [] bytes = new byte [1024];
 
 				// Receive the response from the remote device.
 				var bytesReceived = client.Receive (bytes);
 
 				if (bytesReceived > PacketHeader.HeaderLength) {
-					
-					var tmp = new byte[bytesReceived];
+
+					var tmp = new byte [bytesReceived];
 					Array.Copy (bytes, 0, tmp, 0, bytesReceived);
 					var result = Packet.CreatePacket (bytes);
 
-					Log.Debug (string.Format ("Sending packet: Packet ID={0}, Object ID={1}, Bytes Sent:{2}, Response:{3}",
-						  packet.Header.PacketId,
-						  packet.Header.ObjectId,
-						  packet.Header.DataLength + PacketHeader.HeaderLength,
-						  BitConverter.ToDouble (result.Data, 0)));
+					Log.Debug (string.Format ("Sending packet to {0}: Packet ID={1}, Object ID={2}, Bytes Sent:{3}, Response:{4}",
+					                          client.RemoteEndPoint.ToString (),
+											  packet.Header.PacketId,
+											  packet.Header.ObjectId,
+											  packet.Header.DataLength + PacketHeader.HeaderLength,
+						  					  BitConverter.ToDouble (result.Data, 0)));
 
 					return result;
 				}

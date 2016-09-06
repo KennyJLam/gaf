@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GAF.Exceptions
+namespace GAF.Network
 {
 	/// <summary>
 	/// Custom exception used to indicate an exception with a socket. See the inner exception and message for full exception details.
