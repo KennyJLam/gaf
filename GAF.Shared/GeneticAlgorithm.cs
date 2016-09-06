@@ -332,9 +332,9 @@ namespace GAF
 			//_newPopulation object containing only the top 10% of the solutions that exist in _population.
 			//Deletions handled by the operator(s)
 			foreach (var op in this.Operators) {
+				
 				var enabled = true;
 				//maxFitnessPre = tempPopulation.MaximumFitness;
-
 
 				var genOp = op as IGeneticOperator; //this is the new interface
 				if (genOp != null) {
@@ -346,9 +346,8 @@ namespace GAF
 				//however the check is made here as this cannot be guaranteed with third party
 				//operators.
 				if (enabled) {
-                    //Debug.WriteLine("Operator {0} Invoked", op.GetType().ToString());
+					
 					op.Invoke (tempPopulation, ref processedPopulation, fitnessFunctionDelegate);
-
 
 					Evaluations += op.GetOperatorInvokedEvaluations ();
 											
