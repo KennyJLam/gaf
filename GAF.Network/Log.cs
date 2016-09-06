@@ -64,6 +64,9 @@ namespace GAF.Network
 		}
 		public static void Error (string message)
 		{
+			if (message == null)
+				return;
+			
 			if (_traceLevelSwitch == null) InitialiseTraceSwitch ();
 			var formattedMessage = FormatMessage (message, "ERR");
 			Trace.WriteLineIf (_traceLevelSwitch.TraceError, formattedMessage);
@@ -71,6 +74,9 @@ namespace GAF.Network
 
 		public static void Error (Exception exception)
 		{
+			if (exception == null)
+				return;
+			
 			if (_traceLevelSwitch == null) InitialiseTraceSwitch ();
 
 			var formattedMessage = FormatMessage (exception.Message, "ERR");
@@ -108,24 +114,34 @@ namespace GAF.Network
 
 		public static void Warning (string message)
 		{
+			if (message == null)
+				return;
 			if (_traceLevelSwitch == null) InitialiseTraceSwitch ();
 			Trace.WriteLineIf (_traceLevelSwitch.TraceWarning, FormatMessage (message, "WARN"));
 		}
 
 		public static void Info (string message)
 		{
+			if (message == null)
+				return;
 			if (_traceLevelSwitch == null) InitialiseTraceSwitch ();
 			Trace.WriteLineIf (_traceLevelSwitch.TraceInfo, FormatMessage (message, "INFO"));
 		}
 
 		public static void Debug (string message)
 		{
+			if (message == null)
+				return;
+			
 			if (_traceLevelSwitch == null) InitialiseTraceSwitch ();
 			Trace.WriteLineIf (_traceLevelSwitch.TraceVerbose, FormatMessage (message, "DEBUG"));
 		}
 
 		public static void Debug (byte [] byteData)
 		{
+			if (byteData == null || byteData.Length == 0)
+				return;
+			
 			const int cols = 16;
 
 			if (_traceLevelSwitch.TraceVerbose) {
