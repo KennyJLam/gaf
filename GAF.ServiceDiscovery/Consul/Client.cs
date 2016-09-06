@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using GAF.Network;
+using GAF.Network.Serialization;
 
 namespace GAF.ServiceDiscovery.Consul
 {
@@ -19,6 +20,12 @@ namespace GAF.ServiceDiscovery.Consul
 			var endpoints = new List<IPEndPoint> ();
 
 			var services = GetServices (serviceName, true);
+
+			if (services == null || services.Count == 0) 
+			{
+				throw new GAF.Network.SocketException ("Unable to retrieve services from Service Discovery.");
+			}
+
 			foreach (var service in services) {
 				var address = service.Service.Address;
 				var port = service.Service.Port;
@@ -150,7 +157,7 @@ namespace GAF.ServiceDiscovery.Consul
 		{
 			var url = string.Format ("http://{0}/v1/agent/service/register", this.NodeEndPoint);
 
-			var jsonDoc = Serializer.SerialiseToJson<ServiceDefinition> (serviceDefinition);
+			var jsonDoc = Json.Serialize<ServiceDefinition> (serviceDefinition);
 			var result = SendRequest (url, HttpMethod.Put, jsonDoc);
 			return result.StatusCode == HttpStatusCode.OK;
 		}
@@ -180,7 +187,7 @@ namespace GAF.ServiceDiscovery.Consul
 			knownTypes.Add (typeof (Service));
 			knownTypes.Add (typeof (TaggedAddresses));
 
-			var services = Serializer.DeSerialize<List<AvailableServices>> (json, knownTypes);
+			var services = Json.DeSerialize<List<AvailableServices>> (json, knownTypes);
 
 			return services;
 		}
