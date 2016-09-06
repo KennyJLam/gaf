@@ -93,16 +93,20 @@ namespace GAF.Network
 				throw new ServiceDiscoveryException ("No server endpoints detected. Check that servers are running and registered with the appropriate IServiceDiscovery service.");	
 			}
 
-			Log.Info ("Endpoints detected:");
 			foreach (var endpoint in EndPoints) {
-				Log.Info (string.Format("    Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
+				Log.Info (string.Format("Detected Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
 			}
 
 			_evaluationClient = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
 
-			_evaluationClient.OnEvaluationException += (object s, ExceptionEventArgs e) => {
-				throw new ApplicationException (e.Message);
-			};
+			//_evaluationClient.OnEvaluationException += (object s, ExceptionEventArgs e) => {
+
+			//	//this is the result of an error on one of the tasks and could be due to a socket exception e.g. server failure.
+			//	//this should be logged and ignored as the offending socket client has already been removed from the pool
+			//	//and the service discovery will put it back when it is all OK
+			//	Log.Error (e.Message);
+
+			//};
 			
 			if (reInitialise) {
 				_evaluationClient.ReInitialise ();
@@ -121,13 +125,21 @@ namespace GAF.Network
 
 		private void OnEvaluationBegin (object sender, EvaluationEventArgs args)
 		{
+			//this event is called each time a population is evaluated therefore
+			// this will be called after each operator has been invoked
 			try {
 				
 				var stopwatch = new Stopwatch ();
 				stopwatch.Start ();
 
-				//FIXME: Reload the endpoints incase there are new servers? Is this reasonable?
-				_evaluationClient.EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
+				//TODO: do this every few generations rather than every generation
+				//refresh the endpoints available and update the evaluationClient accordingly.
+				EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
+				_evaluationClient.UpdateEndpoints (EndPoints);
+
+				foreach (var endpoint in EndPoints) {
+					Log.Info (string.Format ("Detected Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
+				}
 
 				var evaluations = _evaluationClient.Evaluate (args.SolutionsToEvaluate);
 
@@ -138,7 +150,7 @@ namespace GAF.Network
 				}
 
 				stopwatch.Stop ();
-				Log.Info (string.Format ("Evaluation time = {0} ms.", stopwatch.ElapsedMilliseconds));
+				Log.Debug (string.Format ("Evaluation time = {0} ms.", stopwatch.ElapsedMilliseconds));
 
 			} catch (Exception ex) {
 
@@ -148,7 +160,7 @@ namespace GAF.Network
 
 				Log.Error (ex);
 
-				throw;
+				//throw;
 
 			} finally {
 				//prevent the normall evaluation process from taking place
@@ -156,9 +168,6 @@ namespace GAF.Network
 			}
 		}
 
-		public void Run ()
-		{
-		}
 		/// <summary>
 		/// Gets a reference to the 'wrapped' GeneticAlgorithm object.
 		/// </summary>
