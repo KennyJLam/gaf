@@ -47,8 +47,17 @@ namespace Example.BinaryF6
 
             var mutation = new BinaryMutate(mutationProbability);
 
-            //create the GA itself 
+            //create the GA itself passing in the fitness function.
             var ga = new GeneticAlgorithm(population, EvaluateFitness);
+
+            /* ------------------------------------------------------------------------------------
+            * if the fitness is defined in a separate assembly (see documentation), 
+            * the following class can be used to load the assembly and access the 
+            * fitness function
+            * 
+            *    var fitnessAssembly = new FitnessAssembly ("Example.IFitness.dll");
+            *    var ga = new GeneticAlgorithm (population, fitnessAssembly.FitnessFunction);
+            * ------------------------------------------------------------------------------------*/
 
             //subscribe to the GAs Generation Complete event 
             ga.OnGenerationComplete += ga_OnGenerationComplete;
