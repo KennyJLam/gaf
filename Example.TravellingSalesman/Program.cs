@@ -20,6 +20,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using GAF;
 using GAF.Extensions;
@@ -29,10 +30,12 @@ namespace Example.TravellingSalesman
 {
     internal class Program
     {
+		private static Stopwatch _stopwatch;
 
-        private static void Main(string[] args)
+		private static void Main(string[] args)
         {
             const int populationSize = 100;
+			_stopwatch = new Stopwatch ();
 
             //get our cities
             var cities = CreateCities().ToList();
@@ -134,8 +137,12 @@ namespace Example.TravellingSalesman
 
         public static double CalculateFitness(Chromosome chromosome)
         {
-            var distanceToTravel = CalculateDistance(chromosome);
-            return 1 - distanceToTravel / 10000;
+			var distanceToTravel = CalculateDistance(chromosome);
+
+			//experience suggests that 2000 is just less than the shortest possible distance
+			var fitness = 2000 / distanceToTravel;
+			return fitness > 1.0 ? 1.0 : fitness;
+
         }
 
         private static double CalculateDistance(Chromosome chromosome)
