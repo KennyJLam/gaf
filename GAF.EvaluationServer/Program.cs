@@ -10,8 +10,13 @@ namespace GAF.EvaluationServer
 {
 	public class Program
 	{
+		private static Stopwatch _stopwatch;
+
 		public static int Main (String [] args)
 		{
+			_stopwatch = new Stopwatch ();
+			_stopwatch.Start ();
+
 			Log.WriteHeader ();
 
 			try {
@@ -121,7 +126,9 @@ namespace GAF.EvaluationServer
 		public static void OnEvaluationComplete (object sender, GAF.Network.RemoteEvaluationEventArgs e)
 		{
 			//this event fires each time an evaluation is undertaken by the server
-			//Console.WriteLine ("Evaluated solution {0}, Fitness={1}", e.Solution.Id, e.Solution.Fitness);
+			var ellapsedMilliseconds = _stopwatch.ElapsedMilliseconds;
+			Log.Debug (string.Format ("Evaluated solution {0}, Fitness={1}, Elapsed Time:{2}ms", e.Solution.Id, e.Solution.Fitness, ellapsedMilliseconds));
+			_stopwatch.Restart ();
 		}
 
 		public static IPEndPoint CreateEndpoint (string ipAddress, int port)
