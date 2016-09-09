@@ -17,8 +17,8 @@ namespace Example.IRemoteFitness
 		{
 			var distanceToTravel = CalculateDistance (chromosome);
 
-			//experience suggests that 1500 is just less than the shortest possible distance
-			var fitness = 1600 / distanceToTravel; 
+			//experience suggests that 2000 is just less than the shortest possible distance
+			var fitness = 2000 / distanceToTravel; 
 					
 			return fitness > 1.0 ? 1.0 : fitness;
 
