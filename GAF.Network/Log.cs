@@ -23,6 +23,9 @@ namespace GAF.Network
 	using System;
 	using System.Diagnostics;
 	using System.Globalization;
+	using System.Linq;
+	using System.Reflection;
+	using System.Runtime.Versioning;
 	using System.Text;
 
 	public static class Log
@@ -44,13 +47,14 @@ namespace GAF.Network
 
 			if (_traceLevelSwitch == null) InitialiseTraceSwitch ();
 
-			if (_traceLevelSwitch.TraceVerbose) {
+			if (_traceLevelSwitch.TraceInfo) {
 
 				var header = new StringBuilder ();
 				header.AppendLine ();
 				header.AppendLine (_logLine);
 				header.AppendLine (DateTime.Now.ToString ("dd-mmm-yyyy hh:mm:ss.ss"));
-				header.AppendLine (string.Format ("Application Version: {0}", Environment.Version.ToString ()));
+				header.AppendLine (string.Format ("Assembly Version: {0}", Assembly.GetExecutingAssembly ().GetName ().Version));
+				header.AppendLine (string.Format ("Runtime Version: {0}", GetFrameworkVersion()));
 				header.AppendLine (string.Format ("Current Path: {0}", Environment.CommandLine));
 				header.AppendLine (string.Format ("Machine Name: {0}", Environment.MachineName));
 				header.AppendLine (string.Format ("Operating System: {0}", Environment.OSVersion.ToString ()));
@@ -66,7 +70,7 @@ namespace GAF.Network
 		{
 			if (message == null)
 				return;
-			
+
 			if (_traceLevelSwitch == null) InitialiseTraceSwitch ();
 			var formattedMessage = FormatMessage (message, "ERR");
 			Trace.WriteLineIf (_traceLevelSwitch.TraceError, formattedMessage);
@@ -76,7 +80,7 @@ namespace GAF.Network
 		{
 			if (exception == null)
 				return;
-			
+
 			if (_traceLevelSwitch == null) InitialiseTraceSwitch ();
 
 			var formattedMessage = FormatMessage (exception.Message, "ERR");
@@ -89,14 +93,14 @@ namespace GAF.Network
 				errorText.AppendLine (_logLine);
 				errorText.AppendLine ("Exception: ");
 				errorText.AppendLine (_logLine);
-				errorText.AppendLine (string.Format("Error: {0}", exception.Message));
+				errorText.AppendLine (string.Format ("Error: {0}", exception.Message));
 				errorText.AppendLine (_logLine);
 				errorText.AppendLine (exception.ToString ());
 
 				errorText.AppendLine (_logLine);
 				errorText.AppendLine ("Base Exception: ");
 				errorText.AppendLine (_logLine);
-				errorText.AppendLine (string.Format("Error: {0}", exception.GetBaseException ().Message));
+				errorText.AppendLine (string.Format ("Error: {0}", exception.GetBaseException ().Message));
 				errorText.AppendLine (_logLine);
 				errorText.AppendLine (exception.GetBaseException ().ToString ());
 
@@ -132,7 +136,7 @@ namespace GAF.Network
 		{
 			if (message == null)
 				return;
-			
+
 			if (_traceLevelSwitch == null) InitialiseTraceSwitch ();
 			Trace.WriteLineIf (_traceLevelSwitch.TraceVerbose, FormatMessage (message, "DEBUG"));
 		}
@@ -141,7 +145,7 @@ namespace GAF.Network
 		{
 			if (byteData == null || byteData.Length == 0)
 				return;
-			
+
 			const int cols = 16;
 
 			if (_traceLevelSwitch.TraceVerbose) {
@@ -198,6 +202,56 @@ namespace GAF.Network
 			return string.Format ("{0} [{1}] {2}",
 					  DateTime.Now.ToString ("yyyy-MM-dd HH:mm:ss"),
 					  type, message);
+		}
+
+		private static string GetFrameworkVersion ()
+		{
+			//TODO: Move this to a resource file.
+			var version = Environment.Version.ToString();
+			                      
+			var friendlyVersion = string.Empty;
+
+			switch (version) {
+
+			//Base 4.0
+
+			case "4.0.30319.1": friendlyVersion = ".NET 4.0 RTM"; break;
+			case "4.0.30319.269": friendlyVersion = ".NET 4.0 (with MS12 - 035 GDR security update)"; break;
+			case "4.0.30319.276": friendlyVersion = ".NET 4.0 (4.0.3 Runtime update)"; break;
+			case "4.0.30319.296": friendlyVersion = ".NET 4.0 (with MS12 - 074 GDR security update)"; break;
+			case "4.0.30319.544": friendlyVersion = ".NET 4.0 (with MS12 - 035 LDR security update)"; break;
+			case "4.0.30319.1008": friendlyVersion = ".NET 4.0 (with MS13 - 052 GDR security update)"; break;
+			case "4.0.30319.1022": friendlyVersion = ".NET 4.0 (with MS14 - 009 GDR security update)"; break;
+			case "4.0.30319.1026": friendlyVersion = ".NET 4.0 (with MS14 - 057 GDR security update)"; break;
+			case "4.0.30319.2034": friendlyVersion = ".NET 4.0 (with MS14 - 009 LDR security update)"; break;
+
+			//4.5
+
+			case "4.0.30319.17626": friendlyVersion = ".NET 4.5 RC"; break;
+			case "4.0.30319.17929": friendlyVersion = ".NET 4.5 RTM"; break;
+			case "4.0.30319.18010": friendlyVersion = ".NET 4.5"; break;
+			case "4.0.30319.18052": friendlyVersion = ".NET 4.5 [64 bit]"; break;
+			case "4.0.30319.18063": friendlyVersion = ".NET 4.5 [64 bit] (with MS14 - 009 security update)"; break;
+
+			//4.5.1
+
+			case "4.0.30319.18408": friendlyVersion = ".NET 4.5.1 [64 bit]"; break;
+			case "4.0.30319.18444": friendlyVersion = ".NET 4.5.1 [64 bit] (with MS14 - 009 security update)"; break;
+			case "4.0.30319.34014": friendlyVersion = ".NET 4.5.1 [64 bit]"; break;
+
+			//4.5.2
+
+			case "4.0.30319.34209": friendlyVersion = ".NET 4.5.2 [64 bit]"; break;
+			//case "4.0.30319.34209": friendlyVersion = ".NET 4.5.2 on Windows 8.1 64 - bit"; break;
+
+			//4.6
+
+			case "4.0.30319.42000": friendlyVersion = ".NET 4.6 [64 bit]"; break;
+
+			}
+
+			return string.Format("{0} {1}",version,friendlyVersion);
+
 		}
 	}
 }

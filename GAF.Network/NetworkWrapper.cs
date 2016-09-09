@@ -60,7 +60,7 @@ namespace GAF.Network
 		/// Re-initialising the server will, if the fitness function is not defined by the server, 
 		/// re-transmit the the fitness function to the server.
 		/// </remarks>
-		public NetworkWrapper (GAF.GeneticAlgorithm geneticAlgorithm, IServiceDiscovery serviceDiscoveryClient, string fitnessAssemblyName, bool reInitialise)
+		public NetworkWrapper (GAF.GeneticAlgorithm geneticAlgorithm, IServiceDiscovery serviceDiscoveryClient, string fitnessAssemblyName, bool initialise)
 		{
 			if (geneticAlgorithm == null)
 				throw new ArgumentNullException (nameof (geneticAlgorithm));
@@ -86,15 +86,15 @@ namespace GAF.Network
 			this.GeneticAlgorithm.Population.OnEvaluationBegin += OnEvaluationBegin;
 
 			//get the endpoints from consul
-			Log.Info("Getting remote endpoints from Service Discovery.");
+			Log.Info ("Getting remote endpoints from Service Discovery.");
 			this.EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
 
 			if (this.EndPoints.Count == 0) {
-				throw new ServiceDiscoveryException ("No server endpoints detected. Check that servers are running and registered with the appropriate IServiceDiscovery service.");	
+				throw new ServiceDiscoveryException ("No server endpoints detected. Check that servers are running and registered with the appropriate IServiceDiscovery service.");
 			}
 
 			foreach (var endpoint in EndPoints) {
-				Log.Info (string.Format("Detected Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
+				Log.Info (string.Format ("Detected Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
 			}
 
 			_evaluationClient = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
@@ -107,9 +107,9 @@ namespace GAF.Network
 			//	Log.Error (e.Message);
 
 			//};
-			
-			if (reInitialise) {
-				_evaluationClient.ReInitialise ();
+
+			if (initialise) {
+				_evaluationClient.Initialise ();
 			}
 
 		}
@@ -120,7 +120,7 @@ namespace GAF.Network
 		/// </summary>
 		public void ReInitialise ()
 		{
-			_evaluationClient.ReInitialise ();
+			_evaluationClient.Initialise ();
 		}
 
 		private void OnEvaluationBegin (object sender, EvaluationEventArgs args)
@@ -128,30 +128,36 @@ namespace GAF.Network
 			//this event is called each time a population is evaluated therefore
 			// this will be called after each operator has been invoked
 			try {
-				
+
 				var stopwatch = new Stopwatch ();
 				stopwatch.Start ();
 
-				//TODO: do this every few generations rather than every generation
-				//refresh the endpoints available and update the evaluationClient accordingly.
-				EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
-				_evaluationClient.UpdateEndpoints (EndPoints);
+				if (args.SolutionsToEvaluate.Count > 0) {
 
-				foreach (var endpoint in EndPoints) {
-					Log.Info (string.Format ("Detected Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
+					//TODO: do this every few generations rather than every generation
+					//refresh the endpoints available and update the evaluationClient accordingly.
+					EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
+					if (this.EndPoints.Count == 0) {
+						throw new ServiceDiscoveryException ("No server endpoints detected. Check that servers are running and registered with the appropriate IServiceDiscovery service.");
+					}
+
+					_evaluationClient.UpdateEndpoints (EndPoints);
+
+					foreach (var endpoint in EndPoints) {
+						Log.Info (string.Format ("Detected Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
+					}
+
+					var evaluations = _evaluationClient.Evaluate (args.SolutionsToEvaluate);
+
+					if (evaluations > 0) {
+						args.Evaluations = evaluations;
+					} else {
+						throw new ApplicationException ("No evaluations undertaken, check that a server exists.");
+					}
+
+					stopwatch.Stop ();
+					Log.Debug (string.Format ("Evaluation time = {0} ms.", stopwatch.ElapsedMilliseconds));
 				}
-
-				var evaluations = _evaluationClient.Evaluate (args.SolutionsToEvaluate);
-
-				if (evaluations > 0) {
-					args.Evaluations = evaluations;
-				} else {
-					throw new ApplicationException ("No evaluations undertaken, check that a server exists.");
-				}
-
-				stopwatch.Stop ();
-				Log.Debug (string.Format ("Evaluation time = {0} ms.", stopwatch.ElapsedMilliseconds));
-
 			} catch (Exception ex) {
 
 				while (ex.InnerException != null) {

@@ -40,7 +40,7 @@ namespace GAF.Network
 	{
 		private List<Socket> _clients;
 		private List<IPEndPoint> _endPoints;
-		private List<bool> _reInitialiseFlags;
+		private List<bool> _initialiseFlags;
 		private List<Task> _tasks;
 
 		private object _syncLock = new object ();
@@ -70,8 +70,9 @@ namespace GAF.Network
 			if (string.IsNullOrWhiteSpace (fitnessAssemblyName)) {
 				throw new ArgumentException ("The specified fitness assembly name is null or empty.", nameof (fitnessAssemblyName));
 			}
+			EndPoints = new List<IPEndPoint> ();
+			EndPoints.AddRange (endPoints);
 
-			EndPoints = endPoints;
 			_fitnessAssemblyName = fitnessAssemblyName;
 			_fitnessAssembly = new FitnessAssembly (fitnessAssemblyName);
 
@@ -81,10 +82,10 @@ namespace GAF.Network
 		/// <summary>
 		/// ReInitialises the remote endpoints and re-transmits the FitnessAssembly.
 		/// </summary>
-		public void ReInitialise ()
+		public void Initialise ()
 		{
-			for (var index = 0; index < ReInitialiseFlags.Count; index++) {
-				ReInitialiseFlags [index] = true;
+			for (var index = 0; index < InitialiseFlags.Count; index++) {
+				InitialiseFlags [index] = true;
 			}
 		}
 
@@ -154,16 +155,16 @@ namespace GAF.Network
 		//	InitialiseClients ();
 		//}
 
-		/// <summary>
-		/// Removes the endpoint.
-		/// </summary>
-		public void RemoveEndpoint (int index)
-		{
-			EndPoints.RemoveAt (index);
-			Clients.RemoveAt (index);
-			ReInitialiseFlags.RemoveAt (index);
-			Tasks.RemoveAt (index);
-		}
+		///// <summary>
+		///// Removes the endpoint.
+		///// </summary>
+		//public void RemoveEndpoint (int index)
+		//{
+		//	EndPoints.RemoveAt (index);
+		//	Clients.RemoveAt (index);
+		//	InitialiseFlags.RemoveAt (index);
+		//	Tasks.RemoveAt (index);
+		//}
 
 		/// <summary>
 		/// Replaces existing endpoints with specified endpoints.
@@ -179,11 +180,11 @@ namespace GAF.Network
 		private void InitialiseClients ()
 		{
 			int epCount = EndPoints.Count;
-			ReInitialiseFlags = new List<bool> ();
+			InitialiseFlags = new List<bool> ();
 			Tasks = new List<Task> ();
 			Clients = new List<Socket> ();
 
-			ReInitialiseFlags.AddRange (new bool [epCount]);
+			InitialiseFlags.AddRange (new bool [epCount]);
 			Tasks.AddRange (new Task [epCount]);
 			Clients.AddRange (new Socket [epCount]);
 
@@ -231,14 +232,14 @@ namespace GAF.Network
 
 		private void EvaluateTask (System.Collections.Queue syncQueue, FitnessFunction fitnessFunctionDelegate, int taskId, CancellationToken token)
 		{
-			//this task will run until the queue is emptied
-
-			// Establish the remote endpoint using the appropriate endpoint and socket client
-			IPEndPoint remoteEndPoint = EndPoints [taskId];
-			Clients [taskId] = SocketClient.Connect (remoteEndPoint);
 			Chromosome solution = null;
-
+			//this task will run until the queue is emptied
 			try {
+
+				// Establish the remote endpoint using the appropriate endpoint and socket client
+				IPEndPoint remoteEndPoint = EndPoints [taskId];
+				Clients [taskId] = SocketClient.Connect (remoteEndPoint);
+
 
 				//send a status packet to see if we have already initialised this connection
 				//i.e. passed the fitness function accross
@@ -254,13 +255,13 @@ namespace GAF.Network
 				var serverStatus = new ServerStatus (statusPacket);
 
 				//we only reinitialise if not already initialised and serverside fitness is NOT being used
-				if (!serverStatus.ServerDefinedFitness && (!serverStatus.Initialised || ReInitialiseFlags [taskId])) {
+				if (!serverStatus.ServerDefinedFitness && (!serverStatus.Initialised || InitialiseFlags [taskId])) {
 
 					//ok to init server with fitness etc
 					Log.Debug ("Sending the fitness function to the server.");
 
 					//reset init flag
-					ReInitialiseFlags [taskId] = false;
+					InitialiseFlags [taskId] = false;
 
 					//serialise the fitness function
 					var functionBytes = File.ReadAllBytes (_fitnessAssemblyName);
@@ -302,16 +303,20 @@ namespace GAF.Network
 					solution.Evaluate (fitnessFunctionDelegate);
 
 				}
+
+				//all done so send ETX to inform the server
+				SocketClient.TransmitETX (Clients [taskId]);
+				SocketClient.Close (Clients [taskId]);
+
 			} catch (Exception ex) {
 				//things went wrong so requeue for another attempt.
 				if (solution != null) {
 					Log.Error (string.Format ("{0}, re-queuing solution {1}.", ex.Message, solution.Id));
 					syncQueue.Enqueue (solution);
+					return;
 				}
 			} finally {
-				//all done so send ETX to inform the server
-				SocketClient.TransmitETX (Clients [taskId]);
-				SocketClient.Close (Clients [taskId]);
+
 			}
 
 		}
@@ -427,15 +432,15 @@ namespace GAF.Network
 			}
 		}
 
-		private List<bool> ReInitialiseFlags {
+		private List<bool> InitialiseFlags {
 			get {
 				lock (_syncLock) {
-					return _reInitialiseFlags;
+					return _initialiseFlags;
 				}
 			}
 			set {
 				lock (_syncLock) {
-					_reInitialiseFlags = value;
+					_initialiseFlags = value;
 				}
 			}
 		}
