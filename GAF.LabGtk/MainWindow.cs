@@ -51,17 +51,6 @@ public partial class MainWindow : Gtk.Window
 
 			mainNotebook.Page = 0;
 
-			////sort out the tree view
-			//var populationHistorySize = 1;
-
-			////TODO: Tidy this up, we dont need to populate the array in reverse order.
-			//var columnNames = new string [populationHistorySize];
-			//int col = 0;
-			//for (int index = populationHistorySize - 1; index >= 0; index--) {
-			//	columnNames [col] = "           ";
-			//	col++;
-			//}
-
 			//var columnNames = new string [0];
 			_populationHistoryView = new GAF.LabGtk.PopulationHistoryView (new string [] { string.Empty, "Fitness" });
 			_populationHistoryView.BorderWidth = 1;
@@ -76,49 +65,7 @@ public partial class MainWindow : Gtk.Window
 
 	void populationHistoryViewItemSelected (GAF.LabGtk.PopulationViewItem [] obj)
 	{
-		//TODO: Code that could be used for row selection although this, as is,
-		//does cause the occaisional array out of bouns exception on single step.
-
-		//set to single select so only ever one item
-		//var item = obj [0];
-		//var dataCol = _populationHistoryView.GetColumn (0);
-		//var fitnessCol = _populationHistoryView.GetColumn (1);
-		//var data = ((CellRendererText)dataCol.Cells.First ()).Text;
-		//var fitness = ((CellRendererText)fitnessCol.Cells.First ()).Text;
-
-		//Debug.WriteLine("{0} {1}",  new [] { data, fitness});
-
-		//var columnTitle = item.SourceGeneration;
-		//var selectedColumn = _populationHistoryView.Columns.SingleOrDefault(c => c.Title.EndsWith (columnTitle.ToString ()));
-
 	}
-
-	//private Gtk.TreeViewColumn CreateColumn (Gtk.TreeView treeView, string title, int columNumber)
-	//{
-	//	Gtk.TreeViewColumn column = new Gtk.TreeViewColumn ();
-	//	column.Title = title;
-
-	//	Gtk.CellRendererText colNameCell = new Gtk.CellRendererText ();
-	//	column.PackStart (colNameCell, true);
-
-	//	column.AddAttribute (colNameCell, "text", columNumber);
-	//	treeView.AppendColumn (column);
-
-	//	var listStore = new Gtk.ListStore (typeof (string), typeof (string));
-	//	treeView.Model = listStore;
-
-	//	return column;
-	//}
-
-	//private void AppendData (Gtk.TreeView treeView, string groupName, string col1, string col2)
-	//{
-	//	var listStore = (Gtk.ListStore)treeView.Model;
-
-	//	//var iter = musicListStore.AppendValues (groupName);
-	//	listStore.AppendValues (col1, col2);
-
-	//}
-
 
 	private void UpdateUI (string propertyName)
 	{
