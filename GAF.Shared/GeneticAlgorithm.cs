@@ -152,7 +152,7 @@ namespace GAF
 		/// <param name="maxEvaluations">Max evaluations.</param>
 		public void Run (long maxEvaluations)
 		{
-			RunTask (maxEvaluations, null, CancellationToken.None);
+			MainTask (maxEvaluations, null, CancellationToken.None);
 		}
 
 		/// <summary>
@@ -163,7 +163,7 @@ namespace GAF
 		/// <param name="terminateFunction">Terminate function.</param>
 		public void Run (TerminateFunction terminateFunction)
 		{
-			RunTask (long.MaxValue, terminateFunction, CancellationToken.None);
+			MainTask (long.MaxValue, terminateFunction, CancellationToken.None);
 		}
 
 		/// <summary>
@@ -206,6 +206,8 @@ namespace GAF
 			RunAsync (maxEvaluations, null);
 		}
 
+
+
 		/// <summary>
 		/// Runs the algorithm the specified number of times. Each run executes until the specified delegate function returns true.
 		/// </summary>
@@ -217,12 +219,10 @@ namespace GAF
 
 		private void RunAsync (long maxEvaluations, TerminateFunction terminateFunction)
 		{
-
 			var token = _tokenSource.Token;
 			((ManualResetEvent)token.WaitHandle).Set ();
 
-			_task = new Task (() => RunTask (maxEvaluations, terminateFunction, token), token);
-			_task.Start ();
+			_task = Task.Factory.StartNew(() => MainTask (maxEvaluations, terminateFunction, token), token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 			_task.ContinueWith (t => {
 				/* error handling */
 				var exception = t.Exception;
@@ -246,71 +246,74 @@ namespace GAF
 		/// <summary>
 		/// Main run routine of genetic algorithm.
 		/// </summary>
-		private void RunTask (long maxEvaluations, TerminateFunction terminateFunction, CancellationToken token)
+		private void MainTask (long maxEvaluations, TerminateFunction terminateFunction, CancellationToken token)
 		{
-			
-			IsRunning = true;
+			try {
 
-			TerminateFunction = terminateFunction;
-			//validate the population
-			if (this.Population == null || this.Population.Solutions.Count == 0) {
-				throw new NullReferenceException (
-					"Either the Population is null, or there are no solutions within the population.");
-			}
+				IsRunning = true;
 
-			//perform the initial evaluation
-			Evaluations += _population.Evaluate (FitnessFunction);
+				TerminateFunction = terminateFunction;
+				//validate the population
+				if (this.Population == null || this.Population.Solutions.Count == 0) {
+					throw new NullReferenceException (
+						"Either the Population is null, or there are no solutions within the population.");
+				}
 
-			//raise the Generation Complete event
-			if (this.OnInitialEvaluationComplete != null) {
-				var eventArgs = new GaEventArgs (_population, 0, Evaluations);
-				this.OnInitialEvaluationComplete (this, eventArgs);
-			}
-				
-			//main run loop for GA
-			for (int generation = 0; Evaluations < maxEvaluations; generation++) {
-
-				//Note: Selection handled by the operator(s)
-				_currentGeneration = generation;
-
-				var newPopulation = RunGeneration (_currentGeneration, _population, FitnessFunction);
-
-				_population.Solutions.Clear ();
-				_population.Solutions.AddRange (newPopulation.Solutions);
+				//perform the initial evaluation
+				Evaluations += _population.Evaluate (FitnessFunction);
 
 				//raise the Generation Complete event
-				if (this.OnGenerationComplete != null) {
-					var eventArgs = new GaEventArgs (_population, generation + 1, Evaluations);
-					this.OnGenerationComplete (this, eventArgs);
+				if (this.OnInitialEvaluationComplete != null) {
+					var eventArgs = new GaEventArgs (_population, 0, Evaluations);
+					this.OnInitialEvaluationComplete (this, eventArgs);
 				}
 
-				if (TerminateFunction != null) {
-					if (TerminateFunction.Invoke (_population, generation + 1, Evaluations)) {
+				//main run loop for GA
+				for (int generation = 0; Evaluations < maxEvaluations; generation++) {
+
+					//Note: Selection handled by the operator(s)
+					_currentGeneration = generation;
+
+					var newPopulation = RunGeneration (_currentGeneration, _population, FitnessFunction);
+
+					_population.Solutions.Clear ();
+					_population.Solutions.AddRange (newPopulation.Solutions);
+
+					//raise the Generation Complete event
+					if (this.OnGenerationComplete != null) {
+						var eventArgs = new GaEventArgs (_population, generation + 1, Evaluations);
+						this.OnGenerationComplete (this, eventArgs);
+					}
+
+					if (TerminateFunction != null) {
+						if (TerminateFunction.Invoke (_population, generation + 1, Evaluations)) {
+							break;
+						}
+					}
+
+					//if running synchronously, this never gets set
+					if (token.CanBeCanceled) {
+						//running asynchronously so check for a 'Pause' by monitoring the wait handle.
+						token.WaitHandle.WaitOne ();
+					}
+
+					if (token.IsCancellationRequested) {
 						break;
 					}
+
 				}
 
-				//if running synchronously, this never gets set
-				if (token.CanBeCanceled) {
-					//running asynchronously so check for a 'Pause' by monitoring the wait handle.
-					token.WaitHandle.WaitOne ();
-				}
+				IsRunning = false;
+				IsPaused = false;
 
-				if (token.IsCancellationRequested) {
-					break;
+				//raise the Run Complete event
+				if (this.OnRunComplete != null) {
+					var eventArgs = new GaEventArgs (_population, _currentGeneration + 1, Evaluations);
+					this.OnRunComplete (this, eventArgs);
 				}
-
+			} catch (Exception ex) {
+				throw;
 			}
-
-			IsRunning = false;
-			IsPaused = false;
-
-			//raise the Run Complete event
-			if (this.OnRunComplete != null) {
-				var eventArgs = new GaEventArgs (_population, _currentGeneration + 1, Evaluations);
-				this.OnRunComplete (this, eventArgs);
-			}
-
 		}
 
 		internal Population RunGeneration (int currentGeneration, Population currentPopulation, FitnessFunction fitnessFunctionDelegate)
