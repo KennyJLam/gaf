@@ -93,20 +93,9 @@ namespace GAF.Network
 				throw new ServiceDiscoveryException ("No server endpoints detected. Check that servers are running and registered with the appropriate IServiceDiscovery service.");
 			}
 
-			foreach (var endpoint in EndPoints) {
-				Log.Info (string.Format ("Detected Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
-			}
+			LogEndpoints (EndPoints);
 
 			_evaluationClient = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
-
-			//_evaluationClient.OnEvaluationException += (object s, ExceptionEventArgs e) => {
-
-			//	//this is the result of an error on one of the tasks and could be due to a socket exception e.g. server failure.
-			//	//this should be logged and ignored as the offending socket client has already been removed from the pool
-			//	//and the service discovery will put it back when it is all OK
-			//	Log.Error (e.Message);
-
-			//};
 
 			if (initialise) {
 				_evaluationClient.Initialise ();
@@ -140,14 +129,12 @@ namespace GAF.Network
 					if (this.EndPoints.Count == 0) {
 						throw new ServiceDiscoveryException ("No server endpoints detected. Check that servers are running and registered with the appropriate IServiceDiscovery service.");
 					}
-
+					Log.Info ("Updating Endpoints from Service Discovery.");
 					_evaluationClient.UpdateEndpoints (EndPoints);
 
-					foreach (var endpoint in EndPoints) {
-						Log.Info (string.Format ("Detected Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
-					}
+					LogEndpoints (EndPoints);
 
-					var evaluations = _evaluationClient.Evaluate (args.SolutionsToEvaluate);
+					var evaluations = _evaluationClient.Evaluate (args.SolutionsToEvaluate).Result;
 
 					if (evaluations > 0) {
 						args.Evaluations = evaluations;
@@ -166,11 +153,16 @@ namespace GAF.Network
 
 				Log.Error (ex);
 
-				//throw;
-
 			} finally {
-				//prevent the normall evaluation process from taking place
+				//prevent the normal evaluation process from taking place
 				args.Cancel = true;
+			}
+		}
+
+		private void LogEndpoints (List<IPEndPoint> endpoints)
+		{
+			foreach (var endpoint in endpoints) {
+				Log.Info (string.Format ("  Detected Endpoint: {0}:{1}", endpoint.Address, endpoint.Port));
 			}
 		}
 

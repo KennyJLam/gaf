@@ -48,16 +48,6 @@ namespace GAF.Network
 		private string _fitnessAssemblyName;
 
 		/// <summary>
-		/// Delegate definition for the EvaluationException event handler.
-		/// </summary>
-		//public delegate void EvaluationExceptionHandler (object sender, ExceptionEventArgs e);
-
-		/// <summary>
-		/// Event definition for the EvaluationException event handler.
-		/// </summary>
-		//public event EvaluationExceptionHandler OnEvaluationException;
-
-		/// <summary>
 		/// Initializes a new instance of the <see cref="GAF.Net.EvaluationClient"/> class.
 		/// </summary>
 		/// <param name="endPoints">End points.</param>
@@ -90,83 +80,6 @@ namespace GAF.Network
 		}
 
 		/// <summary>
-		/// Evaluate the specified solutionsToEvaluate.
-		/// </summary>
-		/// <param name="solutionsToEvaluate">Solutions to evaluate.</param>
-		public int Evaluate (List<Chromosome> solutionsToEvaluate)
-		{
-
-			if (solutionsToEvaluate == null) {
-				throw new ArgumentNullException (nameof (solutionsToEvaluate), "The parameter is null.");
-			}
-
-			var solutionCount = solutionsToEvaluate.Count;
-			if (solutionCount == 0) {
-				throw new ArgumentException ("The parameter is empty.", nameof (solutionsToEvaluate));
-			}
-
-			var epCount = EndPoints.Count;
-
-			if (epCount > 0) {
-
-				//create a single queue and add the solutions to the queue
-				var queue = new System.Collections.Queue ();
-				var syncQueue = System.Collections.Queue.Synchronized (queue);
-
-				foreach (var solution in solutionsToEvaluate) {
-					syncQueue.Enqueue (solution);
-				}
-
-				//start each task passing in the queue, fitness function and that task id
-				//the task id is used within the fitness function to determine a specific endpoint
-				for (int i = 0; i < epCount; i++) {
-					Tasks [i] = RunTask (syncQueue, RemoteFitnessDelegateFunction, i);
-				}
-
-				//wait until all tasks are complete
-				Task.WaitAll (Tasks.ToArray ());
-
-				// set the number of evaluations we have done (one per solution)
-				return solutionCount;
-
-			} else {
-				return 0;
-			}
-
-		}
-
-		///// <summary>
-		///// Adds the endpoint.
-		///// </summary>
-		///// <param name="endpoint">Endpoint.</param>
-		//public void AddEndpoint (IPEndPoint endpoint)
-		//{
-		//	EndPoints.Add (endpoint);
-		//	InitialiseClients ();
-		//}
-
-		///// <summary>
-		///// Adds the endpoints.
-		///// </summary>
-		///// <param name="endpoints">Endpoints.</param>
-		//public void AddEndpoints (List<IPEndPoint> endpoints)
-		//{
-		//	EndPoints.AddRange (endpoints);
-		//	InitialiseClients ();
-		//}
-
-		///// <summary>
-		///// Removes the endpoint.
-		///// </summary>
-		//public void RemoveEndpoint (int index)
-		//{
-		//	EndPoints.RemoveAt (index);
-		//	Clients.RemoveAt (index);
-		//	InitialiseFlags.RemoveAt (index);
-		//	Tasks.RemoveAt (index);
-		//}
-
-		/// <summary>
 		/// Replaces existing endpoints with specified endpoints.
 		/// </summary>
 		/// <param name="endpoints">Endpoints.</param>
@@ -190,47 +103,56 @@ namespace GAF.Network
 
 		}
 
-		private Task RunTask (System.Collections.Queue syncQueue, FitnessFunction fitnessFunctionDelegate, int taskId)
+		/// <summary>
+		/// Evaluate the specified solutionsToEvaluate.
+		/// </summary>
+		/// <param name="solutionsToEvaluate">Solutions to evaluate.</param>
+		public async Task<int> Evaluate (List<Chromosome> solutionsToEvaluate)
 		{
-			//create a simple task that calls the locally defined Evaluate function
-			var tokenSource = new CancellationTokenSource ();
-			var token = tokenSource.Token;
-
-			Log.Info (string.Format ("Starting Task {0}", taskId));
-			//.Net 4.5 option
-			//var task = Task.Run (() => EvaluateTask (syncQueue, fitnessFunctionDelegate, taskId, token), token);
-
-			//.Net 4.0/4.5 option
-			var task = new Task (() => EvaluateTask (syncQueue, fitnessFunctionDelegate, taskId, token), token);
-			task.Start ();
-
-			Task continuationTask = task.ContinueWith (t => {
-
-				var message = new StringBuilder ();
-				foreach (var ex in t.Exception.InnerExceptions) {
-					message.Append (ex.Message);
-					message.Append ("\r\n");
+			try {
+				if (solutionsToEvaluate == null) {
+					throw new ArgumentNullException (nameof (solutionsToEvaluate), "The parameter is null.");
 				}
 
-				Log.Error (message.ToString ());
-				Log.Error (string.Format ("Endpoint {0}:{1} failed.", EndPoints [taskId].Address, EndPoints [taskId].Port));
+				var solutionCount = solutionsToEvaluate.Count;
+				if (solutionCount == 0) {
+					throw new ArgumentException ("The parameter is empty.", nameof (solutionsToEvaluate));
+				}
 
-				//TODO: could remove endpoint but service discovery would probably just re-add it until service discovery
-				// detected the failure so leave this to service discovery.
-				// 
-				//     RemoveEndpoint (taskId);
+				var epCount = EndPoints.Count;
 
+				if (epCount > 0) {
 
-			}, TaskContinuationOptions.OnlyOnFaulted);
+					//create a single queue and add the solutions to the queue
+					var queue = new System.Collections.Queue ();
+					var syncQueue = System.Collections.Queue.Synchronized (queue);
 
-			//if we get here, the task has failed, perhaps due to a socket exception/server failure etc.
-			//the continuation task now needs to wait until all of the others have completed.
-			//continuationTask.Wait ();
+					foreach (var solution in solutionsToEvaluate) {
+						syncQueue.Enqueue (solution);
+					}
 
-			return task;
+					for (int i = 0; i < epCount; i++) {
+						var taskId = i;
+						Tasks [i] = Task.Run (() => EvaluateTask (syncQueue, RemoteFitnessDelegateFunction, taskId));
+					}
+					Task all = Task.WhenAll (Tasks);
+					await all;
+
+					// set the number of evaluations we have done (one per solution)
+					return solutionCount;
+
+				} else {
+					return 0;
+				}
+
+			} catch (Exception ex) {
+				//Log.Error (ex);
+				throw;
+			}
+
 		}
 
-		private void EvaluateTask (System.Collections.Queue syncQueue, FitnessFunction fitnessFunctionDelegate, int taskId, CancellationToken token)
+		private void EvaluateTask (System.Collections.Queue syncQueue, FitnessFunction fitnessFunctionDelegate, int taskId)
 		{
 			Chromosome solution = null;
 			//this task will run until the queue is emptied
@@ -272,7 +194,6 @@ namespace GAF.Network
 
 				}
 
-
 				//read the queue, each task will be doing this
 				while (syncQueue.Count > 0) {
 
@@ -293,9 +214,6 @@ namespace GAF.Network
 					//add the task Id, this is used in the fitness function 
 					//to determine a suitable endpoint
 					solution.Tag = taskId;
-					if (token.IsCancellationRequested) {
-						break;
-					}
 
 					//evaluate the solution in the normal way however pass the locally defined 
 					//'Remote Fitness Function' this will initiate a remote connection to the
@@ -309,16 +227,21 @@ namespace GAF.Network
 				SocketClient.Close (Clients [taskId]);
 
 			} catch (Exception ex) {
+
+				if (EndPoints != null && EndPoints.Count > taskId) {
+					Log.Error (string.Format ("{0} [TaskId:{1}, Endpoint:{2}]", ex.Message, taskId, EndPoints [taskId]));
+				} else {
+					Log.Error (ex);
+				}
+
 				//things went wrong so requeue for another attempt.
 				if (solution != null) {
 					Log.Error (string.Format ("{0}, re-queuing solution {1}.", ex.Message, solution.Id));
 					syncQueue.Enqueue (solution);
-					return;
 				}
-			} finally {
 
+				throw;
 			}
-
 		}
 
 		private double RemoteFitnessDelegateFunction (Chromosome chromosome)
@@ -356,7 +279,6 @@ namespace GAF.Network
 
 			return fitness;
 		}
-
 
 		#region Static Methods
 
