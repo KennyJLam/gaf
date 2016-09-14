@@ -97,19 +97,6 @@ namespace GAF.Network
 
 			_evaluationClient = new EvaluationClient (this.EndPoints, _fitnessAssemblyName);
 
-			if (initialise) {
-				_evaluationClient.Initialise ();
-			}
-
-		}
-
-		/// <summary>
-		/// Re-initialises the server. If the fitness function is not defined by the server, 
-		/// the fitness function will be re-transmitted to the server. 
-		/// </summary>
-		public void ReInitialise ()
-		{
-			_evaluationClient.Initialise ();
 		}
 
 		private void OnEvaluationBegin (object sender, EvaluationEventArgs args)
@@ -125,14 +112,14 @@ namespace GAF.Network
 
 					//TODO: do this every few generations rather than every generation
 					//refresh the endpoints available and update the evaluationClient accordingly.
-					EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
-					if (this.EndPoints.Count == 0) {
-						throw new ServiceDiscoveryException ("No server endpoints detected. Check that servers are running and registered with the appropriate IServiceDiscovery service.");
-					}
-					Log.Info ("Updating Endpoints from Service Discovery.");
-					_evaluationClient.UpdateEndpoints (EndPoints);
+					//EndPoints = _serviceDiscoveryClient.GetActiveServices (ServiceName);
+					//if (this.EndPoints.Count == 0) {
+					//	throw new ServiceDiscoveryException ("No server endpoints detected. Check that servers are running and registered with the appropriate IServiceDiscovery service.");
+					//}
+					//Log.Info ("Updating Endpoints from Service Discovery.");
+					//_evaluationClient.UpdateEndpoints (EndPoints);
 
-					LogEndpoints (EndPoints);
+					//LogEndpoints (EndPoints);
 
 					var evaluations = _evaluationClient.Evaluate (args.SolutionsToEvaluate).Result;
 

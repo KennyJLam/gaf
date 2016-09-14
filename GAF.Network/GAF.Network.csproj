@@ -60,6 +60,8 @@
     <Compile Include="Serialization\Json.cs" />
     <Compile Include="Serialization\Xml.cs" />
     <Compile Include="SocketException.cs" />
+    <Compile Include="Treading\ProducerConsumerQueue.cs" />
+    <Compile Include="Treading\SocketPool.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GAF.45\GAF.45.csproj">
@@ -70,6 +72,7 @@
   <ItemGroup>
     <Folder Include="Properties\" />
     <Folder Include="Serialization\" />
+    <Folder Include="Treading\" />
   </ItemGroup>
   <Import Project="..\GAF.Version\GAF.Version.projitems" Label="Shared" Condition="Exists('..\GAF.Version\GAF.Version.projitems')" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

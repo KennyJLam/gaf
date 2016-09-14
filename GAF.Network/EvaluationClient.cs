@@ -23,6 +23,7 @@ using System.Text;
 using System;
 using System.Net;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Threading;
@@ -30,22 +31,22 @@ using System.Linq;
 using System.IO;
 using System.Diagnostics;
 using GAF.Network.Serialization;
+using System.Collections;
+using GAF.Network.Treading;
 
 namespace GAF.Network
 {
 	/// <summary>
 	/// Evaluation client.
 	/// </summary>
-	public class EvaluationClient
+	public class EvaluationClient : IDisposable
 	{
-		private List<Socket> _clients;
-		private List<IPEndPoint> _endPoints;
-		private List<bool> _initialiseFlags;
-		private List<Task> _tasks;
-
-		private object _syncLock = new object ();
+		//this represents a poolof connected sockets clients
+		//private BlockingCollection<Socket> _socketPool;
+		private SocketPool _socketPool;
 		private FitnessAssembly _fitnessAssembly;
 		private string _fitnessAssemblyName;
+		private GAF.Network.Threading.ProducerConsumerQueue _pcQueue;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="GAF.Net.EvaluationClient"/> class.
@@ -60,24 +61,16 @@ namespace GAF.Network
 			if (string.IsNullOrWhiteSpace (fitnessAssemblyName)) {
 				throw new ArgumentException ("The specified fitness assembly name is null or empty.", nameof (fitnessAssemblyName));
 			}
-			EndPoints = new List<IPEndPoint> ();
-			EndPoints.AddRange (endPoints);
+
+			_socketPool = new SocketPool (endPoints);
+			_pcQueue = new GAF.Network.Threading.ProducerConsumerQueue (endPoints.Count);
 
 			_fitnessAssemblyName = fitnessAssemblyName;
 			_fitnessAssembly = new FitnessAssembly (fitnessAssemblyName);
 
-			InitialiseClients ();
+			InitialiseServers (true);
 		}
 
-		/// <summary>
-		/// ReInitialises the remote endpoints and re-transmits the FitnessAssembly.
-		/// </summary>
-		public void Initialise ()
-		{
-			for (var index = 0; index < InitialiseFlags.Count; index++) {
-				InitialiseFlags [index] = true;
-			}
-		}
 
 		/// <summary>
 		/// Replaces existing endpoints with specified endpoints.
@@ -85,22 +78,39 @@ namespace GAF.Network
 		/// <param name="endpoints">Endpoints.</param>
 		public void UpdateEndpoints (List<IPEndPoint> endpoints)
 		{
-			EndPoints.Clear ();
-			EndPoints.AddRange (endpoints);
-			InitialiseClients ();
+			//TODO: Implement me
+			//bear in mind that sockets will be constantly changing
+			//can this even work?
 		}
 
-		private void InitialiseClients ()
+		private void InitialiseServers (bool forceInitialisation)
 		{
-			int epCount = EndPoints.Count;
-			InitialiseFlags = new List<bool> ();
-			Tasks = new List<Task> ();
-			Clients = new List<Socket> ();
+			//send a status packet to see if we have already initialised this connection
+			//i.e. passed the fitness function accross
+			try {
 
-			InitialiseFlags.AddRange (new bool [epCount]);
-			Tasks.AddRange (new Task [epCount]);
-			Clients.AddRange (new Socket [epCount]);
+				var socketPoolItems = _socketPool.Sockets;
+				foreach (var socketPoolItem in socketPoolItems) {
 
+					//TODO: Check that item is connected.
+					var serverStatus = GetServerStatus (socketPoolItem.Socket);
+
+					//check if it is ok to init server with fitness etc
+					if (!serverStatus.ServerDefinedFitness && (!serverStatus.Initialised || forceInitialisation)) {
+
+						Log.Info (string.Format ("Sending the fitness function to server {0}.", socketPoolItem.EndPoint));
+
+						var functionBytes = File.ReadAllBytes (_fitnessAssemblyName);
+
+						//send to server
+						var xmitPacket = new Packet (functionBytes, PacketId.Init, Guid.Empty);
+						SocketClient.TransmitData (socketPoolItem.Socket, xmitPacket);
+					}
+				}
+
+			} catch (Exception ex) {
+				Log.Error (ex);
+			}
 		}
 
 		/// <summary>
@@ -109,7 +119,10 @@ namespace GAF.Network
 		/// <param name="solutionsToEvaluate">Solutions to evaluate.</param>
 		public async Task<int> Evaluate (List<Chromosome> solutionsToEvaluate)
 		{
+			//this method is called after each operator, the solutionsToEvaluate list
+			//contains all the required for a complete generation.
 			try {
+
 				if (solutionsToEvaluate == null) {
 					throw new ArgumentNullException (nameof (solutionsToEvaluate), "The parameter is null.");
 				}
@@ -119,166 +132,129 @@ namespace GAF.Network
 					throw new ArgumentException ("The parameter is empty.", nameof (solutionsToEvaluate));
 				}
 
-				var epCount = EndPoints.Count;
-
-				if (epCount > 0) {
-
-					//create a single queue and add the solutions to the queue
-					var queue = new System.Collections.Queue ();
-					var syncQueue = System.Collections.Queue.Synchronized (queue);
-
-					foreach (var solution in solutionsToEvaluate) {
-						syncQueue.Enqueue (solution);
-					}
-
-					for (int i = 0; i < epCount; i++) {
-						var taskId = i;
-						Tasks [i] = Task.Run (() => EvaluateTask (syncQueue, RemoteFitnessDelegateFunction, taskId));
-					}
-					Task all = Task.WhenAll (Tasks);
-					await all;
-
-					// set the number of evaluations we have done (one per solution)
-					return solutionCount;
-
-				} else {
-					return 0;
+				//create a concurrent queue with max concurrency equal 
+				//to the endpoint count and add the delegates to the queue
+				foreach (var solution in solutionsToEvaluate) {
+					var chromosome = solution;
+					var task = _pcQueue.Enqueue (() => Evaluate (chromosome));
+					Log.Debug (string.Format ("Chromosome [{0}] evaluation queued as Task {1} queued.", chromosome.Id, task.Id));
 				}
 
-			} catch (Exception ex) {
-				//Log.Error (ex);
+				var allTasks = Task.WhenAll (_pcQueue.AllTasks);
+				await allTasks;
+
+				// set the number of evaluations we have done (one per solution)
+				return solutionCount;
+
+
+			} catch (Exception) {
+
 				throw;
 			}
 
 		}
 
-		private void EvaluateTask (System.Collections.Queue syncQueue, FitnessFunction fitnessFunctionDelegate, int taskId)
+		private ServerStatus GetServerStatus (Socket client)
 		{
-			Chromosome solution = null;
-			//this task will run until the queue is emptied
+			var statusRequestPacket = new Packet (PacketId.Status);
+			var statusPacket = SocketClient.TransmitData (client, statusRequestPacket);
+
+			//check the status packet and decode with the ServerStatus class.
+			if (statusPacket == null) {
+				throw new GAF.Network.SocketException ("Status Packet was not received or was empty.");
+			}
+
+			return new ServerStatus (statusPacket);
+
+		}
+
+		private void Evaluate (Chromosome chromosome)
+		{
+			SocketPoolItem socketPoolItem = null;
+
 			try {
+				//Get a connected socket from the socket collection. As this is a blocking collection
+				//wrapping a concurrent queue, then '_sockets.Take()' will remove the next item (Socket) 
+				//from the queue. If nothing is on the queue the task will wait (block). This is by 
+				//design as the task(s) that call this method (one worker per endpoint) are defined
+				//as long running tasks.
 
-				// Establish the remote endpoint using the appropriate endpoint and socket client
-				IPEndPoint remoteEndPoint = EndPoints [taskId];
-				Clients [taskId] = SocketClient.Connect (remoteEndPoint);
+				//use the connected socket and then pop it back on the queue.
+				//this ensures that only unused sockets are selected.
 
+				socketPoolItem = _socketPool.Dequeue ();
 
-				//send a status packet to see if we have already initialised this connection
-				//i.e. passed the fitness function accross
+				Log.Debug (string.Format ("SocketPoolItem: {0} retrieved from the pool.", socketPoolItem.EndPoint));
 
-				var statusRequestPacket = new Packet (PacketId.Status);
-				var statusPacket = SocketClient.TransmitData (Clients [taskId], statusRequestPacket);
+				//if not connected, attempt to reconnect
+				if (!socketPoolItem.Socket.Connected) {
 
-				//check the status packet and decode with the ServerStatus class.
-				if (statusPacket == null) {
-					throw new GAF.Network.SocketException ("Status Packet was not received or was empty.");
-				}
+					Log.Debug (string.Format ("SocketPoolItem: {0} not connected, attempting to re-connect.", socketPoolItem.EndPoint));
 
-				var serverStatus = new ServerStatus (statusPacket);
+					socketPoolItem = new SocketPoolItem (
+						SocketClient.Connect (socketPoolItem.EndPoint), socketPoolItem.EndPoint);
 
-				//we only reinitialise if not already initialised and serverside fitness is NOT being used
-				if (!serverStatus.ServerDefinedFitness && (!serverStatus.Initialised || InitialiseFlags [taskId])) {
+				} else {
 
-					//ok to init server with fitness etc
-					Log.Debug ("Sending the fitness function to the server.");
-
-					//reset init flag
-					InitialiseFlags [taskId] = false;
-
-					//serialise the fitness function
-					var functionBytes = File.ReadAllBytes (_fitnessAssemblyName);
-
-					//send to server
-					var xmitPacket = new Packet (functionBytes, PacketId.Init, Guid.Empty);
-					SocketClient.TransmitData (Clients [taskId], xmitPacket);
+					Log.Debug (string.Format ("SocketPoolItem: {0} connected.", socketPoolItem.EndPoint));
 
 				}
 
-				//read the queue, each task will be doing this
-				while (syncQueue.Count > 0) {
-
-					//reset the 'solution' variable in case we have an exception
-					//we do not want this to point to a previous solution as we will
-					//use it to re-queue a solution that failed an evaluation
-					solution = null;
-
-					//take a solution from the queue
-					//this can cause an exception if the queue is emptied
-					//between the count (above) and the next statement
-					try {
-						solution = (Chromosome)syncQueue.Dequeue ();
-					} catch {
-						break;
-					}
-
-					//add the task Id, this is used in the fitness function 
-					//to determine a suitable endpoint
-					solution.Tag = taskId;
-
-					//evaluate the solution in the normal way however pass the locally defined 
-					//'Remote Fitness Function' this will initiate a remote connection to the
-					//real fitness function at the server end.
-					solution.Evaluate (fitnessFunctionDelegate);
-
-				}
-
-				//all done so send ETX to inform the server
-				SocketClient.TransmitETX (Clients [taskId]);
-				SocketClient.Close (Clients [taskId]);
+				//pass the socket to the fitness function using the tag property
+				chromosome.Tag = socketPoolItem;
+				chromosome.Evaluate (RemoteFitnessDelegateFunction);
 
 			} catch (Exception ex) {
 
-				if (EndPoints != null && EndPoints.Count > taskId) {
-					Log.Error (string.Format ("{0} [TaskId:{1}, Endpoint:{2}]", ex.Message, taskId, EndPoints [taskId]));
+				if (socketPoolItem != null && socketPoolItem.Socket != null && socketPoolItem.EndPoint != null) {
+					Log.Error (string.Format ("{0} [Socket:{1}]", ex.Message, socketPoolItem.EndPoint));
 				} else {
 					Log.Error (ex);
 				}
 
-				//things went wrong so requeue for another attempt.
-				if (solution != null) {
-					Log.Error (string.Format ("{0}, re-queuing solution {1}.", ex.Message, solution.Id));
-					syncQueue.Enqueue (solution);
-				}
+				var task = _pcQueue.Enqueue (() => Evaluate (chromosome));
+				Log.Debug (string.Format ("Chromosome [{0}] evaluation re-queued as Task {1} queued.", chromosome.Id, task.Id));
 
 				throw;
+
+			} finally {
+				//finished with the endpoint so pop it back in the list to be used by this or another worker
+				_socketPool.Enqueue (socketPoolItem);
 			}
 		}
 
 		private double RemoteFitnessDelegateFunction (Chromosome chromosome)
 		{
 			double fitness = 0.0;
-			Socket client = Clients [(int)chromosome.Tag];
 
-			if (client == null || client.Connected) {
+			//retrieve the client to be used;
+			var socketPoolItem = (SocketPoolItem)chromosome.Tag;
 
-				// Convert the passed chromosome to a byte array
-				//actually just the genes are serialised as we dont need to sent the rest
-				//var byteData = Serializer.Serialize<Chromosome> (chromosome, _fitnessAssembly.KnownTypes);
-				var byteData = Binary.Serialize<List<Gene>> (chromosome.Genes, _fitnessAssembly.KnownTypes);
+			// Convert the passed chromosome to a byte array
+			//actually just the genes are serialised as we dont need to sent the rest
+			//var byteData = Serializer.Serialize<Chromosome> (chromosome, _fitnessAssembly.KnownTypes);
+			var byteData = Binary.Serialize<List<Gene>> (chromosome.Genes, _fitnessAssembly.KnownTypes);
 
-				var xmitPacket = new Packet (byteData, PacketId.Data, chromosome.Id);
+			var xmitPacket = new Packet (byteData, PacketId.Data, chromosome.Id);
 
-				var recPacket = SocketClient.TransmitData (client, xmitPacket);
-				if (recPacket != null) {
-					fitness = BitConverter.ToDouble (recPacket.Data, 0);
-
-				} else {
-					throw new GAF.Network.SocketException ("Data Packet was not received or was empty.");
-				}
-
-				//TODO: Look at re-writing the protocol to handle full bi-directional transfers 
-				//rather than just using the returned GUID.
-				if (recPacket.Header.PacketId == PacketId.Result &&
-					recPacket.Header.ObjectId.ToString () != xmitPacket.Header.ObjectId.ToString ()) {
-					throw new GAF.Network.SocketException ("Received PacketID or ObjectId was incorrect.");
-				}
+			var recPacket = SocketClient.TransmitData (socketPoolItem.Socket, xmitPacket);
+			if (recPacket != null) {
+				fitness = BitConverter.ToDouble (recPacket.Data, 0);
 
 			} else {
-				throw new GAF.Network.SocketException ("Client not connected.");
+				throw new GAF.Network.SocketException ("Data Packet was not received or was empty.");
+			}
+
+			//TODO: Look at re-writing the protocol to handle full bi-directional transfers 
+			//rather than just using the returned GUID.
+			if (recPacket.Header.PacketId == PacketId.Result &&
+				recPacket.Header.ObjectId.ToString () != xmitPacket.Header.ObjectId.ToString ()) {
+				throw new GAF.Network.SocketException ("Received PacketID or ObjectId was incorrect.");
 			}
 
 			return fitness;
 		}
+
 
 		#region Static Methods
 
@@ -310,6 +286,15 @@ namespace GAF.Network
 			return ipEndPoint;
 		}
 
+		public void Dispose ()
+		{
+			_pcQueue.Dispose ();
+
+			//close all available sockets
+			_socketPool.Dispose ();
+
+		}
+
 		#endregion
 
 		#region Properties
@@ -319,66 +304,6 @@ namespace GAF.Network
 		/// </summary>
 		/// <value>The evaluations.</value>
 		public int Evaluations { get; private set; }
-
-		#endregion
-
-		#region Private Properties
-
-		/// <summary>
-		/// Gets the end points.
-		/// </summary>
-		/// <value>The end points.</value>
-		private List<IPEndPoint> EndPoints {
-			get {
-				lock (_syncLock) {
-					return _endPoints;
-				}
-			}
-			set {
-				lock (_syncLock) {
-					_endPoints = value;
-				}
-			}
-		}
-
-		private List<Socket> Clients {
-			get {
-				lock (_syncLock) {
-					return _clients;
-				}
-			}
-			set {
-				lock (_syncLock) {
-					_clients = value;
-				}
-			}
-		}
-
-		private List<bool> InitialiseFlags {
-			get {
-				lock (_syncLock) {
-					return _initialiseFlags;
-				}
-			}
-			set {
-				lock (_syncLock) {
-					_initialiseFlags = value;
-				}
-			}
-		}
-
-		private List<Task> Tasks {
-			get {
-				lock (_syncLock) {
-					return _tasks;
-				}
-			}
-			set {
-				lock (_syncLock) {
-					_tasks = value;
-				}
-			}
-		}
 
 		#endregion
 

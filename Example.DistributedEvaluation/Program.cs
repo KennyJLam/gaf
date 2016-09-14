@@ -31,7 +31,7 @@ namespace Example.DistributedEvaluation
 			//we can create an empty population as we will be creating the 
 			//initial solutions manually.
 			//FIXME: Why is ReEvaluateAll required.
-			var population = new Population (true, false);
+			var population = new Population (false, false);
 
 			//create the initial solutions (chromosomes)
 			for (var p = 0; p < populationSize; p++) {
@@ -79,22 +79,22 @@ namespace Example.DistributedEvaluation
 			//we can point the service discovery client at any node running a consul service, typically
 			//this would be the localhost. An explicit IP/Port is stated here for clarity, see the 
 			//constructor overloads for more details.
-			IServiceDiscovery serviceDiscovery = new GAF.ServiceDiscovery.Consul.Client ("192.168.1.90", 8500);
+			//IServiceDiscovery serviceDiscovery = new GAF.ServiceDiscovery.Consul.Client ("192.168.1.90", 8500);
 
 			/****************************************************************************************
 			 * The StaticServices class is a IServiceDiscovery implementation that can be used to access
 			 * the specified endpoints. Use this is no specific discovery service is available.
 			 * 
-			 *    var endpoints = new List<IPEndPoint> ();
-			 * 
-			 *    endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.91:11000"));
-			 *    endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.92:11000"));
-			 *    endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.93:11000"));
-			 *    endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.94:11000"));
-
-			 *  IServiceDiscovery serviceDiscovery = new GAF.ServiceDiscovery.ServiceEndpoints (endpoints);
-			 * 
 			 ***************************************************************************************/
+			var endpoints = new List<IPEndPoint> ();
+			endpoints.Add (NetworkWrapper.CreateEndpoint ("127.0.0.1:11000"));
+			endpoints.Add (NetworkWrapper.CreateEndpoint ("127.0.0.1:11001"));
+			//endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.91:11000"));
+			//endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.92:11000"));
+			//endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.93:11000"));
+			//endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.94:11000"));
+
+			IServiceDiscovery serviceDiscovery = new GAF.ServiceDiscovery.ServiceEndpoints (endpoints);
 
 			var networkWrapper = new NetworkWrapper (ga, serviceDiscovery, "Example.IRemoteFitness.dll", true);
 
@@ -103,7 +103,7 @@ namespace Example.DistributedEvaluation
 
 			//locally declared terminate function
 			networkWrapper.GeneticAlgorithm.Run (TerminateAlgorithm);
-
+			Console.ReadLine ();
 		}
 
 		private static bool TerminateAlgorithm (Population population, int currentGeneration, long currentEvaluation)
@@ -146,7 +146,7 @@ namespace Example.DistributedEvaluation
 			var fittest = e.Population.GetTop (1) [0];
 
 			var distanceToTravel = TravellingSalesman.CalculateDistance (fittest);
-			Console.WriteLine (String.Format ("Generation: {0}, Evaluations: {1}, Fitness: {2}, Distance: {3}, ElapsedTime:T {4}",
+			Console.WriteLine (String.Format ("Generation: {0}, Evaluations: {1}, Fitness: {2}, Distance: {3}, ElapsedTime: {4}ms",
 				e.Generation,
 				e.Evaluations,
 				fittest.Fitness,
