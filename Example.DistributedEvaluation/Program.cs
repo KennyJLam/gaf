@@ -5,7 +5,6 @@ using System.Linq;
 using GAF.Extensions;
 using GAF.Operators;
 using GAF;
-using Example.IRemoteFitness;
 using System.Net;
 using System.Diagnostics;
 using GAF.Network;
@@ -79,22 +78,20 @@ namespace Example.DistributedEvaluation
 			//we can point the service discovery client at any node running a consul service, typically
 			//this would be the localhost. An explicit IP/Port is stated here for clarity, see the 
 			//constructor overloads for more details.
-			//IServiceDiscovery serviceDiscovery = new GAF.ServiceDiscovery.Consul.Client ("192.168.1.90", 8500);
+			IServiceDiscovery serviceDiscovery = new GAF.ServiceDiscovery.Consul.Client ("192.168.1.90", 8500);
 
 			/****************************************************************************************
 			 * The StaticServices class is a IServiceDiscovery implementation that can be used to access
 			 * the specified endpoints. Use this is no specific discovery service is available.
 			 * 
-			 ***************************************************************************************/
+			 ***************************************************************************************
 			var endpoints = new List<IPEndPoint> ();
 			endpoints.Add (NetworkWrapper.CreateEndpoint ("127.0.0.1:11000"));
 			endpoints.Add (NetworkWrapper.CreateEndpoint ("127.0.0.1:11001"));
-			//endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.91:11000"));
-			//endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.92:11000"));
-			//endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.93:11000"));
-			//endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.94:11000"));
+
 
 			IServiceDiscovery serviceDiscovery = new GAF.ServiceDiscovery.ServiceEndpoints (endpoints);
+			*/
 
 			var networkWrapper = new NetworkWrapper (ga, serviceDiscovery, "Example.IRemoteFitness.dll", true);
 
@@ -133,6 +130,41 @@ namespace Example.DistributedEvaluation
 			return cities;
 		}
 
+        public static double CalculateFitness (Chromosome chromosome)
+		{
+			var distanceToTravel = CalculateDistance (chromosome);
+
+			//experience suggests that 2000 is just less than the shortest possible distance
+			var fitness = 2000 / distanceToTravel;
+			return fitness > 1.0 ? 1.0 : fitness;
+
+		}
+
+		private static double CalculateDistance (Chromosome chromosome)
+		{
+			var distanceToTravel = 0.0;
+			City previousCity = null;
+
+			//run through each city in the order specified in the chromosome
+			foreach (var gene in chromosome.Genes) {
+				var currentCity = (City)gene.ObjectValue;
+
+				if (previousCity != null) {
+					distanceToTravel += previousCity.GetDistanceFromPosition (currentCity.Latitude,
+																		currentCity.Longitude);
+				}
+
+				previousCity = currentCity;
+			}
+
+			//add distance back to the starting point
+			var firstCity = (City)chromosome.Genes [0].ObjectValue;
+			distanceToTravel += previousCity.GetDistanceFromPosition (firstCity.Latitude,
+													firstCity.Longitude);
+
+			return distanceToTravel;
+		}
+
 		private static void ga_OnRunComplete (object sender, GaEventArgs e)
 		{
 			var fittest = e.Population.GetTop (1) [0];
@@ -145,7 +177,7 @@ namespace Example.DistributedEvaluation
 		{
 			var fittest = e.Population.GetTop (1) [0];
 
-			var distanceToTravel = TravellingSalesman.CalculateDistance (fittest);
+			var distanceToTravel = CalculateDistance (fittest);
 			Console.WriteLine (String.Format ("Generation: {0}, Evaluations: {1}, Fitness: {2}, Distance: {3}, ElapsedTime: {4}ms",
 				e.Generation,
 				e.Evaluations,

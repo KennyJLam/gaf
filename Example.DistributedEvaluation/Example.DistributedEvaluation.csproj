@@ -38,12 +38,13 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="City.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <ProjectReference Include="..\Example.IRemoteFitness\Example.IRemoteFitness.csproj">
       <Project>{02E5A665-E74A-4972-B3B8-FC49351490B0}</Project>
-      <Name>Example.IRemoteFitness</Name>
+      <Name>Example.IGafLabConsumerFunctions.TravellingSalesman</Name>
     </ProjectReference>
     <ProjectReference Include="..\GAF.Network\GAF.Network.csproj">
       <Project>{3A089051-A784-4791-8D77-719EAB592F20}</Project>

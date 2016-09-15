@@ -21,7 +21,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Example.TravellingSalesman
+namespace Example.DistributedEvaluation
 {
     public class City
     {
