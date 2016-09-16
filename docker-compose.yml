@@ -1,0 +1,46 @@
+version: '2'
+
+services:
+
+  consul-agent:
+
+    hostname: D11
+
+    image: johnnewcombe/consul
+
+    container_name: consul-agent
+
+    ports:
+      - "8300:8300"
+      - "8301:8301/udp"
+      - "8302:8302"
+      - "8302:8302/udp"
+      - "8400:8400"
+      - "8500:8500"
+      - "53:53"
+
+    network_mode: "host"
+
+    # Use this for the main consul node
+    #command: [-server, -advertise, 192.168.1.90, -bootstrap-expect, "3"]
+    
+    # Use this for all other nodes
+    command: [-server, -advertise, 192.168.1.91, -join, 192.168.1.90]
+    
+  gaf-server:
+
+    image: johnnewcombe/gaf
+
+    container_name: gaf-server
+
+    ports:
+      - "11000:11000"
+
+    network_mode: "host"
+
+    depends_on:
+      - consul-agent
+
+    command: [mono, GAF.EvaluationServer.exe]
+    
+    
