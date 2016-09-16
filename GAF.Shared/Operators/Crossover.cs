@@ -197,12 +197,10 @@ namespace GAF.Operators
 				_currentPopulationSize - eliteCount;
 
 			while (_numberOfChildrenToGenerate > 0) {
+
 				//emergency exit
-				maxLoop--;
 				if (maxLoop <= 0) {
-					Debug.WriteLine (
-						"Warning: Unable to create a child that is better than those in the current population");
-					break;
+					throw new ChromosomeException ("Unable to create a suitable child. If duplicates have been disallowed then consider increasing the chromosome length or increasing the number of elites.");
 				}
 
 				//these will hold the children
@@ -224,19 +222,23 @@ namespace GAF.Operators
 					var eventArgs = new CrossoverEventArgs (crossoverResult, p1, p2, c1, c2);
 					OnCrossoverComplete (this, eventArgs);
 				}
-                
+
 				if (AddChild (c1)) {
 					_numberOfChildrenToGenerate--;
+				} else {
+					//unable to create child
+					maxLoop--;
 				}
 
 				//see if we can add the secomd
 				if (_numberOfChildrenToGenerate > 0) {
 					if (AddChild (c2)) {
 						_numberOfChildrenToGenerate--;
+					} else {
+						//unable to create child
+						maxLoop--;
 					}
-
 				}
-
 			}
 
 		}
