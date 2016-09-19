@@ -36,6 +36,7 @@ namespace GAF.Network.Serialization
 	/// </summary>
 	public static class Binary
 	{
+		//TODO: Consider exposing this as an option.
 		private const bool UseXml = true;
 
 		/// <summary>
