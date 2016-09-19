@@ -35,7 +35,6 @@
   <ItemGroup>
     <Compile Include="City.cs" />
     <Compile Include="TravellingSalesman.cs" />
-    <Compile Include="Cities.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GAF.45\GAF.45.csproj">

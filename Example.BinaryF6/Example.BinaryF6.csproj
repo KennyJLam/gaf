@@ -57,7 +57,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Example.IFitness\Example.IFitness.csproj">
       <Project>{2578BCC7-9C16-48BF-B298-F2C44DC007C5}</Project>
-      <Name>Example.IFitness</Name>
+      <Name>Example.IGafLabConsumerFunctions.BinaryF6</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -79,7 +79,7 @@
     <MonoDevelop>
       <Properties>
         <Policies>
-          <TextStylePolicy inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
+          <TextStylePolicy FileWidth="80" TabWidth="4" TabsToSpaces="True" IndentWidth="4" RemoveTrailingWhitespace="True" NoTabsAfterNonTabs="False" EolMarker="Native" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/plain" />
         </Policies>
       </Properties>
     </MonoDevelop>
