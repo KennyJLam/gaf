@@ -1,13 +1,12 @@
 ﻿using System;
-using GAF.Network.Serialization;
 using System.Collections.Generic;
 using System.Linq;
 using GAF.Extensions;
 using GAF.Operators;
 using GAF;
-using System.Net;
 using System.Diagnostics;
 using GAF.Network;
+using Example.IRemoteFitness;
 
 namespace Example.DistributedEvaluation
 {
