@@ -14,7 +14,6 @@ namespace Example.DistributedEvaluation
 	{
 		private static Stopwatch _stopWatch;
 		private const int RunCount = 1;
-		//private const int populationSize = 100;
 		private const int populationSize = 100;
 
 		private static void Main (string [] args)
@@ -28,7 +27,6 @@ namespace Example.DistributedEvaluation
 
 			//we can create an empty population as we will be creating the 
 			//initial solutions manually.
-			//FIXME: Why is ReEvaluateAll required.
 			var population = new Population (false, false);
 
 			//create the initial solutions (chromosomes)
@@ -87,7 +85,6 @@ namespace Example.DistributedEvaluation
 			var endpoints = new List<IPEndPoint> ();
 			endpoints.Add (NetworkWrapper.CreateEndpoint ("127.0.0.1:11000"));
 			endpoints.Add (NetworkWrapper.CreateEndpoint ("127.0.0.1:11001"));
-
 
 			IServiceDiscovery serviceDiscovery = new GAF.ServiceDiscovery.ServiceEndpoints (endpoints);
 			*/
