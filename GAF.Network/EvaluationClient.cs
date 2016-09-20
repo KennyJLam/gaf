@@ -32,7 +32,7 @@ using System.IO;
 using System.Diagnostics;
 using GAF.Network.Serialization;
 using System.Collections;
-using GAF.Network.Treading;
+using GAF.Network.Threading;
 
 namespace GAF.Network
 {

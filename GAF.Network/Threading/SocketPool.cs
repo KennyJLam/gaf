@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
-namespace GAF.Network.Treading
+namespace GAF.Network.Threading
 {
 	public class SocketPoolItem
 	{
