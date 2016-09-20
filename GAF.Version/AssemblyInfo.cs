@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Genetic Algorithm Framework for .Net")]
 
-[assembly: AssemblyConfiguration("2nd April 2016")]
+[assembly: AssemblyConfiguration("13th September 2016")]
 [assembly: AssemblyCompany("AI Frameworks")]
 [assembly: AssemblyCopyright("Copyright © John Newcombe 2016")]
 [assembly: AssemblyTrademark("")]
