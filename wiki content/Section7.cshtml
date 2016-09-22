@@ -1,0 +1,41 @@
+<h2>Using the GAF Docker Images</h2>
+
+<h3>Installation</h3>
+<h4>Docker</h4>
+<p>Docker can be installed on any platform, however, for the GAF Images to work the platfom must use
+an Intel processor.</p>
+<p>Details of downloading and installing Docker for most platforms can be found
+<a href="https://www.docker.com/products/overview" target="_blank"> here</a>.</p>
+
+<h4>Docker Compose</h4>
+<p>For the GAF Evaluation example Docker Compose is used to start and stop the images. Details of how to 
+download and install this product can be found <a href="https://docs.docker.com/compose" target="_blank">here</a>.</p>
+
+<h3>GAF Related Images</h3>
+<h4>The GAF Docker Image</h4>
+<p>The GAF Docker image includes working code examples for 
+the Genetic Algorithm Framework for .Net. and is based on 
+the official Debian image with Mono installed.</p>
+
+<p>The image is available from 
+<a href="https://hub.docker.com/r/johnnewcombe/gaf/" target="_blank">Docker Hub</a>.</p>
+
+
+<h4>The Consul Docker Image</h4>
+<p>The Consul image provides service discovery functionality and is described more fully
+	in the article <a href="/gaf/section/703">Creating a GAF Evaluation Server</a>.</p>
+
+    <p>The image is available from 
+<a href="https://hub.docker.com/r/johnnewcombe/consul/" target="_blank">Docker Hub</a>.</p>
+
+    <a href="/gaf/section/701" class="btn-u pull-right">Next ></a>
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

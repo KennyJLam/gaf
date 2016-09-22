@@ -1,0 +1,55 @@
+<h2>Fitness Function</h2>
+<p>
+    Fitness refers to the assessment of a solution provided by the genetic algorithm. 
+    For example if the GAF is being used to optimise the shape of a fan blade, the genetic 
+    algorithm will constantly present a solution representing a collection of fan blade parameters to the fitness 
+    function for evaluation. If you are a developer using the GAF, the fitness function is 
+    where your effort should be focused as this is what controls the process. In the example above
+    the developer is responsible for implementing a fitness function that can evaluate any
+    given set of parameters representing a fan blade.
+</p>
+<p>
+    The GAF simply requires that you create a fitness function in the following form. The 
+    method name is unimportant, but the signature is. The contents of this function are 
+    determined by the developer. When the method is called by the GAF, the GAF will pass
+    a populated Chromosome for evaluation.
+</p>
+
+<pre><code>private double CalculateFitness(Chromosome chromosome)
+{
+    //calculate fitness 
+    //...
+
+    return fitness;
+}</code></pre>
+<p>
+    This function is passed to the GAF as a delegate during initialisation
+    and will be called by the GAF when the GAF needs to evaluate a solution.
+</p>
+<pre><code>var ga = new GeneticAlgorithm(population, CalculateFitness);</code></pre>
+<p>
+    Solutions from the population are passed to this fitness function by the GAF. 
+    The value returned by the fitness function should be set 
+    to a real number between 0 and 1.0, the higher the value, the fitter the solution. Therfore, using
+    the above example a solution representing a fan blade would have a 
+    fitness value somewhere between 0 and 1.0 and proportional to how good it is
+    as a fan blade.
+</p>
+<h2>Using a separate Assembly for Fitness Functions</h2>
+<p>
+    An example of how to define the fitness function within a separate assembly
+    can be found <a href="/gaf/section/505">here</a>.
+</p>
+
+<a href="/gaf/section/302" class="btn-u pull-right">Next ></a>
+
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

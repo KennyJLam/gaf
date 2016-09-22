@@ -1,0 +1,40 @@
+<h2>Configuring the GAF Evaluation Server</h2>
+
+<h3>Configuration File</h3>
+<p>In the Docker based examples shown in the article <a href="/gaf/section/506">Evaluating on a Network of Computers</a>,
+The GAF Evaluation was pre-configured within a Docker image using the GAF.Evaluation.exe.config file.
+An example of the file is shown below.</p>
+<pre><code>@Html.Action("LoadCodeFile", "Gaf", new { filename = "/Content/txt/gaf/603/app.config.txt", htmlEncode = "true" })</code></pre>
+
+<p>The configuration file includes a single custom section called <em>&lt;server/&gt;</em>. Within this section the example shows the 
+	<em>&lt;serviceDiscovery/&gt;</em> setting. In the above example this is pointing to the Consul client within the GAF.ServiceDiscovery package.
+	Naturally this could point to any type that implements the GAF.Network.IServiceDiscovery interface.</p>
+<p>In addition to the <em>&lt;serviceDiscovery/&gt;</em> node a <em>&lt;fitness/&gt;</em> node can also be present. e.g.</p>
+
+<pre><code>&lt;server&gt;
+  &lt;fitness assemblyName="Example.IRemoteFitness.dll" /&gt;
+&lt;/server&gt;
+</code></pre>
+
+<p>The presence of this node is indicated to the client during initialisation. If the node is not present, 
+the client will transfer the locally specified fitness assembly over the network to the server during initialisation.
+This transfer of fitness assembly simplifies the business of updating and deploying the fitness function.</p>
+
+
+<h3>Specifying the Listening Endpoint</h3>
+<p>When the GAF Evaluation Server is launched, it will automatically listen on the primary IP address of the server 
+	machine (port 11000). If this is unsuitable, the endpoint can be set explicitly with the <em>-endpoint</em> option,
+	for example, using Mono on OSX or Linux..</p>
+
+	<pre># mono GAF.EvaluationServer.exe -endpoint:192.168.90:11000</pre>
+	<p>... or Windows...</p>
+	<pre>&gt; GAF.EvaluationServer.exe -endpoint:192.168.90:11000</pre>
+
+<script>
+	$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

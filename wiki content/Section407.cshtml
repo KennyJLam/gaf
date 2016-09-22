@@ -1,0 +1,114 @@
+<h2>Custom Operators</h2>
+<h3>Introduction</h3>
+<p>
+    There are two methods for producing a custom Genetic Operator for use with the 
+    GAF. The first is the simplest and involves creating a C# class that implements
+    the GAF.IGeneticOperator interface. The second method is to derive a new Genetic 
+    Operator from an existing one.
+</p>
+<h3>Method 1 - Implementing IGeneticOperator</h3>
+<p>
+    This is the simplest and most flexible way to create a Genetic Operator. The 
+    class SimpleOperator in the code shown below shows the simplest example.
+</p>
+<pre><code>public interface IGeneticOperator
+{
+    void Invoke(Population currentPopulation, 
+                ref Population newPopulation, 
+                FitnessFunction fitnesFunctionDelegate);
+
+    int GetOperatorInvokedEvaluations();
+
+    bool Enabled { set; get; }
+}    
+</code></pre>
+<p>&nbsp;</p>
+<pre><code>using GAF;
+
+namespace Operators
+{
+    public class SimpleOperator : IGeneticOperator
+    {
+        public void Invoke(Population currentPopulation, 
+                            ref Population newPopulation, 
+                            FitnessFunction fitnesFunctionDelegate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetOperatorInvokedEvaluations()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Enabled { get; set; }
+    }
+}
+</code></pre>
+<p>
+    Once the operator has been created it can be added to the Operators collection 
+    in the same way as the other built-in operators e.g.</p>
+<pre><code>ga.Operators.Add(simpleOperator)
+</code></pre>
+<p>
+    The Invoke method will be called by the GAF and will present the current generations
+    population (param: population) along with the next generation's population 
+    (param: newPopulation). Each operator is responsible for either taking some 
+    solutions from the current population and transferring them to the new 
+    population. 
+    The way in which this is done is left to the implementer of the operator. 
+    For example the Crossover Operator takes two solutions from the current 
+    population, performs a single or double point crossover, and places these 
+    'children' into the new population.
+</p>
+<p>
+    The GetOperatorInvokedEvaluations method is used during by the GAF to determine 
+    the number of evaluations an operator invokes. Therefore, the method should 
+    return the number of evaluations that the operator undertakes for each invocation.
+</p>
+<p>
+    For example, the built-in Crossover operator evaluates the population to 
+    determine which individuals to select. However, the built-in Mutation operator 
+    does not perform any evaluations. If an operator performed a single evaluation 
+    of each member of a population of say 100 individuals, the 
+    GetOperatorInvokedEvaluation method would return 100. For an operator that 
+    does not perform any evaluations the GetOperatorInvokedEvaluation method 
+    would return 0.
+</p>
+<h4>Things to Bear in Mind</h4>
+<ul>
+    <li>Ensure that the new population is not larger than the current population.</li>
+    <li>Elites passed into the new population by the Elite Operator will be 
+        marked with the 'IsElite' property set to true. These should not 
+        normally be interfered with by subsequent operators.</li>
+    <li>If the custom operator changes any existing chromosomes (as apposed to creating 
+	    new ones), and will not be calling the Evaluate method on that chromosome,
+	    ensure that any existing fitness value is reset to zero as the existing value will no longer be 
+	    valid. This will ensure that even if ReEvaluateAll is set to false, the chromosome will
+	    be correctly evaluated before the generation is complete.
+    </li>
+</ul>
+<h3>Method - 2 Deriving a new Genetic Operator</h3>
+<p>Watson (2003) discussed an approach that used a non-phenotype gene within the 
+    chromosome that could be used to increase the mutation probability. 
+    This additional gene was treated to the same genetic operations as the other 
+    genes, however, it was not used during chromosome decoding process. The gene 
+    was simply used to modify the mutation probability.
+</p>
+<p>
+    The example <a href="/gaf/section/503">Creating an Auto-Mutate Operator</a> 
+    demonstrates how a custom genetic operator can easily be built by deriving 
+    a new Genetic Operator from an existing one.
+</p>
+<h3>References:</h3>
+<p>Watson, T. (2003) An Investigation into Cooperative Behaviour: Altrurism and Evolutionary Computing. <em>Submitted in partial fulfilment of the requirements for the degree of Doctor Of Philosophy DeMontfort Universiity 2003</em></p>
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

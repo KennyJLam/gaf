@@ -1,0 +1,92 @@
+<h2>Chromosomes and Genes</h2>
+<p>
+    Chromosomes represent possible solutions. A population represents a collection of chromosomes.
+    Chromosomes are selected as <em>parents</em>, genetic operators are applied to them e.g. Crossover, 
+    which produces new chromosomes often referred to as <em>children</em>.
+    Each Chromosome consists of a collection of Genes.
+</p>
+<p>
+    For example a binary chromosome consists of a collection of Genes that have values 
+    of <em>true</em> or false. Typically <em>true</em> would refer to a "1" and <em>false</em> to a "0".
+</p>
+<p>
+    Random binary chromosomes can be created very quickly using the constructors of the Population or Chromosome classes.
+    For example the following constructor will create a random Binary Chromosome with
+    a binary string length of 44.
+    
+</p>
+<pre><code>var chromosome = new Chromosome(44);</code></pre>
+<p>
+    Alternatively, the code below creates a binary chromosome from a string representation of
+    a binary value.
+</p>
+<pre><code>var chromosome = new Chromosome("1100100110011011011010");</code></pre>
+
+<p> 
+    The GAF supports binary, integer, real and object based genes (i.e. a Chromosome with objects as Genes). 
+    Each gene could, for example, store a list of objects allowing multidimensional chromosomes 
+    if so desired.</p> 
+    <p>The gene's type is given by the Gene.GeneType property. This property returns an enumerated 
+    value of one of the following C# types.</p>
+
+		<ul><li>Binary</li>
+		<li>Integer</li>
+		<li>Real</li>
+		<li>Object</li>
+		</ul>
+<p>As an example, the code below
+    creates an object based chromosome. This snippet was taken from the 
+    <a href="/gaf/section/502">Solving the Travelling Salesman Problem</a> example and shows how
+    an object based Gene can store a city object.</p>
+
+<pre><code>//create some City Objects
+var cities = CreateCities().ToList();
+
+//Each city is an object. The chromosome is a special case as it needs 
+//to contain each city only once. Therefore, our chromosome will contain 
+//all the cities with no duplicates
+
+//create an empty population
+var population = new Population();
+
+//create the chromosomes
+for (var p = 0; p < populationSize; p++)
+{
+
+    var chromosome = new Chromosome();
+    foreach (var city in cities)
+    {
+        chromosome.Genes.Add(new Gene(city));
+    }
+
+    //shuffle the order
+    chromosome.Genes.ShuffleFast();
+    population.Solutions.Add(chromosome);
+}</code></pre>
+<pre><code>private static IEnumerable&lt;City&gt; CreateCities()
+{
+    var cities = new List&lt;City&gt;
+    {
+        new City("Birmingham", 52.486125, -1.890507),
+        new City("Bristol", 51.460852, -2.588139),
+        new City("London", 51.512161, -0.116215),
+        new City("Leeds", 53.803895, -1.549931),
+        new City("Manchester", 53.478239, -2.258549),
+        new City("Liverpool", 53.409532, -3.000126),
+        new City("Hull", 53.751959, -0.335941),
+    };
+
+    return cities;
+}</code></pre>
+
+<a href="/gaf/section/203" class="btn-u pull-right">Next ></a>
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

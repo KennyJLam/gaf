@@ -1,0 +1,25 @@
+<h2><span>Random Replace</h2>
+<pre>public RandomReplace(int percentageToReplace, bool allowDuplicates)
+</pre>
+<p>     
+    This operator will replace the weakest solutions in the new population 
+    with the selected amount (by percentatge) of randomly generated solutions 
+    (Chromosomes) from the current population. Any chromosome marked as Elite
+    will not be replaced. Therefore, 50% of a population of 100 that has 10
+    'Elites' will replace 45 solutions.
+</p>
+<p>
+    This operator only works with binary Chromosomes as it is simply not possible for this
+    operator to generate custom defined solutions.
+</p>
+<a href="/gaf/section/406" class="btn-u pull-right">Next ></a>
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

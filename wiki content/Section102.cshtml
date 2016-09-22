@@ -1,0 +1,41 @@
+
+
+<h2>Threading Considerations</h2>
+<h3>Delegates and Events</h3>
+<p>When using the GAF it is important to note that the Fitness and Terminate delegates 
+and the various events of the GAF are not guaranteed to be called on the 
+main thread. Therefore, if updating UI components or accessing widely scoped variables,
+care needs to be taken.</p>
+<p>Below is an example of the approach that can be taken to ensure that any updates to a UI
+are called on the main thread.</p>
+<pre><code>private delegate void UpDateUICallback();
+public void UpdateUI()
+{
+    if (this.InvokeRequired)
+    {
+        var callBack = new UpDateUICallback(UpdateUI);
+        this.Invoke(callBack);
+    }
+    else
+    {
+        // Update UI here
+    }
+}</code></pre>
+
+<h3>Parameters</h3>
+<p>
+	All of the GAF parameters, and the parameters of the built-in genetic operators, 
+	are thread safe. This allows the GAF to 
+    be run on a separate thread to that of the consuming process whilst at the same time 
+    allowing modification of the parameters while te GA is running.
+</p>
+
+<a href="/gaf/A Basic Genetic Algorithm" class="btn-u pull-right">Next ></a>
+
+<script>
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+</script>

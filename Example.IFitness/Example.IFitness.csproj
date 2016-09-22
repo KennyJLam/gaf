@@ -28,16 +28,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="GAF">
+      <HintPath>..\packages\GAF.2.2.5\lib\net45\GAF.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BinaryF6Functions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GAF.45\GAF.45.csproj">
-      <Project>{A49A025E-F146-4D04-8F07-8C0A5D1F803F}</Project>
-      <Name>GAF.45</Name>
-    </ProjectReference>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

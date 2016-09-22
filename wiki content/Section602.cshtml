@@ -1,0 +1,44 @@
+<h2>Implementing GAF.Network.IRemoteFitness</h2>
+
+<p>The GAF.Network.IRemoteFitness interface derives from IFitness and is defined as follows.</p>
+<pre><code>public interface IRemoteFitness : IFitness
+{
+	List&lt;Type&gt; GetKnownTypes ();
+}
+public interface IFitness
+{
+	double EvaluateFitness (Chromosome chromosome);
+}
+</code></pre>
+
+<p>I most cases all that is required to implement the interface is to implement the EvaluateFitness method and 
+return an empty collection within the GetKnownTypes method.
+The GetKnownTypes method would typically only be required if the Chromosome was object based. See below.</p>
+
+<h3>Object Based Genes</h3>
+
+<p>For the Cromosome to be evaluated remotely, the Genes collection has to be serialised for transport over the network.
+The DataContractSerializer is used for this purpose. Therefore, any custom classes used within the Genes collection will
+need to be marked with DataContract and DataMember attributes. In addition custom types should
+be returned from the GetKnownTypes method of the IRemoteFitness implementation.</p>
+
+<h3>Example</h3>
+
+<p>The following code shows an implementation of IRemoteFitness for the Travelling Salesman example. The listing shows
+the DataContract and DataMember attributes and an implementation of GetKnownTypes.</p>
+
+<pre><code>@Html.Action("LoadCodeFile", "Gaf", new { filename = "/Content/txt/gaf/602/TravellingSalesman.cs.txt" })</code></pre>
+<pre><code>@Html.Action("LoadCodeFile", "Gaf", new { filename = "/Content/txt/gaf/602/City.cs.txt" })</code></pre>
+
+<a href="/gaf/section/603" class="btn-u pull-right">Next ></a>
+
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

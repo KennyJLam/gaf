@@ -1,78 +1,54 @@
-﻿/*
-	Genetic Algorithm Framework for .Net
-	Copyright (C) 2016  John Newcombe
-
-	This program is free software: you can redistribute it and/or modify
-	it under the terms of the GNU Lesser General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	(at your option) any later version.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU Lesser General Public License for more details.
-
-		You should have received a copy of the GNU Lesser General Public License
-		along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-	http://johnnewcombe.net
-*/
-
-using System;
-using System.Runtime.CompilerServices;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Example.TravellingSalesman
 {
+	[DataContract]
     public class City
     {
-        
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="latitude"></param>
-        /// <param name="longitude"></param>
         public City(string name, double latitude, double longitude)
         {
             Name = name;
             Latitude = latitude;
             Longitude = longitude;
         }
-
+		[DataMember]
         public string Name { set; get; }
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
+		[DataMember]
+		public double Latitude { get; set; }
+		[DataMember]
+		public double Longitude { get; set; }
 
-        /// <summary>
-        /// Retuns the distance in Km betwen this City and the precified location.
-        /// </summary>
-        /// <param name="latitude"></param>
-        /// <param name="longitude"></param>
-        /// <returns></returns>
+        /// <summary> 
+        /// Returns the distance in Km between this City and the specified location. 
+        ///<summary> 
         public double GetDistanceFromPosition(double latitude, double longitude)
         {
-            var R = 6371; // radius of the earth in km
+            var R = 6371;
+            // radius of the earth in km 
             var dLat = DegreesToRadians(latitude - Latitude);
             var dLon = DegreesToRadians(longitude - Longitude);
-            var a =
-                Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(DegreesToRadians(Latitude)) * Math.Cos(DegreesToRadians(latitude)) *
-                Math.Sin(dLon / 2) * Math.Sin(dLon / 2)
-                ;
-            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-            var d = R * c; // distance in km
+            var a = System.Math.Sin(dLat/2)*System.Math.Sin(dLat/2) +
+                    System.Math.Cos(DegreesToRadians(Latitude))*System.Math.Cos(DegreesToRadians(latitude))*
+                    System.Math.Sin(dLon/2)*System.Math.Sin(dLon/2);
+            var c = 2*System.Math.Atan2(System.Math.Sqrt(a), System.Math.Sqrt(1 - a));
+            var d = R*c;
+            // distance in km 
             return d;
         }
 
         private static double DegreesToRadians(double deg)
         {
-            return deg * (System.Math.PI / 180);
+            return deg*(System.Math.PI/180);
         }
 
 		public override string ToString ()
 		{
 			return Name;
 		}
-
     }
 }

@@ -1,0 +1,79 @@
+<h2>GAF Lab Installation</h2>
+
+
+<p>GAF Lab can be installed on Linux, OSX and Windows.
+<h3>Linux and OSX</h3>
+<p>GAF Lab is a .Net/Mono application and requires Mono to be installed. The directions for this can be found on the Mono
+website by following the links below.</p>
+<div>
+<ul>
+<li><a href="http://www.mono-project.com/docs/getting-started/install/linux/" target="_blank">Install Mono on Linux</a></li>
+<li><a href="http://www.mono-project.com/docs/getting-started/install/mac/" target="_blank">Install Mono on Mac OSX</a></li>
+</ul>
+</div>
+<p>Once Mono has been installed, download GAF Lab from the link below into a suitable directory/folder.</p>
+
+<ul>
+<li>
+	@Html.ActionLink("GAF Lab for Linux/OSX", 
+		"LoadBinaryZipFile",new {filename = "/Content/files/GAFLab_Latest_Nix.zip", 
+		recordDownload = true }, 
+		new { id="downloadNix" } )
+</li>
+</ul>
+
+<p>Use the following command to run the application.</p>
+
+<pre>mono GAFLab.exe</pre>
+
+<p>Details on how to use the application are shown <a href="/gaf/section/802">here</a>.</p>
+
+<h3>Windows</h3>
+
+<p>GAF Lab can be installed on Windows using the installer available for download at the link below.</p>
+<ul>
+<li>
+	@Html.ActionLink("GAF Lab for Windows", 
+		"LoadBinaryZipFile",
+		new {filename = "/Content/files/GAFLab_Latest_Windows.zip", recordDownload = true }, 
+		new { id="downloadWindows" } ) 
+	</li>
+</ul>
+<p>The installer will install the GAF Lab files, in addition, the installer for Gtk Sharp will also be launched.</p>
+<p>Details on how to use the application are shown <a href="/gaf/section/802">here</a>.</p>
+
+<a href="/gaf/section/802" class="btn-u pull-right">Next ></a>
+
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+	$(document).ready(function() {
+	
+    $('#downloadWindows').click(function() {
+
+		ga('send', {
+		  hitType: 'event',
+		  eventCategory: 'GAF Lab',
+		  eventAction: 'Download Win',
+		  eventLabel: 'GAF Lab Campaign'
+		});
+    });
+	
+    $('#downloadNix').click(function() {
+
+		ga('send', {
+		  hitType: 'event',
+		  eventCategory: 'GAF Lab',
+		  eventAction: 'Download Nix',
+		  eventLabel: 'GAF Lab Campaign'
+		});
+    });
+});
+
+</script>

@@ -1,0 +1,53 @@
+<h2>Solving The Binary F6 Function</h2>
+<p>In order to create a simple GA and test it, a problem is required to be solved, in particular a problem 
+that where the answer is already known. In line with many researchers, the
+problem selected for this example is the Binary F6 function. Details of the Binary F6 function 
+can be found all over the internet, however, for our purposes all that is required is to understand 
+and accept that this is a difficult problem to solve using traditional approaches.
+</p>
+
+<p><img class="img-responsive" src="/Content/img/gaf/501/f63dplot1.jpg" alt="Binary F6 3D Plot" /></p>
+
+<p>A 3D plot of the Binary F6 function is shown here. It can be seen that there are many peaks and 
+troughs within the overall plot. The aim of the GA produced in this example is to identify the values for X and Y 
+that produces the minimum value for f(x,y).</p>
+
+<p>In this example three genetic operators will be used. <a href="/gaf/section/403">Elite</a>, 
+<a href="/gaf/section/401">Crossover</a>. and <a href="/gaf/section/402">Binary Mutate</a>. 
+It is worth noting that many systems often combine crossover and mutation into a single operator. 
+The GAF treats them as two completely independent operators.</p>
+
+<p>When developing GAs the fitness function is probably the single most important thing to get right. 
+For this example the the Binary F6 function will be used to see how close the GAs values for X and Y
+get to the minumum value (i.e. 0).</p>
+
+<p>To get started, use the NuGet package manager to add the GAF to a project. In this example 
+a Console Project was used.</p>
+
+<pre><code>PM&gt; Install-Package GAF</code></pre>
+
+<p>The code below shows a Console Application that configures a GA to solve the Binary F6 function.</p>
+
+<p>In example, two delegates are used. The first 'EvaluateFitness' is passed into the constructor of 
+the GeneticAlgorithm class. The second, 'TerminateAlgorithm' is passed as an argument to the Run method. 
+These delegate methods will be called when needed by the GAF.</p>
+<p>In order to show the evolving solution, the example below subscribes to the GenerationComplete event. 
+The code in this function displays X, Y and fitness from the best chromosome in each generation.</p>
+
+<p>The results of the run show the final values for X and Y to be -0.00417 and -0.00069 respectively 
+the final fitness value is 0.999982095862215.</p>
+
+<p><em>This code and the compiled assembly is avalaible via <a href="/gaf/section/5">Docker and BitBucket</a>.</em></p>
+<pre><code>@Html.Action("LoadCodeFile", "Gaf", new { filename = "/Content/txt/gaf/501/Program.cs.txt" })</code></pre>
+
+<a href="/gaf/section/502" class="btn-u pull-right">Next ></a>
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

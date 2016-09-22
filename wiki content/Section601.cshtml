@@ -1,0 +1,70 @@
+<h2>Using the GAF Evaluation Server</h2>
+
+<p>In order to use the GAF Evaluation Server the GAF.Network and GAF.Service Discovery 
+NuGet packages should bve added to an existing GAF project.</p>
+
+<pre><code>PM&gt; Install-Package GAF.Network
+PM&gt; Install-Package GAF.ServiceDiscovery</code></pre>
+
+<h3>GAF.Network and GAF.ServiceDiscovery NuGet Packages</h3>
+
+<p>The GAF.ServiceDiscovery package is used in conjuction with the GAF.Network package to provide basic service discovery
+functionality. This component currently supports Consul as well as statically defined service endpoints.</p>
+
+<p>The GAF.Network package provides a network wrapper for the GeneticAlgorithm class allowing a network client to be created using 
+only a couple of lines of code. The package can be installed using the Package Manager console.</p>
+<pre><code>PM&gt; Install-Package GAF.Network</code></pre>
+<p>For example where the standard code for running a non-networked GA is as follows.</p>
+<pre><code>ga.Run(TerminateAlgorithm);</code></pre>
+
+<p>The networked version of the code, with Consul service discovery, would be something like the following.</p>
+<p>The IP address of the nearest Consul node (192.168.1.90 in this example) is passed to the constructor
+of the Consil.Client class. The serviceDiscovery object is then passed to the constructor of the NetworkWrapper
+	class along with the genetic algorithm object.</p>
+<pre><code>IServiceDiscovery serviceDiscovery = new GAF.ServiceDiscovery.Consul.Client ("192.168.1.90", 8500);
+		
+var networkWrapper = new NetworkWrapper (ga, serviceDiscovery, "Example.IRemoteFitness.dll", true);
+networkWrapper.GeneticAlgorithm.Run (TerminateAlgorithm);
+</code></pre>
+
+<p>If the GAF Evaluation Server is installed and is set not to use Service Discovery see 
+<a href="/gaf/section/603">Configuring the GAF Evaluation Server</a>, static server endpoints can be
+defined within the client as shown below. The code specifies two remote GAF Evaluation Server endpoints
+(192.168.1.91 and 192.168.1.92). The NetworkWrapper is created in exactly the same way.</p>
+
+<pre><code>var endpoints = new List ();
+endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.91:11000"));
+endpoints.Add (NetworkWrapper.CreateEndpoint ("192.168.1.92:11001"));
+
+IServiceDiscovery serviceDiscovery = new GAF.ServiceDiscovery.ServiceEndpoints (endpoints);
+
+var networkWrapper = new NetworkWrapper (ga, serviceDiscovery, "Example.IRemoteFitness.dll", true);
+networkWrapper.GeneticAlgorithm.Run (TerminateAlgorithm);</code></pre>
+
+<h3>Remote Fitness</h3>
+<p>For the GAF Evaluation Servers to perform an evaluation, the fitness function needs to exist on each server. 
+To accomplish this, the Fitness Function is placed in a separate assembly within a class that implements the 
+IFitness interface. The name of the assembly is passed to the constructor of the NetworkWrapper and  
+automatically copied to the server when the link is initialised.</p>
+<p>The fitness assembly can be copied manually to the server if preferred, see 
+	<a href="/gaf/section/603">Configuring the GAF Evaluation Server</a>.</p>
+
+<p>Please see the article <a href="/gaf/section/602">Implementing IRemoteFitness</a> for details
+	of how to create an assembly for the fitness function.
+</p>
+
+<h3>A Complete Example</h3>
+<p>The article <a href="/gaf/section/506">Evaluating on a Network of Computers</a>, shows a full example.</p>
+
+<a href="/gaf/section/602" class="btn-u pull-right">Next ></a>
+
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

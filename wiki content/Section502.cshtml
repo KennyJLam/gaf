@@ -1,0 +1,126 @@
+<h2>Solving the Travelling Salesman Problem</h2>
+
+<h3>Introduction</h3>
+<p>The Traveling Salesman problem is a well used problem in AI circles. Given a list of cities, 
+a salesman has to identify the most efficient route that visits every city once and only once. 
+Any city can be the starting point.</p>
+<p>It is possible to solve this problem using 'brute force', that is, calculating every 
+combination of routes. However, with 16 cities we would have to test 20,922,789,888,000 
+possible routes. With 20 cities the number of routes increases to 432,902,008,176,640,000. 
+A brute force approach is simply impractical.</p>
+
+<h3>Using the GAF to Solve the Problem</h3>
+<p>To solve this with a GA is reasonably straight forward. For the example here, a console 
+application has been created (shown below). The Genetic Algorithm Framework (GAF) was added to this
+project using the NuGet command:</p>
+<div class="code">PM&gt; Install-Package GAF
+</div>
+<p>
+    Typically the chromosome in a genetic algorithm is created from a binary string. 
+    However, there are cases where a simple binary string is not the most straightforward approach.
+    The Traveling Salesman problem (TSP) is an example of this as it relies on the chromosome
+    representing a route and each gene representing a city.
+</p>
+<p>
+    The GAF supports various gene types including integers, real numbers and objects. 
+    In this TSP example, the chromosome will store a potential route with each gene being
+    responsible for storing a city object (code shown below).
+</p>
+
+<p> In this example the chromosome is a 
+    special case as it needs to contain each city only once. Therefore, it is not possible 
+    just to create random chromosomes (routes) as was the case with the 
+    <a href="/gaf/section/501">Binary F6 example</a>. It is necessary to create the population manually. 
+    This was done in the Main function in this example.
+</p>
+<p>
+	It is necessary to create the population manually. This was done in the Main function in this example.
+</p>
+
+<p>
+	As mentioned earlier, the chromosome must contain every city. Therefore, it is not possible to use the 
+	traditional crossover method. In most cases a traditional single or double point crossover would corrupt 
+	the route leaving duplicate cities and others missing.
+</p>
+<p>
+	The GAF supports a form of crossover called 'Double Point Ordered'. This type of crossover creates a 
+	child from a single parent. Two parents are selected and two random points along the chromosome are selected. 
+	The genes between the points are passed to the child. The remaining genes are transferred from the same parent, 
+	but in the order that they appear in the second parent. The result is that the child contains all of the 
+	values from a single parent but includes ordering, and therefore traits, from both parents.
+</p>
+<p>
+	Similarly, the Binary Mutate operator used in previous examples is not suitable in this example. 
+	We have to maintain the complete set of values within the chromosome. Therefore, the 'Swap Mutate' 
+	operator has been used. This operator simply takes two genes at random and swaps their position 
+	within the chromosome.
+</p>
+
+<p>For the fitness delegate, the CalculateFitness function has been created. This function simply calls CalculateDistance 
+in order to calculate the total distance between each city in the order specified by the chromosome. The return value 
+of this function needs to be between 0 and 1 with the better fitness (shorter route) being the higher number. 
+The approach taken here is a little crude but it works well.</p>
+
+<p>The terminate delegate function simply stops the GA when 400 generations have taken place.</p>
+
+<p>A couple of things to note regarding the City object. The Equals method has been overloaded, this is simply to ensure that the 
+    Swap Mutate operator functions correctly. If you are not using Swap Mutate then this step 
+    could be ignored. For completeness I have implemented GetHashCode also.
+</p>
+
+<h3>Results</h3>
+<p>Running the GA gave the following results. Most of the work has been done after 154 generations although leaving the GA running showed a very slight improvement in route distance after 368 generations. The shortest distance discovered by the GA was approximately 1629 miles. It is worth noting that this was the result from the first run, no optimisation of the GA was carried out. Adjusting the parent selection method or Crossover/Mutation probability could improve the performance of the GA. I will leave this to you to experiment. Enjoy!</p>
+<pre>Generation: 10, Fitness: 0.751764339552472, Distance: 2482.35660447528
+Generation: 11, Fitness: 0.751764339552472, Distance: 2482.35660447528
+Generation: 12, Fitness: 0.776179966270441, Distance: 2238.20033729559
+Generation: 16, Fitness: 0.778498506612512, Distance: 2215.01493387488
+Generation: 20, Fitness: 0.778792498460299, Distance: 2212.07501539701
+Generation: 21, Fitness: 0.779983453246518, Distance: 2200.16546753482
+Generation: 22, Fitness: 0.791472961088518, Distance: 2085.27038911482
+Generation: 26, Fitness: 0.806022227954872, Distance: 1939.77772045128
+Generation: 27, Fitness: 0.806721914946973, Distance: 1932.78085053027
+Generation: 28, Fitness: 0.80946570810232, Distance: 1905.3429189768
+Generation: 36, Fitness: 0.81391858503094, Distance: 1860.8141496906
+Generation: 39, Fitness: 0.820262019460363, Distance: 1797.37980539637
+Generation: 46, Fitness: 0.825307565772963, Distance: 1746.92434227037
+Generation: 85, Fitness: 0.825532111167778, Distance: 1744.67888832222
+Generation: 93, Fitness: 0.832642679433738, Distance: 1673.57320566262
+Generation: 154, Fitness: 0.836884868024645, Distance: 1631.15131975355
+Generation: 368, Fitness: 0.83710941341946, Distance: 1628.9058658054
+</pre>
+<p>The route selected by the GA was as follows.</p>
+<ol>
+<li>Canterbury</li>
+<li>London</li>
+<li>Bristol</li>
+<li>Cardiff</li>
+<li>Exeter</li>
+<li>Falmouth</li>
+<li>Swansea</li>
+<li>Birmingham</li>
+<li>Liverpool</li>
+<li>Manchester</li>
+<li>Leeds</li>
+<li>Hull</li>
+<li>Newcastle</li>
+<li>Carlisle</li>
+<li>Glasgow</li>
+<li>Edinburgh</li>
+</ol>
+
+<p><em>This code and the compiled assembly is avalaible via <a href="/gaf/section/5">Docker and BitBucket</a>.</em></p>
+<pre><code>@Html.Action("LoadCodeFile", "Gaf", new { filename = "/Content/txt/gaf/502/Program.cs.txt" })</code></pre>
+
+<p><em>This code and the compiled assembly is avalaible via <a href="/gaf/section/5">Docker and BitBucket</a>.</em></p>
+<pre><code>@Html.Action("LoadCodeFile", "Gaf", new { filename = "/Content/txt/gaf/502/City.cs.txt" })</code></pre>
+
+<a href="/gaf/section/503" class="btn-u pull-right">Next ></a>
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

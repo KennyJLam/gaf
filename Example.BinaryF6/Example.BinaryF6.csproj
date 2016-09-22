@@ -42,7 +42,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="GAF">
-      <HintPath>..\packages\GAF.2.2.5\lib\net40\GAF.dll</HintPath>
+      <HintPath>..\packages\GAF.2.2.5\lib\net45\GAF.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -57,7 +57,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Example.IFitness\Example.IFitness.csproj">
       <Project>{2578BCC7-9C16-48BF-B298-F2C44DC007C5}</Project>
-      <Name>Example.IGafLabConsumerFunctions.BinaryF6</Name>
+      <Name>Example.IFitness</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

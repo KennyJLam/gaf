@@ -1,0 +1,38 @@
+<h2>Binary Mutate</h2>
+<p>
+    Although mutation is often closely associated with Crossover, within the GAF, 
+    mutation is seen as a first class citizen and is an operator in its own right.
+</p>
+<p>    
+    The Binary Mutation Operator, traverses each gene 
+    in the population and, based on the probability, swaps a gene 
+    from one state to the other. The aim of this operator is to 
+    add diversity to the population. This operator cannot be used with genes of 
+    type Object.
+</p>
+<p>
+    Diversity is important in order that the best potential solution can be found
+    within the landscape.
+</p>
+<p>
+    The BinaryMutate class constructor is shown below.
+</p>
+<pre><code>public BinaryMutate(double mutationProbability)
+</code></pre>
+<h3>Duplicate Solutions</h3>
+<p>
+    The Binary Mutate Operator can be set to not allow duplicate solutions within 
+    the population. If duplicates are not allowed and a mutation would introduce a
+	duplicate solution, the mutation is not implemented.
+</p>
+<a href="/gaf/section/403" class="btn-u pull-right">Next ></a>
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>

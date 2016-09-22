@@ -1,0 +1,42 @@
+<h2>Running the Binary F6 Function Example in Docker</h2>
+
+<p>This section details how the <a href="/gaf/section/501">Binary F6 example</a> can be run using the
+GAFExamples Docker image.</p>
+
+<p>Details of installing Docker and the optional Docker Compose products 
+can be found <a href="/gaf/section/7">here</a>.</p>
+
+<p>To download and run the docker image in interactive mode, use the command:</p>
+<pre>docker run -it johnnewcombe/gaf bash</pre>
+<p>&nbsp;</p>
+
+<p>All GAF example binaries are stored within the image in the folder /opt/gaf and
+can be run from the command line using Mono, for example: to run 
+the Binary F6 example navigate to /opt/gaf using:</p>
+
+	<pre>cd /opt/gaf</pre>
+
+<p>The example can be run by executing the the following command:</p>
+
+	<pre>mono Example.BinaryF6.exe</pre>
+
+<p>The source code for the example is located at /opt/gaf/source/BinaryF6 
+and can be edited using nano, for example to edit the source use:</p>
+
+    <pre>nano /opt/gaf/src/Example.BinaryF6/Example.BinaryF6.cs</pre>
+
+<p>and recompile with the Mono C# compiler with the following command:</p>
+
+    <pre>mcs -r:/opt/gaf/GAF.dll /opt/gaf/src/Example.BinaryF6/Example.BinaryF6.cs -out:/opt/gaf/Example.BinaryF6.exe</pre>
+
+<a href="/gaf/section/702" class="btn-u pull-right">Next ></a>
+
+<script>
+
+$(document).ready(function() {
+  $('pre code').each(function(i, block) {
+    hljs.highlightBlock(block);
+  });
+});
+
+</script>
