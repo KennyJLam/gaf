@@ -1,7 +1,7 @@
 Latest Stable Version
 =====================
 
-The source here is the latest stable version and reflects the version that is published in [Nuget.org](http://nuget.org/packages/gaf).
+The source within the master branch represents the latest stable version and reflects the version that is published in [Nuget.org](http://nuget.org/packages/gaf).
 
 Description
 ===========
