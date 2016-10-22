@@ -42,12 +42,11 @@ namespace GAF.Operators
 		private double _mutationProbability;
 		private readonly object _syncLock = new object ();
 
-
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="mutationProbability"></param>
-		public MutateBase (double mutationProbability) : base()
+		public MutateBase (double mutationProbability): base()
 		{
 			//_mutationProbability = mutationProbability >= 0 ? mutationProbability : 0.0;
 			if (mutationProbability > 1.0)
@@ -114,6 +113,7 @@ namespace GAF.Operators
 			if (child == null || child.Genes == null) {
 				throw new ArgumentException ("The Chromosome is either null or the Chromosomes Genes are null.");
 			}
+
 			foreach (var gene in child.Genes) {
 
 				//check probability by generating a random number between zero and one and if 
