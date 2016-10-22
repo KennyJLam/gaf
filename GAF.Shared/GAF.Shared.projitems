@@ -65,6 +65,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Net\PacketId.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IFitness.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ChromosomeExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operators\MutateBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Operators\OperatorBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Net\" />

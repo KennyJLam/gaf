@@ -37,10 +37,9 @@ namespace GAF.Operators
 	/// better reflect nature and add diversity to the population.
 	/// This operator cannot be used with genes of type Object.
 	/// </summary>
-	public class BinaryMutate : IGeneticOperator
+	public class BinaryMutate : MutateBase, IGeneticOperator
 	{
-		private double _mutationProbabilityS;
-		private bool _allowDuplicatesS;
+		private bool _allowDuplicates;
 		private readonly object _syncLock = new object ();
 
 		/// <summary>
@@ -49,22 +48,11 @@ namespace GAF.Operators
 		public event LoggingEventHandler OnLogging;
 
 		/// <summary>
-		/// Internal Constructor for unit Testing.
-		/// </summary>
-		internal BinaryMutate () : this (1.0)
-		{
-
-		}
-
-		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="mutationProbability"></param>
-		public BinaryMutate (double mutationProbability)
+		public BinaryMutate (double mutationProbability) : this (mutationProbability, true)
 		{
-			_mutationProbabilityS = mutationProbability;
-			_allowDuplicatesS = true;
-			Enabled = true;
 		}
 
 		/// <summary>
@@ -72,161 +60,62 @@ namespace GAF.Operators
 		/// </summary>
 		/// <param name="mutationProbability"></param>
 		/// <param name="allowDuplicates"></param>
-		public BinaryMutate (double mutationProbability, bool allowDuplicates)
+		public BinaryMutate (double mutationProbability, bool allowDuplicates) : base (mutationProbability)
 		{
-			_mutationProbabilityS = mutationProbability;
-			_allowDuplicatesS = allowDuplicates;
-			Enabled = true;
+			_allowDuplicates = allowDuplicates;
 		}
 
 		/// <summary>
-		/// Enabled property. Diabling this operator will cause the population to 'pass through' unaltered.
-		/// </summary>
-		public bool Enabled { set; get; }
-
-		/// <summary>
-		/// This is the method that invokes the operator. This should not normally be called explicitly.
-		/// 
-		/// This method is virtual and allows the consumer to override and extend 
-		/// the functionality of the operator to be extended        /// </summary>
-		/// <param name="currentPopulation"></param>
-		/// <param name="newPopulation"></param>
-		/// <param name="fitnessFunctionDelegate"></param>
-		public virtual void Invoke (Population currentPopulation, ref Population newPopulation, FitnessFunction fitnessFunctionDelegate)
-		{
-
-			if (newPopulation == null) {
-				newPopulation = currentPopulation.CreateEmptyCopy ();
-			}
-
-			if (!Enabled)
-				return;
-
-			if (currentPopulation.Solutions == null || currentPopulation.Solutions.Count == 0) {
-				throw new ArgumentException ("There are no Solutions in the current Population.");
-			}
-
-			if (currentPopulation.Solutions [0].Genes.Any (g => g.GeneType != GeneType.Binary)) {
-				throw new Exception ("Only Genes with a GeneType of Binary can be handled by the BinaryMutate operator.");
-			}
-
-			//copy everything accross including elites
-			newPopulation.Solutions.Clear ();
-			newPopulation.Solutions.AddRange (currentPopulation.Solutions);
-
-			//run through the non elites mutating as required
-			var solutionsToProcess = newPopulation.GetNonElites ();
-
-			foreach (var chromosome in solutionsToProcess) {
-
-				var mutationProbability = MutationProbability >= 0 ? MutationProbability : 0.0;
-
-				if (AllowDuplicates) {
-
-					//allowing duplicates so simply mutate
-					Mutate (chromosome, mutationProbability);
-
-				} else {
-
-					//duplicates not allowed so we have to clone the chromosome
-					var clonedChromosome = chromosome.DeepClone ();
-
-					//mutate the clone
-					Mutate (clonedChromosome, mutationProbability);
-
-					//only add the mutated chromosome if it does not exist otherwise do nothing
-					if (!newPopulation.SolutionExists (clonedChromosome)) {
-
-						//swap existing genes for the mutated onese
-						chromosome.Genes = clonedChromosome.Genes;
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Internal Method for Unit test purposes.
+		/// Method to Mutate the specified child in derived classes. The method would not normally
+		/// be called directly. It will be called by the framework as required.
 		/// </summary>
 		/// <param name="child"></param>
-		internal void Mutate (Chromosome child)
+		protected override void Mutate (Chromosome child)
 		{
-			Mutate (child, MutationProbability);
-		}
+			Chromosome childToMutate = null;
 
-		/// <summary>
-		/// This method is virtual and allows the consumer to override and extend 
-		/// the functionality of the operator to be extended within a derived class.
-		/// </summary>
-		/// <param name="child"></param>
-		/// <param name="mutationProbability"></param>
-		protected virtual void Mutate (Chromosome child, double mutationProbability)
-		{
-			//cannot mutate elites or else we will ruin them
-			if (child.IsElite)
-				return;
+			if (AllowDuplicates) {
+				childToMutate = child;
+			} else {
 
-			if (child == null || child.Genes == null) {
-				throw new ArgumentException ("The Cromosome is either null or the Chromosomes Genes are null.");
+				//We have to clone the chromosome before we mutate it as it may
+				//not be usable i.e. if it is a duplicate if we didn't clone it 
+				//and we created a duplicate through mutation we would have to 
+				//undo the mutation. This way is easier.
+				childToMutate = child.DeepClone ();
 			}
 
-			foreach (var gene in child.Genes) {
-				if (gene.GeneType == GeneType.Object) {
-					throw new OperatorException ("Genes with a GeneType of Object cannot be mutated by the BinaryMutate operator.");
-				}
+			//call the default mutation behaviour
+			base.Mutate (childToMutate);
 
-				//Debug.WriteLine("Calculated Mutation Probability: {0}", workingProbability);
+			//only add the mutated chromosome if it does not exist otherwise do nothing
+			if (!AllowDuplicates && !NewPopulation.SolutionExists (childToMutate)) {
 
-				//check probability by generating a random number between zero and one and if 
-				//this number is less than or equal to the given mutation probability 
-				//e.g. 0.001 then the bit value is changed.
-				var rd = RandomProvider.GetThreadRandom ().NextDouble ();
+				//swap existing genes for the mutated onese
+				child.Genes = childToMutate.Genes;
 
-				if (rd <= mutationProbability) {
-					//we are changing a chromosome so any existing fitness is now inappropriate
-					child.Fitness = 0;
-					child.FitnessNormalised = 0;
-
-					switch (gene.GeneType) {
-					case GeneType.Binary: {
-							gene.ObjectValue = !(bool)gene.ObjectValue;
-							break;
-						}
-					case GeneType.Real: {
-							gene.ObjectValue = (double)gene.ObjectValue * -1;
-							break;
-						}
-					case GeneType.Integer: {
-							gene.ObjectValue = (int)gene.ObjectValue * -1;
-							break;
-						}
-					}
-				}
 			}
 		}
 
-		/// <summary>
-		/// Returns the number of evaluations performed by this operator.
-		/// </summary>
-		/// <returns></returns>
-		public int GetOperatorInvokedEvaluations ()
+		protected override void MutateGene (Gene gene)
 		{
-			return 0;
-		}
 
-		/// <summary>
-		/// Sets/gets the Mutation probabilty. The setting and getting of this property is thread safe.
-		/// </summary>
-		public double MutationProbability {
-			get {
-				lock (_syncLock) {
-					//this only locks the object, not its members
-					//this is ok as the MutationProbability object is immutable.
-					return _mutationProbabilityS;
-				}
+			if (gene.GeneType == GeneType.Object) {
+				throw new OperatorException ("Genes with a GeneType of Object cannot be mutated by the BinaryMutate operator.");
 			}
-			set {
-				lock (_syncLock) {
-					_mutationProbabilityS = value;
+
+			switch (gene.GeneType) {
+			case GeneType.Binary: {
+					gene.ObjectValue = !(bool)gene.ObjectValue;
+					break;
+				}
+			case GeneType.Real: {
+					gene.ObjectValue = (double)gene.ObjectValue * -1;
+					break;
+				}
+			case GeneType.Integer: {
+					gene.ObjectValue = (int)gene.ObjectValue * -1;
+					break;
 				}
 			}
 		}
@@ -238,12 +127,12 @@ namespace GAF.Operators
 		public bool AllowDuplicates {
 			get {
 				lock (_syncLock) {
-					return _allowDuplicatesS;
+					return _allowDuplicates;
 				}
 			}
 			set {
 				lock (_syncLock) {
-					_allowDuplicatesS = value;
+					_allowDuplicates = value;
 				}
 			}
 		}
