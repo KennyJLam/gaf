@@ -30,15 +30,11 @@ using System.Text;
 namespace GAF.Network.Serialization
 {
 
-
 	/// <summary>
 	/// Binary serializer.
 	/// </summary>
 	public static class Binary
 	{
-		//TODO: Consider exposing this as an option.
-		private const bool UseXml = true;
-
 		/// <summary>
 		/// Deserializes specified bytes.
 		/// </summary>
@@ -57,13 +53,8 @@ namespace GAF.Network.Serialization
 		/// <typeparam name="T">The 1st type parameter.</typeparam>
 		public static T DeSerialize<T> (byte [] byteData, List<Type> knownTypes)
 		{
-			if (UseXml) {
-				return DeSerializeViaXml<T> (byteData, knownTypes);
-			} else {
-				return DeSerializeViaJson<T> (byteData, knownTypes);
-			}
+			return DeSerializeViaXml<T> (byteData, knownTypes);
 		}
-
 
 		private static T DeSerializeViaJson<T> (byte [] byteData, List<Type> knownTypes)
 		{
@@ -129,11 +120,7 @@ namespace GAF.Network.Serialization
 		/// <typeparam name="T">The 1st type parameter.</typepara
 		public static byte [] Serialize<T> (T obj, List<Type> knownTypes)
 		{
-			if (UseXml) {
-				return SerializeViaXml<T> (obj, knownTypes);
-			} else {
-				return SerializeViaJson<T> (obj, knownTypes);
-			}
+			return SerializeViaXml<T> (obj, knownTypes);
 		}
 
 		private static byte [] SerializeViaJson<T> (T obj, List<Type> knownTypes)
@@ -171,19 +158,10 @@ namespace GAF.Network.Serialization
 
 					return bytes;
 
-					//memoryStream.Seek (0, SeekOrigin.Begin);
-
-					//using (var streamReader = new StreamReader (memoryStream)) {
-					//	var xml = streamReader.ReadToEnd ();
-					//	bytes = Encoding.UTF8.GetBytes (xml);
-					//	return bytes;
-					//}
-
 				}
 			} catch (Exception) {
 				throw;
 			}
 		}
-
 	}
 }
