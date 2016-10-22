@@ -33,11 +33,12 @@ namespace CustomOperators
 		Factor50 = 50
 	}
 
-    public class AutoMutate : BinaryMutate
+	public class AutoMutate : BinaryMutate
     {
         private AutoMutateFactor _autoMutationFactorS;
+
         private readonly object _syncLock = new object();
-        private int _geneCount;
+        //private int _geneCount;
 
         public AutoMutate(double mutationProbability)
             : base(mutationProbability)
@@ -47,26 +48,26 @@ namespace CustomOperators
         public override void Invoke(Population currentPopulation, ref Population newPopulation,
           FitnessFunction fitnessFunctionDelegate)
         {
-            _geneCount = newPopulation.ChromosomeLength;
+            //_geneCount = newPopulation.ChromosomeLength;
             base.Invoke(currentPopulation, ref newPopulation, fitnessFunctionDelegate);
         }
 
-        protected override void Mutate(Chromosome child, double mutationProbability)
-        {
+        protected override void Mutate(Chromosome child)
+        {			
+			//store the defined mutation probability
+			var tempProbability = MutationProbability;
+
             //adjust and scale for AutoMutate Factor based on the value of the last gene
-            var newMutationProbability = 0.0;
-            var nonPhenotypeGene = child.Genes.ElementAt(_geneCount - 1);
+			var nonPhenotypeGene = child.Genes.Last();
 
-            if (nonPhenotypeGene.BinaryValue == 1)
-            {
-                newMutationProbability = mutationProbability * (int)AutoMutationFactor;
-            }
-            else
-            {
-                newMutationProbability = mutationProbability;
-            }
+			if (nonPhenotypeGene.BinaryValue == 1) {
+				MutationProbability = MutationProbability * (int)AutoMutationFactor;
+			}
 
-            base.Mutate(child, newMutationProbability);
+            base.Mutate(child);
+
+			//restore the original probability
+			MutationProbability = tempProbability;
 
         }
 
